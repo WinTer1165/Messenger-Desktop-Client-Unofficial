@@ -170,10 +170,15 @@ Transform your Messenger with stunning color themes that apply everywhere.
 ### Why This App is Safe
 
 ✅ **Open Source** - All code is public and auditable on GitHub
+
 ✅ **No Data Collection** - Zero tracking, analytics, or data harvesting
+
 ✅ **Sandboxed** - Web content runs in an isolated, secure container
+
 ✅ **Direct to Facebook** - Credentials go straight to Facebook's servers
+
 ✅ **Session-Only Storage** - Only saves your login session (like a browser)
+
 ✅ **No Third-Party Services** - No external dependencies or cloud services
 
 ### Security Features
