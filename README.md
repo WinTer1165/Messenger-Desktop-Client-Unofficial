@@ -184,9 +184,13 @@ Transform your Messenger with stunning color themes that apply everywhere.
 ### Security Features
 
 🛡️ **Context Isolation** - Prevents malicious code from accessing system APIs
+
 🛡️ **Content Security Policy** - Blocks XSS and injection attacks
+
 🛡️ **Rate Limiting** - Protects against message flooding
+
 🛡️ **Input Validation** - All internal messages are validated
+
 🛡️ **Navigation Control** - Only messenger.com and Facebook domains allowed
 
 ### What Data is Stored Locally?
