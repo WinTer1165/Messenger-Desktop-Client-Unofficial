@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)
 
-[⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) • [❓ FAQ](#faq) • [🛠️ Troubleshooting](#troubleshooting)
+[⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) 
 
 </div>
 
