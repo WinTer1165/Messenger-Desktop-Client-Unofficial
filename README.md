@@ -10,7 +10,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)
-[![Downloads](https://img.shields.io/github/downloads/WinTer1165/Messenger-Desktop-Client-Unofficial/total?style=flat&logo=github)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases)
 
 [⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) • [❓ FAQ](#-faq) • [🛠️ Troubleshooting](#-troubleshooting)
 
@@ -27,7 +26,7 @@ Choose the version that matches your system:
 #### 🔹 Windows Installer (Recommended)
 **Perfect for most users - automatic installation with shortcuts**
 
-[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest/download/Messenger-Desktop-Unofficial-Setup-1.0.0.exe)
+[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/%60%E2%80%8Bv1.0.0%60/Messenger.Desktop.Unofficial.Setup.1.0.0.exe)
 
 - **File:** `Messenger Desktop (Unofficial) Setup 1.0.0.exe`
 - **Size:** 185 MB
@@ -39,7 +38,7 @@ Choose the version that matches your system:
 #### 🔹 Portable Version - x64 (Intel/AMD)
 **No installation required - extract and run**
 
-[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
+[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/%60%E2%80%8Bv1.0.0%60/win-x64-portable.zip)
 
 - **File:** `win-unpacked.zip` (from releases)
 - **For:** Windows 10/11 (64-bit Intel/AMD processors)
@@ -50,7 +49,7 @@ Choose the version that matches your system:
 #### 🔹 Portable Version - ARM64
 **For Windows on ARM devices (Surface Pro X, etc.)**
 
-[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
+[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/%60%E2%80%8Bv1.0.0%60/win-arm64-portable.zip)
 
 - **File:** `win-arm64-unpacked.zip` (from releases)
 - **For:** Windows 10/11 on ARM64 processors
