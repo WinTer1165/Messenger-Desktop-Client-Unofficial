@@ -1,0 +1,45 @@
+{
+  "name": "messenger-desktop-unofficial",
+  "version": "1.0.0",
+  "description": "Messenger Desktop (Unofficial) - Secure desktop client for Facebook Messenger with native OS integration",
+  "main": "dist/main/main.js",
+  "author": "WinTer1165",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "tsc && cp -f src/renderer/*.html dist/renderer/",
+    "build:watch": "tsc --watch",
+    "start": "electron .",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "test": "npm run typecheck && npm run lint",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "electron-store": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "electron": "^38.7.2",
+    "electron-builder": "^26.0.0",
+    "eslint": "^9.17.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "svg2img": "^1.0.0-beta.2",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "build": {
+    "extends": "electron-builder.yml"
+  }
+}

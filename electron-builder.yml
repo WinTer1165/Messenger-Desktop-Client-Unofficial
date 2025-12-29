@@ -1,0 +1,76 @@
+appId: com.yourcompany.messenger-desktop-unofficial
+productName: Messenger Desktop (Unofficial)
+copyright: Copyright © 2025
+
+directories:
+  output: release
+  buildResources: assets
+
+files:
+  - dist/**/*
+  - assets/**/*
+  - "!**/*.ts"
+  - "!**/*.map"
+  - "!src/**/*"
+
+# Ensure preload script is included
+extraResources:
+  - from: dist/preload/
+    to: preload/
+    filter:
+      - "**/*"
+
+asar: true
+compression: maximum
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+  icon: assets/icon.ico
+  # Request only necessary permissions
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Messenger Desktop (Unofficial)
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: assets/icon.icns
+  category: public.app-category.social-networking
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: assets/entitlements.mac.plist
+  entitlementsInherit: assets/entitlements.mac.plist
+
+dmg:
+  sign: false
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+  icon: assets/icons
+  category: Network
+  maintainer: aminulislamlabib@gmail.com
+
+# Auto-update configuration (optional)
+publish:
+  provider: github
+  owner: WinTer1165
+  repo: Messenger-Desktop-Client-Unofficial

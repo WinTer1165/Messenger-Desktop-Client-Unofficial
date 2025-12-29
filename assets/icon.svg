@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0078ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#grad)"/>
+  
+  <!-- Messenger lightning bolt -->
+  <path d="M 256 80 
+           C 160 80 80 155 80 256 
+           C 80 310 105 358 145 392 
+           L 145 472 
+           L 220 420 
+           C 230 422 243 424 256 424 
+           C 352 424 432 349 432 248 
+           C 432 155 352 80 256 80 Z" 
+        fill="white" 
+        fill-opacity="0.95"/>
+  
+  <!-- Lightning bolt icon -->
+  <path d="M 290 160 L 200 280 L 260 280 L 220 360 L 320 230 L 255 230 L 290 160 Z" 
+        fill="url(#grad)"/>
+</svg>

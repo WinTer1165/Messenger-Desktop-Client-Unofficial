@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger Desktop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-app-region: drag;
+            user-select: none;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Theme Styles */
+        body[data-theme="dark"] {
+            background: linear-gradient(135deg, #1a1d29 0%, #2d3748 50%, #1e3a5f 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        body[data-theme="light"] {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            color: #1e293b;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        body[data-theme="contrast"] {
+            background: linear-gradient(135deg, #000000 0%, #0f0f0f 50%, #1a1a1a 100%);
+            color: #00ff41;
+            box-shadow: 0 4px 20px rgba(0, 255, 65, 0.5), inset 0 1px 0 rgba(0, 255, 65, 0.3);
+        }
+
+        body[data-theme="lush-forest"] {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+            color: #ecfdf5;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(236, 253, 245, 0.2);
+        }
+
+        body[data-theme="desert"] {
+            background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%);
+            color: #fffbeb;
+            box-shadow: 0 4px 20px rgba(234, 88, 12, 0.6), inset 0 1px 0 rgba(255, 251, 235, 0.2);
+        }
+
+        body[data-theme="electric"] {
+            background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%);
+            color: #faf5ff;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.7), inset 0 1px 0 rgba(250, 245, 255, 0.2);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        body[data-theme="light"]::before {
+            background: linear-gradient(90deg,
+                rgba(0, 0, 0, 0.05) 0%,
+                transparent 50%,
+                rgba(0, 0, 0, 0.02) 100%);
+        }
+
+        .title {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 6px 10px !important;
+            margin-right: 8px;
+            width: 36px;
+            height: 36px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .theme-toggle svg {
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .theme-toggle:hover svg {
+            transform: scale(1.1) rotate(5deg);
+            filter: brightness(1.2);
+        }
+
+        body[data-theme="light"] .theme-toggle {
+            background: rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+        }
+
+        body[data-theme="light"] .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        body[data-theme="light"] button {
+            color: #2c3e50;
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body[data-theme="contrast"] button {
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+
+        .about-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 6px 10px !important;
+            margin-right: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .about-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .about-btn:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .tray-toggle {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 6px 10px !important;
+            margin-right: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .tray-toggle:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .tray-toggle.active {
+            background: rgba(0, 184, 255, 0.3) !important;
+            border-color: rgba(0, 184, 255, 0.6) !important;
+        }
+
+        .tray-toggle.active svg {
+            stroke: #00b8ff;
+        }
+
+        body[data-theme="light"] .tray-toggle {
+            background: rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+        }
+
+        body[data-theme="light"] .tray-toggle.active {
+            background: rgba(0, 184, 255, 0.2) !important;
+            border-color: rgba(0, 184, 255, 0.5) !important;
+        }
+
+        body[data-theme="light"] .about-btn {
+            background: rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+        }
+
+        body[data-theme="light"] .about-btn:hover {
+            background: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* About Modal */
+        .about-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 35, 45, 0.98);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 400px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .about-modal.show {
+            display: block;
+        }
+
+        .about-modal h2 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .about-modal p {
+            margin: 10px 0;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .about-modal a {
+            color: #0099ff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .about-modal a:hover {
+            color: #00ccff;
+            text-decoration: underline;
+        }
+
+        .about-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .about-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .about-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        .about-overlay.show {
+            display: block;
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            -webkit-app-region: no-drag;
+            z-index: 1;
+        }
+
+        .controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-app-region: no-drag;
+            backdrop-filter: blur(10px);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .zoom-label {
+            min-width: 48px;
+            padding: 6px 10px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 0;
+            -webkit-app-region: no-drag;
+        }
+
+        .window-controls button {
+            width: 46px;
+            height: 32px;
+            font-size: 12px;
+            border-radius: 0;
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
+
+        .window-controls button:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .window-controls button:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .window-controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .window-controls button:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .window-controls button.close:hover {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            box-shadow: 0 2px 8px rgba(255, 65, 108, 0.4);
+        }
+
+        .separator {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24">
+                <defs>
+                    <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#0099FF"/>
+                        <stop offset="50%" style="stop-color:#0068FF"/>
+                        <stop offset="100%" style="stop-color:#A033FF"/>
+                    </linearGradient>
+                </defs>
+                <!-- Minimalistic Pixelated Logo -->
+                <rect x="80" y="80" width="352" height="352" rx="80" fill="url(#messengerGradient)"/>
+                <!-- Chat bubble -->
+                <rect x="160" y="160" width="192" height="32" fill="white"/>
+                <rect x="128" y="192" width="256" height="96" fill="white"/>
+                <rect x="160" y="288" width="192" height="32" fill="white"/>
+                <rect x="192" y="320" width="32" height="32" fill="white"/>
+                <rect x="224" y="352" width="32" height="32" fill="white"/>
+                <!-- Lightning bolt -->
+                <rect x="232" y="208" width="16" height="16" fill="#0068FF"/>
+                <rect x="248" y="208" width="16" height="16" fill="#0068FF"/>
+                <rect x="248" y="224" width="16" height="16" fill="#0068FF"/>
+                <rect x="264" y="224" width="16" height="16" fill="#0068FF"/>
+                <rect x="216" y="224" width="16" height="16" fill="#0068FF"/>
+                <rect x="216" y="240" width="16" height="16" fill="#0068FF"/>
+                <rect x="200" y="240" width="16" height="16" fill="#0068FF"/>
+                <rect x="200" y="256" width="16" height="16" fill="#0068FF"/>
+            </svg>
+        </div>
+        <span>Messenger Desktop</span>
+    </div>
+
+    <div class="right-section">
+        <button id="about-btn" class="about-btn" title="About">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+        </button>
+        <button id="minimize-to-tray-toggle" class="tray-toggle" title="Minimize to tray when closing">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Tray icon -->
+                <rect x="3" y="18" width="18" height="3" rx="1"/>
+                <path d="M7 18V12C7 9.8 8.8 8 11 8H13C15.2 8 17 9.8 17 12V18"/>
+                <circle cx="12" cy="5" r="2"/>
+            </svg>
+        </button>
+        <button id="theme-toggle" class="theme-toggle" title="Change Theme">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                <defs>
+                    <linearGradient id="paletteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#64748b"/>
+                        <stop offset="100%" style="stop-color:#94a3b8"/>
+                    </linearGradient>
+                </defs>
+                <!-- Artist's palette shape -->
+                <path d="M12,2 C17.5,2 22,6.5 22,12 C22,14.5 21,16.8 19.5,18.5 C18.5,19.5 17,20 15.5,20 C14.5,20 13.5,19.5 13,18.5 C12.5,17.5 12,17 11,17 C9.3,17 8,18.3 8,20 C8,21 7,22 6,22 C3.2,22 2,19.8 2,17 C2,9.8 6.5,2 12,2 Z"
+                      fill="url(#paletteGradient)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                <!-- Paint color dots -->
+                <circle cx="8" cy="8" r="1.8" fill="#ef4444"/>
+                <circle cx="14" cy="7" r="1.8" fill="#f59e0b"/>
+                <circle cx="17" cy="11" r="1.8" fill="#10b981"/>
+                <circle cx="9" cy="13" r="1.8" fill="#3b82f6"/>
+                <circle cx="15" cy="14" r="1.8" fill="#a855f7"/>
+            </svg>
+        </button>
+        <div class="controls">
+            <button id="zoom-out" title="Zoom Out (Ctrl+-)">−</button>
+            <button id="zoom-reset" class="zoom-label" title="Reset Zoom (Ctrl+0)">100%</button>
+            <button id="zoom-in" title="Zoom In (Ctrl++)">+</button>
+        </div>
+        <div class="separator"></div>
+        <div class="window-controls">
+            <button id="minimize" title="Minimize">─</button>
+            <button id="maximize" title="Maximize">□</button>
+            <button id="close" class="close" title="Close">✕</button>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="about-overlay" id="about-overlay"></div>
+    <div class="about-modal" id="about-modal">
+        <button class="about-modal-close" id="about-close">×</button>
+        <h2>Messenger Desktop</h2>
+        <p><strong>Version:</strong> 1.0.0</p>
+        <p><strong>Description:</strong> Unofficial desktop client for Facebook Messenger with native OS integration, custom themes, and enhanced privacy features.</p>
+        <p><strong>GitHub:</strong> <a href="#" id="github-link">WinTer1165/Messenger-Desktop-Client-Unofficial</a></p>
+        <p style="margin-top: 20px; font-size: 12px; color: #888;">Built with Electron • Made with ❤️</p>
+    </div>
+
+    <script>
+        console.log('[TitleBar] Initializing...');
+        console.log('[TitleBar] electronAPI available:', !!window.electronAPI);
+
+        // Theme Management
+        const themes = ['dark', 'light', 'lush-forest', 'contrast', 'desert', 'electric'];
+        let currentThemeIndex = 0;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('titlebar-theme') || 'dark';
+        currentThemeIndex = themes.indexOf(savedTheme);
+        if (currentThemeIndex === -1) currentThemeIndex = 0;
+        document.body.setAttribute('data-theme', themes[currentThemeIndex]);
+
+        // Notify main process of initial theme
+        if (window.electronAPI && window.electronAPI.changeTheme) {
+            window.electronAPI.changeTheme(themes[currentThemeIndex]);
+        }
+
+        // Theme toggle button
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('titlebar-theme', newTheme);
+            console.log('[TitleBar] Theme changed to:', newTheme);
+
+            // Notify main process of theme change
+            if (window.electronAPI && window.electronAPI.changeTheme) {
+                window.electronAPI.changeTheme(newTheme);
+            }
+        });
+
+        // These will be handled by the preload script
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            console.log('[TitleBar] Zoom in clicked');
+            if (window.electronAPI) {
+                window.electronAPI.zoomIn();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            console.log('[TitleBar] Zoom out clicked');
+            if (window.electronAPI) {
+                window.electronAPI.zoomOut();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        document.getElementById('zoom-reset').addEventListener('click', () => {
+            console.log('[TitleBar] Zoom reset clicked');
+            if (window.electronAPI) {
+                window.electronAPI.zoomReset();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        document.getElementById('minimize').addEventListener('click', () => {
+            console.log('[TitleBar] Minimize clicked');
+            if (window.electronAPI) {
+                window.electronAPI.minimizeWindow();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        document.getElementById('maximize').addEventListener('click', () => {
+            console.log('[TitleBar] Maximize clicked');
+            if (window.electronAPI) {
+                window.electronAPI.maximizeWindow();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        document.getElementById('close').addEventListener('click', () => {
+            console.log('[TitleBar] Close clicked');
+            if (window.electronAPI) {
+                window.electronAPI.closeWindow();
+            } else {
+                console.error('[TitleBar] electronAPI not available!');
+            }
+        });
+
+        // Update zoom level display
+        if (window.electronAPI && window.electronAPI.onZoomLevelChange) {
+            window.electronAPI.onZoomLevelChange((level) => {
+                const percentage = Math.round(100 + level * 50);
+                document.getElementById('zoom-reset').textContent = `${percentage}%`;
+            });
+        }
+
+        // About Modal
+        const aboutBtn = document.getElementById('about-btn');
+        const aboutModal = document.getElementById('about-modal');
+        const aboutOverlay = document.getElementById('about-overlay');
+        const aboutClose = document.getElementById('about-close');
+        const githubLink = document.getElementById('github-link');
+
+        function showAboutModal() {
+            aboutModal.classList.add('show');
+            aboutOverlay.classList.add('show');
+        }
+
+        function hideAboutModal() {
+            aboutModal.classList.remove('show');
+            aboutOverlay.classList.remove('show');
+        }
+
+        // About button directly opens GitHub
+        aboutBtn.addEventListener('click', () => {
+            const url = 'https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial';
+            console.log('[TitleBar] Opening GitHub:', url);
+            if (window.electronAPI && window.electronAPI.openExternal) {
+                window.electronAPI.openExternal(url);
+            } else {
+                // Fallback for development
+                window.open(url, '_blank');
+            }
+        });
+
+        aboutClose.addEventListener('click', hideAboutModal);
+        aboutOverlay.addEventListener('click', hideAboutModal);
+
+        // Minimize to Tray Toggle
+        const trayToggleBtn = document.getElementById('minimize-to-tray-toggle');
+        let minimizeToTray = localStorage.getItem('minimize-to-tray') === 'true';
+
+        // Set initial state
+        if (minimizeToTray) {
+            trayToggleBtn.classList.add('active');
+            trayToggleBtn.title = 'Minimize to tray: ON (click to close app on X)';
+        } else {
+            trayToggleBtn.title = 'Minimize to tray: OFF (click to minimize on X)';
+        }
+
+        // Send initial setting to main process
+        if (window.electronAPI && window.electronAPI.setMinimizeToTray) {
+            window.electronAPI.setMinimizeToTray(minimizeToTray);
+        }
+
+        trayToggleBtn.addEventListener('click', () => {
+            minimizeToTray = !minimizeToTray;
+            localStorage.setItem('minimize-to-tray', minimizeToTray);
+
+            if (minimizeToTray) {
+                trayToggleBtn.classList.add('active');
+                trayToggleBtn.title = 'Minimize to tray: ON (click to close app on X)';
+                console.log('[TitleBar] Minimize to tray: ENABLED');
+            } else {
+                trayToggleBtn.classList.remove('active');
+                trayToggleBtn.title = 'Minimize to tray: OFF (click to minimize on X)';
+                console.log('[TitleBar] Minimize to tray: DISABLED');
+            }
+
+            // Send to main process
+            if (window.electronAPI && window.electronAPI.setMinimizeToTray) {
+                window.electronAPI.setMinimizeToTray(minimizeToTray);
+            }
+        });
+
+        // Handle GitHub link click in modal (if modal is shown)
+        githubLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = 'https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial';
+            if (window.electronAPI && window.electronAPI.openExternal) {
+                window.electronAPI.openExternal(url);
+            } else {
+                // Fallback for development
+                window.open(url, '_blank');
+            }
+        });
+
+        console.log('[TitleBar] Initialization complete');
+    </script>
+</body>
+</html>

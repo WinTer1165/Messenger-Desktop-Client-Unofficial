@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!--
+    SECURITY: Content Security Policy
+    This prevents XSS and other injection attacks in our native chrome.
+    Note: This is for the renderer chrome ONLY, not the BrowserView.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data:;
+    font-src 'self';
+    connect-src 'none';
+    frame-src 'none';
+  ">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messenger Desktop</title>
+  <style>
+    /*
+      Native Chrome Styles
+      
+      This provides custom window controls for frameless windows.
+      Enable by setting frame: false in BrowserWindow options.
+      
+      USAGE: Only needed if you want custom title bar.
+      The BrowserView will be positioned below this chrome.
+    */
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      overflow: hidden;
+      user-select: none;
+      background: transparent;
+    }
+    
+    /* Custom Title Bar (32px height) */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      background: #0084ff;
+      color: white;
+      -webkit-app-region: drag; /* Makes titlebar draggable */
+      padding: 0 8px;
+    }
+    
+    .titlebar-title {
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .titlebar-title img {
+      width: 18px;
+      height: 18px;
+    }
+    
+    /* Window Controls */
+    .window-controls {
+      display: flex;
+      -webkit-app-region: no-drag; /* Buttons are clickable */
+    }
+    
+    .window-controls button {
+      width: 46px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.1s;
+    }
+    
+    .window-controls button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .window-controls button.close:hover {
+      background: #e81123;
+    }
+    
+    .window-controls button svg {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+    }
+    
+    /* macOS Traffic Lights Spacer */
+    .macos-spacer {
+      width: 70px;
+      display: none;
+    }
+    
+    /* Show spacer on macOS (when using hiddenInset title bar) */
+    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      .platform-darwin .macos-spacer {
+        display: block;
+      }
+      .platform-darwin .window-controls {
+        display: none;
+      }
+    }
+    
+    /* Content Area - BrowserView renders below this */
+    .content {
+      height: calc(100vh - 32px);
+      /* BrowserView is positioned programmatically over this area */
+    }
+    
+    /* Hidden by default - shown only when enabled */
+    body:not(.frameless) .titlebar {
+      display: none;
+    }
+    
+    body:not(.frameless) .content {
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    Custom Title Bar
+    To enable:
+    1. Set frame: false in BrowserWindow options
+    2. Add 'frameless' class to body
+    3. Adjust BrowserView y offset to 32px
+  -->
+  <div class="titlebar">
+    <div class="macos-spacer"></div>
+    <div class="titlebar-title">
+      <!-- Messenger Icon (placeholder) -->
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+        <path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.936 1.444 5.544 3.7 7.257v4l3.863-2.135c.961.267 1.982.413 3.037.413 5.523 0 10-4.145 10-9.243C22.6 6.145 17.523 2 12 2zm1.063 12.384L10.5 11.692 5.313 14.5l5.688-6.084L13.5 11.108l5.188-2.808-5.625 6.084z"/>
+      </svg>
+      <span>Messenger</span>
+    </div>
+    <div class="window-controls">
+      <!-- Minimize -->
+      <button id="btn-minimize" title="Minimize" aria-label="Minimize">
+        <svg viewBox="0 0 12 12">
+          <rect y="5" width="12" height="2"/>
+        </svg>
+      </button>
+      <!-- Maximize/Restore -->
+      <button id="btn-maximize" title="Maximize" aria-label="Maximize">
+        <svg viewBox="0 0 12 12">
+          <rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </button>
+      <!-- Close -->
+      <button id="btn-close" class="close" title="Close" aria-label="Close">
+        <svg viewBox="0 0 12 12">
+          <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Content area where BrowserView renders -->
+  <div class="content">
+    <!-- BrowserView is positioned here programmatically -->
+  </div>
+  
+  <script src="./renderer.js"></script>
+</body>
+</html>
