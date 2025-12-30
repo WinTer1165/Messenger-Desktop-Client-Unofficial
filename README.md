@@ -3,6 +3,8 @@
 <div align="center">
 
 <img src="assets/icon.png" width="128" height="128" alt="Messenger Desktop Icon">
+<br>
+<img src="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/blob/main/demo/messengerdemo110.jpg?raw=true" width="560"/>
 
 ### A Beautiful, Secure Desktop Client for Facebook Messenger
 
