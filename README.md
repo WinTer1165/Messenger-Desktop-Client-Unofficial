@@ -460,5 +460,7 @@ This project is open source (MIT License) and provided as-is for personal use.
 
 Facebook® and Messenger® are registered trademarks of Meta Platforms, Inc.
 
+![Hits](https://hits.sh/github.com/WinTer1165/Messenger-Desktop-Client-Unofficial.svg?style=flat-square&label=Views&color=blue)
+
 ---
 </div>
