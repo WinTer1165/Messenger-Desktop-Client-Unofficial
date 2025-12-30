@@ -19,7 +19,7 @@
 
 ## 📥 Download
 
-### **Latest Version: 1.0.0**
+### **Latest Version: 1.1.0**
 
 Choose the version that matches your system:
 
