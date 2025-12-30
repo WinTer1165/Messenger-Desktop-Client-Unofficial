@@ -88,7 +88,7 @@ Download the installer from [above](#-download) or visit [Releases](https://gith
 
 #### Step 2: Run the Installer
 
-1. **Open the downloaded file** - Double-click `Messenger Desktop (Unofficial) Setup 1.0.0.exe`
+1. **Open the downloaded file** - Double-click `Messenger Desktop (Unofficial) Setup 1.1.0.exe`
 
 2. **Windows Security Warning** (Normal for unsigned apps):
    - If you see "Windows protected your PC":
