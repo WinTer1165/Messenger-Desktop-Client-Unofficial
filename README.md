@@ -40,7 +40,7 @@ Choose the version that matches your system:
 
 [![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.1.0/win-x64-portable-110.zip)
 
-- **File:** `win-x64-portable.zip` (from releases)
+- **File:** `win-x64-portable-110.zip` (from releases)
 - **For:** Windows 10/11 (64-bit Intel/AMD processors)
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
@@ -51,7 +51,7 @@ Choose the version that matches your system:
 
 [![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.1.0/win-arm64-prtable-110.zip)
 
-- **File:** `win-arm64-portable.zip` (from releases)
+- **File:** `win-arm64-portable-110.zip` (from releases)
 - **For:** Windows 10/11 on ARM64 processors
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
