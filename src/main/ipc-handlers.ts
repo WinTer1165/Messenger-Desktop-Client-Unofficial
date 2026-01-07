@@ -20,7 +20,6 @@
  * VALIDATION STRATEGY:
  * - Use type guards from shared/types.ts
  * - Fail closed (reject invalid input silently)
- * - Log validation failures for debugging
  */
 
 import { ipcMain, IpcMainEvent, BrowserWindow } from 'electron';
@@ -43,6 +42,12 @@ let themeChangeCallback: ((theme: string) => void) | null = null;
 // Minimize to tray setting
 let minimizeToTray: boolean = false;
 
+// Go to home callback
+let goToHomeCallback: (() => void) | null = null;
+
+// Browser login callback
+let browserLoginCallback: (() => Promise<void>) | null = null;
+
 /**
  * Set zoom control functions from menu module
  */
@@ -61,6 +66,20 @@ export function setZoomFunctions(
  */
 export function setThemeChangeCallback(callback: (theme: string) => void): void {
   themeChangeCallback = callback;
+}
+
+/**
+ * Set go to home callback from main module
+ */
+export function setGoToHomeCallback(callback: () => void): void {
+  goToHomeCallback = callback;
+}
+
+/**
+ * Set browser login callback from main module
+ */
+export function setBrowserLoginCallback(callback: () => Promise<void>): void {
+  browserLoginCallback = callback;
 }
 
 /**
@@ -345,6 +364,26 @@ function handleMinimizeToTray(_event: IpcMainEvent, enabled: unknown): void {
 }
 
 /**
+ * Handle go to home request.
+ */
+function handleGoToHome(): void {
+  console.log('[IPC] Go to home requested');
+  if (goToHomeCallback) {
+    goToHomeCallback();
+  }
+}
+
+/**
+ * Handle browser login request from login window.
+ */
+async function handleBrowserLogin(): Promise<void> {
+  console.log('[IPC] Browser login requested');
+  if (browserLoginCallback) {
+    await browserLoginCallback();
+  }
+}
+
+/**
  * Register all IPC handlers.
  * Call this once during app initialization.
  *
@@ -421,6 +460,18 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     createHandler('minimize-to-tray', handleMinimizeToTray)
   );
 
+  // Go to home
+  ipcMain.on(
+    'go-to-home',
+    createHandler('go-to-home', handleGoToHome)
+  );
+
+  // Browser login
+  ipcMain.on(
+    'start-browser-login',
+    createHandler('start-browser-login', handleBrowserLogin)
+  );
+
   console.log('[IPC] Handlers registered');
 }
 
@@ -439,12 +490,16 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('zoom-reset');
   ipcMain.removeAllListeners(IPC_CHANNELS.APP_READY);
   ipcMain.removeAllListeners(IPC_CHANNELS.THEME_CHANGE);
+  ipcMain.removeAllListeners('go-to-home');
+  ipcMain.removeAllListeners('start-browser-login');
 
   mainWindow = null;
   zoomInFunc = null;
   zoomOutFunc = null;
   zoomResetFunc = null;
   themeChangeCallback = null;
+  goToHomeCallback = null;
+  browserLoginCallback = null;
   rateLimiter.clear();
 
   console.log('[IPC] Handlers unregistered');

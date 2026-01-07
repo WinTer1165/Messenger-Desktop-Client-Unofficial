@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Messenger Desktop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+            min-height: 20px;
+        }
+
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto 0;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 12px 0;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .feature svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .error {
+            background: rgba(255, 59, 48, 0.2);
+            border: 1px solid rgba(255, 59, 48, 0.4);
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <defs>
+                <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#fff"/>
+                    <stop offset="50%" style="stop-color:#f0f0f0"/>
+                    <stop offset="100%" style="stop-color:#e0e0e0"/>
+                </linearGradient>
+            </defs>
+            <rect x="80" y="80" width="352" height="352" rx="80" fill="url(#messengerGradient)"/>
+            <rect x="160" y="160" width="192" height="32" fill="#667eea"/>
+            <rect x="128" y="192" width="256" height="96" fill="#667eea"/>
+            <rect x="160" y="288" width="192" height="32" fill="#667eea"/>
+            <rect x="192" y="320" width="32" height="32" fill="#667eea"/>
+            <rect x="224" y="352" width="32" height="32" fill="#667eea"/>
+            <rect x="232" y="208" width="16" height="16" fill="white"/>
+            <rect x="248" y="208" width="16" height="16" fill="white"/>
+            <rect x="248" y="224" width="16" height="16" fill="white"/>
+            <rect x="264" y="224" width="16" height="16" fill="white"/>
+            <rect x="216" y="224" width="16" height="16" fill="white"/>
+            <rect x="216" y="240" width="16" height="16" fill="white"/>
+            <rect x="200" y="240" width="16" height="16" fill="white"/>
+            <rect x="200" y="256" width="16" height="16" fill="white"/>
+        </svg>
+
+        <h1>Welcome to Messenger Desktop</h1>
+        <p id="description">Sign in with your Facebook account. If you're already logged in to Facebook in your browser, you can use that login!</p>
+
+        <button class="button" id="loginBtn">Sign In with Facebook</button>
+
+        <div class="spinner" id="spinner"></div>
+        <div class="status" id="status"></div>
+        <div class="error" id="error"></div>
+
+        <div class="features">
+            <div class="feature">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                </svg>
+                <span>Use existing browser login or sign in fresh</span>
+            </div>
+            <div class="feature">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                </svg>
+                <span>Works with 2FA & biometrics</span>
+            </div>
+            <div class="feature">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                </svg>
+                <span>Your password is handled by Facebook</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const spinner = document.getElementById('spinner');
+        const status = document.getElementById('status');
+        const error = document.getElementById('error');
+        const description = document.getElementById('description');
+
+        loginBtn.addEventListener('click', () => {
+            console.log('[Login] Button clicked');
+
+            // Disable button
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Opening Browser...';
+
+            // Show spinner
+            spinner.classList.add('active');
+            status.textContent = 'Opening your default browser...';
+
+            // Hide error
+            error.classList.remove('show');
+
+            // Notify main process
+            if (window.electronAPI && window.electronAPI.startBrowserLogin) {
+                window.electronAPI.startBrowserLogin();
+            }
+        });
+
+        // Listen for updates from main process
+        if (window.electronAPI && window.electronAPI.onLoginStatus) {
+            window.electronAPI.onLoginStatus((data) => {
+                console.log('[Login] Status update:', data);
+
+                if (data.status === 'waiting') {
+                    status.textContent = 'Waiting for login in browser...';
+                    description.textContent = 'Complete the login in your browser, then return here.';
+                } else if (data.status === 'success') {
+                    status.textContent = '✅ Login successful!';
+                    spinner.classList.remove('active');
+                    loginBtn.textContent = 'Launching Messenger...';
+                } else if (data.status === 'error') {
+                    status.textContent = '';
+                    error.textContent = data.message || 'Login failed. Please try again.';
+                    error.classList.add('show');
+                    spinner.classList.remove('active');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Try Again';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

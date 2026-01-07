@@ -73,6 +73,7 @@ import {
   notifyFocusChange,
   setZoomFunctions,
   setThemeChangeCallback,
+  setGoToHomeCallback,
 } from './ipc-handlers';
 import { createApplicationMenu, setMessengerView, zoomIn, zoomOut, zoomReset } from './menu';
 
@@ -97,9 +98,6 @@ const store = new ElectronStore<StoreSchema>({
   get<K extends keyof StoreSchema>(key: K): StoreSchema[K];
   set<K extends keyof StoreSchema>(key: K, value: StoreSchema[K]): void;
 };
-
-// Facebook login URL for first-time setup
-const FACEBOOK_LOGIN_URL = 'https://www.facebook.com/login';
 
 // ═══════════════════════════════════════════════════════════════════
 // PATH RESOLUTION
@@ -320,14 +318,7 @@ function configureSession(): Electron.Session {
  * - Hides promotional banners
  */
 const CUSTOM_CSS = `
-/* Custom styles for Messenger Desktop Wrapper */
-
-/* Adjust for custom title bar (if using frameless window) */
-/* Uncomment if you add a custom title bar:
-body {
-  padding-top: 32px !important;
-}
-*/
+/* Custom styles for Messenger Desktop Wrapper - Minimal changes only */
 
 /* Hide "Get the Messenger app" banners */
 [role="banner"] a[href*="messenger.com/desktop"],
@@ -339,220 +330,16 @@ body {
 [data-testid="MWJewelThreadListContainer"] > div:first-child > div[role="banner"] {
   display: none !important;
 }
-
-/* Smooth scrolling for better UX */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Remove focus outline */
-:focus-visible {
-  outline: none !important;
-}
 `;
 
 /**
  * Generate theme-specific CSS for messenger content.
+ * MINIMAL - Only for call windows, does not modify main Messenger UI
  */
 function getThemeCSS(theme: string): string {
-  const themes: Record<string, { bg: string; sidebar: string; text: string; accent: string; hover: string; glow: string }> = {
-    'dark': {
-      bg: 'linear-gradient(135deg, #1a1d29 0%, #2d3748 50%, #1e3a5f 100%)',
-      sidebar: 'rgba(26, 29, 41, 0.95)',
-      text: '#ffffff',
-      accent: '#0084ff',
-      hover: 'rgba(0, 132, 255, 0.15)',
-      glow: 'rgba(0, 132, 255, 0.4)'
-    },
-    'light': {
-      bg: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
-      sidebar: 'rgba(248, 250, 252, 0.95)',
-      text: '#1e293b',
-      accent: '#0084ff',
-      hover: 'rgba(0, 132, 255, 0.1)',
-      glow: 'rgba(0, 132, 255, 0.3)'
-    },
-    'lush-forest': {
-      bg: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%)',
-      sidebar: 'rgba(6, 78, 59, 0.95)',
-      text: '#ecfdf5',
-      accent: '#34d399',
-      hover: 'rgba(52, 211, 153, 0.15)',
-      glow: 'rgba(52, 211, 153, 0.5)'
-    },
-    'contrast': {
-      bg: 'linear-gradient(135deg, #000000 0%, #0f0f0f 50%, #1a1a1a 100%)',
-      sidebar: 'rgba(0, 0, 0, 0.98)',
-      text: '#00ff41',
-      accent: '#00ff41',
-      hover: 'rgba(0, 255, 65, 0.15)',
-      glow: 'rgba(0, 255, 65, 0.6)'
-    },
-    'desert': {
-      bg: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)',
-      sidebar: 'rgba(124, 45, 18, 0.95)',
-      text: '#fffbeb',
-      accent: '#fbbf24',
-      hover: 'rgba(251, 191, 36, 0.15)',
-      glow: 'rgba(251, 191, 36, 0.5)'
-    },
-    'electric': {
-      bg: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)',
-      sidebar: 'rgba(76, 29, 149, 0.95)',
-      text: '#faf5ff',
-      accent: '#c084fc',
-      hover: 'rgba(192, 132, 252, 0.15)',
-      glow: 'rgba(192, 132, 252, 0.6)'
-    }
-  };
-
-  const colors = themes[theme] || themes['dark'];
-
+  // Return empty CSS - keep original Messenger UI unchanged
   return `
-/* Theme: ${theme} - Only for call windows, not main Messenger content */
-
-/* Remove focus rings (blue box fix) */
-input:focus, textarea:focus, [contenteditable="true"]:focus,
-div[role="textbox"]:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* Call window specific styles */
-div[class*="call"],
-div[class*="video"],
-div[class*="Call"],
-div[class*="Video"] {
-  background: ${colors.bg} !important;
-}
-
-/* Call controls background */
-div[class*="callControls"],
-div[class*="controls"],
-div[class*="toolbar"],
-div[class*="CallControls"] {
-  background: ${colors.sidebar} !important;
-  backdrop-filter: blur(20px) !important;
-}
-
-/* Video tiles/participants */
-video {
-  border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px ${colors.glow} !important;
-}
-
-div[class*="participant"],
-div[class*="tile"],
-div[class*="Participant"],
-div[class*="Tile"] {
-  background: ${colors.sidebar} !important;
-  border: 2px solid ${colors.accent}33 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 12px ${colors.glow} !important;
-}
-
-/* Call buttons */
-button[class*="call"],
-button[class*="CallButton"],
-div[class*="callButton"] button {
-  background: ${colors.hover} !important;
-  border: 1px solid ${colors.accent}55 !important;
-  color: ${colors.text} !important;
-  box-shadow: 0 2px 8px ${colors.glow} !important;
-}
-
-button[class*="call"]:hover,
-button[class*="CallButton"]:hover {
-  background: ${colors.accent}44 !important;
-  border-color: ${colors.accent} !important;
-  transform: scale(1.05) !important;
-  box-shadow: 0 4px 16px ${colors.glow} !important;
-}
-
-/* Mute/unmute, video on/off buttons */
-button[aria-label*="mute"],
-button[aria-label*="video"],
-button[aria-label*="Mute"],
-button[aria-label*="Video"] {
-  background: ${colors.hover} !important;
-  border: 1px solid ${colors.accent}55 !important;
-}
-
-/* End call button (red) - preserve its warning color but theme it */
-button[aria-label*="end"],
-button[aria-label*="End"],
-button[aria-label*="leave"],
-button[aria-label*="Leave"],
-button[class*="danger"],
-button[class*="Danger"] {
-  background: #dc2626 !important;
-  border-color: #991b1b !important;
-}
-
-button[aria-label*="end"]:hover,
-button[aria-label*="End"]:hover,
-button[aria-label*="leave"]:hover,
-button[aria-label*="Leave"]:hover {
-  background: #b91c1c !important;
-  transform: scale(1.05) !important;
-}
-
-/* Participant names and labels */
-div[class*="name"],
-div[class*="label"],
-span[class*="name"],
-span[class*="label"] {
-  color: ${colors.text} !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Modals and dialogs */
-div[role="dialog"],
-div[class*="modal"],
-div[class*="Modal"] {
-  background: ${colors.sidebar} !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid ${colors.accent}33 !important;
-}
-
-/* Tooltips */
-div[role="tooltip"],
-div[class*="tooltip"] {
-  background: ${colors.sidebar} !important;
-  color: ${colors.text} !important;
-  border: 1px solid ${colors.accent}44 !important;
-}
-
-/* Scrollbar theming */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: ${colors.accent};
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: ${colors.accent}dd;
-}
-
-/* Selection color */
-::selection {
-  background: ${colors.accent}66 !important;
-  color: ${colors.text} !important;
-}
-
-/* Focus indicators */
-*:focus-visible {
-  outline: 2px solid ${colors.accent} !important;
-  outline-offset: 2px !important;
-}
+/* Theme: ${theme} - No modifications to preserve original Messenger UI */
 `;
 }
 
@@ -570,6 +357,138 @@ async function injectCustomCSS(view: BrowserView, theme: string = 'dark'): Promi
 }
 
 /**
+ * Inject JavaScript to auto-scroll to latest messages.
+ */
+async function injectAutoScrollJS(view: BrowserView): Promise<void> {
+  try {
+    const autoScrollScript = `
+      (function() {
+        console.log('[AutoScroll] Initializing auto-scroll script...');
+
+        let scrollContainer = null;
+        let observer = null;
+        let lastScrollTime = Date.now();
+        const SCROLL_DEBOUNCE = 100; // ms
+
+        // Function to find the message container
+        function findMessageContainer() {
+          // Try multiple selectors that Messenger might use
+          const selectors = [
+            'div[role="main"] div[data-scope="messages_table"]',
+            'div[role="main"] > div > div > div',
+            'div[data-pagelet="MWJewelThreadListContainer"] ~ div',
+            'div[class*="message"] div[class*="scroll"]',
+            'div[aria-label*="Messages"]',
+          ];
+
+          for (const selector of selectors) {
+            const elements = document.querySelectorAll(selector);
+            for (const el of elements) {
+              // Check if element is scrollable
+              if (el.scrollHeight > el.clientHeight) {
+                console.log('[AutoScroll] Found scrollable container:', selector);
+                return el;
+              }
+            }
+          }
+
+          // Fallback: find any scrollable div in main
+          const mainElement = document.querySelector('div[role="main"]');
+          if (mainElement) {
+            const allDivs = mainElement.querySelectorAll('div');
+            for (const div of allDivs) {
+              if (div.scrollHeight > div.clientHeight && div.scrollHeight > 500) {
+                console.log('[AutoScroll] Found fallback scrollable container');
+                return div;
+              }
+            }
+          }
+
+          return null;
+        }
+
+        // Function to scroll to bottom
+        function scrollToBottom(smooth = true) {
+          if (!scrollContainer) {
+            scrollContainer = findMessageContainer();
+          }
+
+          if (scrollContainer) {
+            const now = Date.now();
+            if (now - lastScrollTime < SCROLL_DEBOUNCE) {
+              return; // Debounce
+            }
+            lastScrollTime = now;
+
+            scrollContainer.scrollTo({
+              top: scrollContainer.scrollHeight,
+              behavior: smooth ? 'smooth' : 'auto'
+            });
+            console.log('[AutoScroll] Scrolled to bottom');
+          }
+        }
+
+        // Watch for new messages
+        function setupObserver() {
+          // Disconnect old observer if exists
+          if (observer) {
+            observer.disconnect();
+          }
+
+          const mainElement = document.querySelector('div[role="main"]');
+          if (!mainElement) {
+            console.log('[AutoScroll] Main element not found, retrying...');
+            setTimeout(setupObserver, 1000);
+            return;
+          }
+
+          observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              // Check if nodes were added (new messages)
+              if (mutation.addedNodes.length > 0) {
+                scrollToBottom(true);
+                break;
+              }
+            }
+          });
+
+          observer.observe(mainElement, {
+            childList: true,
+            subtree: true
+          });
+
+          console.log('[AutoScroll] MutationObserver set up');
+
+          // Initial scroll
+          setTimeout(() => scrollToBottom(false), 500);
+        }
+
+        // Start observing
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setupObserver);
+        } else {
+          setupObserver();
+        }
+
+        // Also scroll on page visibility change (when user comes back to app)
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            setTimeout(() => scrollToBottom(true), 300);
+          }
+        });
+
+        console.log('[AutoScroll] Auto-scroll script initialized');
+      })();
+    `;
+
+    await view.webContents.executeJavaScript(autoScrollScript);
+    console.log('[AutoScroll] JavaScript injected');
+  } catch (error) {
+    console.error('[AutoScroll] Failed to inject JavaScript:', error);
+  }
+}
+
+/**
  * Handle theme change from titlebar.
  */
 function handleThemeChange(theme: string): void {
@@ -580,6 +499,19 @@ function handleThemeChange(theme: string): void {
   if (messengerView && !messengerView.webContents.isDestroyed()) {
     messengerView.webContents.insertCSS(getThemeCSS(theme)).catch((error) => {
       console.error('[Theme] Failed to inject theme CSS:', error);
+    });
+  }
+}
+
+/**
+ * Handle go to home request - navigate to messenger.com
+ */
+function handleGoToHome(): void {
+  console.log('[Navigation] Navigating to Messenger home');
+
+  if (messengerView && !messengerView.webContents.isDestroyed()) {
+    messengerView.webContents.loadURL(MESSENGER_URL).catch((error) => {
+      console.error('[Navigation] Failed to navigate to home:', error);
     });
   }
 }
@@ -897,9 +829,9 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
       }
     });
 
-    // Inject theme CSS into call window
+    // Inject theme CSS and auto-scroll into call window
     childWindow.webContents.on('did-finish-load', () => {
-      console.log('[ChildWindow] Page loaded, injecting theme CSS');
+      console.log('[ChildWindow] Page loaded, injecting theme CSS and auto-scroll');
       childWindow.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error) => {
         console.error('[ChildWindow] Failed to inject theme CSS:', error);
       });
@@ -910,6 +842,7 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
   view.webContents.on('did-finish-load', () => {
     console.log('[BrowserView] Page loaded');
     injectCustomCSS(view, currentTheme);
+    injectAutoScrollJS(view);
   });
 
   // Handle page load errors
@@ -1081,6 +1014,8 @@ function createMainWindow(): BrowserWindow {
   return window;
 }
 
+// Removed unused login window functions - using simplified direct login approach
+
 // ═══════════════════════════════════════════════════════════════════
 // APPLICATION LIFECYCLE
 // ═══════════════════════════════════════════════════════════════════
@@ -1121,17 +1056,37 @@ async function initializeApp(): Promise<void> {
   // Set up theme change callback
   setThemeChangeCallback(handleThemeChange);
 
+  // Set up go to home callback
+  setGoToHomeCallback(handleGoToHome);
+
   // Check if this is first-time launch
   const hasLoggedIn = store.get('hasLoggedIn');
 
   if (!hasLoggedIn) {
-    // First-time launch: go to Facebook login
-    console.log('[App] First-time launch detected, loading Facebook login');
-    await messengerView.webContents.loadURL(FACEBOOK_LOGIN_URL);
+    // First-time launch: load messenger.com in the main view
+    // If user has existing Facebook session in browser, they can use it
+    // Otherwise they log in fresh
+    console.log('[App] First-time launch detected, loading Messenger login');
+    await messengerView.webContents.loadURL(MESSENGER_URL);
+
+    // Show main window
+    mainWindow.show();
+
+    // Monitor for successful login
+    messengerView.webContents.on('did-navigate', (_event, url) => {
+      // Check if user successfully logged in
+      if (url.includes('messenger.com/t/') || url === 'https://www.messenger.com/') {
+        console.log('[App] Login detected, marking as logged in');
+        store.set('hasLoggedIn', true);
+      }
+    });
   } else {
     // User has logged in before: go directly to Messenger
     console.log(`[App] Loading ${MESSENGER_URL}`);
     await messengerView.webContents.loadURL(MESSENGER_URL);
+
+    // Show main window
+    mainWindow.show();
   }
 
   console.log('[App] Initialized successfully');

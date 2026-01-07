@@ -66,6 +66,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     console.log('[TitleBarPreload] Sending minimize-to-tray setting:', enabled);
     ipcRenderer.send('minimize-to-tray', enabled);
   },
+
+  // Go to home (messenger.com)
+  goToHome: () => {
+    console.log('[TitleBarPreload] Sending go-to-home');
+    ipcRenderer.send('go-to-home');
+  },
 });
 
 console.log('[TitleBarPreload] APIs exposed successfully');
