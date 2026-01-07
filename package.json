@@ -1,6 +1,6 @@
 {
   "name": "messenger-desktop-unofficial",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Messenger Desktop (Unofficial) - Secure desktop client for Facebook Messenger with native OS integration",
   "main": "dist/main/main.js",
   "author": "WinTer1165",
