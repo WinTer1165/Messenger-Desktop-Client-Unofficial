@@ -45,9 +45,11 @@ jobs:
           [System.IO.File]::WriteAllBytes("cert.pfx", $certBytes)
         shell: pwsh
 
+      # --publish never: uploading is handled by the Create Release step;
+      # otherwise electron-builder auto-creates its own draft release.
       - name: Build Electron App (Windows)
         if: matrix.os == 'windows-latest'
-        run: npm run dist:win
+        run: npm run dist:win -- --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Empty when the cert secret is missing -> unsigned build instead of a failure
@@ -65,7 +67,7 @@ jobs:
 
       - name: Build Electron App (macOS)
         if: matrix.os == 'macos-latest'
-        run: npm run dist:mac
+        run: npm run dist:mac -- --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS requires paid Apple Developer cert
@@ -73,7 +75,7 @@ jobs:
 
       - name: Build Electron App (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: npm run dist:linux
+        run: npm run dist:linux -- --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
