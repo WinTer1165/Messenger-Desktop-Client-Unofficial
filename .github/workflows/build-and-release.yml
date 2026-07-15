@@ -34,8 +34,12 @@ jobs:
         run: npm run build
 
       # Windows Code Signing with Self-Signed Certificate (No Credit Card Required)
+      # NOTE: the secrets context is not allowed in step-level `if`
+      # expressions, so the check goes through an env var instead.
       - name: Decode Certificate (Windows)
-        if: matrix.os == 'windows-latest' && secrets.WINDOWS_CERT_BASE64 != ''
+        if: matrix.os == 'windows-latest' && env.HAS_WIN_CERT == 'true'
+        env:
+          HAS_WIN_CERT: ${{ secrets.WINDOWS_CERT_BASE64 != '' }}
         run: |
           $certBytes = [System.Convert]::FromBase64String("${{ secrets.WINDOWS_CERT_BASE64 }}")
           [System.IO.File]::WriteAllBytes("cert.pfx", $certBytes)
@@ -46,7 +50,8 @@ jobs:
         run: npm run dist:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WIN_CSC_LINK: cert.pfx
+          # Empty when the cert secret is missing -> unsigned build instead of a failure
+          WIN_CSC_LINK: ${{ secrets.WINDOWS_CERT_BASE64 != '' && 'cert.pfx' || '' }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
 
       # Portable zips referenced by the README and the download webpage
