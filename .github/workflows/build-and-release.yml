@@ -49,6 +49,15 @@ jobs:
           WIN_CSC_LINK: cert.pfx
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
 
+      # Portable zips referenced by the README and the download webpage
+      - name: Package Portable Versions (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          Compress-Archive -Path "release\win-unpacked\*" -DestinationPath "release\Messenger-Desktop-Unofficial-$version-Portable-x64.zip"
+          Compress-Archive -Path "release\win-arm64-unpacked\*" -DestinationPath "release\Messenger-Desktop-Unofficial-$version-Portable-ARM64.zip"
+        shell: pwsh
+
       - name: Build Electron App (macOS)
         if: matrix.os == 'macos-latest'
         run: npm run dist:mac
@@ -71,7 +80,7 @@ jobs:
           path: |
             release/*.exe
             release/*.msi
-            release/*.zip
+            release/Messenger-Desktop-Unofficial-*-Portable-*.zip
           retention-days: 30
 
       - name: Upload macOS Artifacts
@@ -109,6 +118,7 @@ jobs:
             release/*.AppImage
             release/*.deb
             release/*.rpm
+            release/Messenger-Desktop-Unofficial-*-Portable-*.zip
             release/latest*.yml
             release/*.blockmap
           draft: false
