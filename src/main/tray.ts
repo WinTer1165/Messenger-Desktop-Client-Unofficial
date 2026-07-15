@@ -40,6 +40,8 @@ import {
 } from 'electron';
 import * as path from 'path';
 import { TRAY_UPDATE_DEBOUNCE_MS, TrayState } from '../shared/types';
+import * as settings from './settings';
+import { checkForUpdatesInteractive } from './updater';
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE
@@ -48,7 +50,7 @@ import { TRAY_UPDATE_DEBOUNCE_MS, TrayState } from '../shared/types';
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
 let debounceTimeout: NodeJS.Timeout | null = null;
-let currentState: TrayState = {
+const currentState: TrayState = {
   unreadCount: 0,
   lastUpdate: 0,
 };
@@ -62,14 +64,36 @@ let baseIcon: NativeImage | null = null;
 
 /**
  * Get the path to tray icon assets.
- * In development, use the assets folder directly.
- * In production, use the packaged resources.
+ *
+ * The assets folder is packaged inside the asar (electron-builder
+ * `files`), and __dirname-relative paths resolve into the asar, so the
+ * same path works in development and production.
+ * (process.resourcesPath/assets does NOT exist in packaged builds -
+ * only dist/preload is copied as extraResources.)
  */
 function getIconPath(filename: string): string {
-  if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'assets', filename);
-  }
   return path.join(__dirname, '..', '..', 'assets', filename);
+}
+
+/**
+ * Write one pixel into a raw bitmap buffer.
+ *
+ * Electron's nativeImage.createFromBuffer interprets raw data as
+ * BGRA with premultiplied alpha - writing plain RGBA silently swaps
+ * red/blue (a blue fill renders orange).
+ */
+function setPixel(
+  canvas: Buffer,
+  offset: number,
+  r: number,
+  g: number,
+  b: number,
+  a: number
+): void {
+  canvas[offset] = Math.round((b * a) / 255);
+  canvas[offset + 1] = Math.round((g * a) / 255);
+  canvas[offset + 2] = Math.round((r * a) / 255);
+  canvas[offset + 3] = a;
 }
 
 /**
@@ -106,15 +130,21 @@ function createBaseIcon(): NativeImage {
 function createGeneratedIcon(): NativeImage {
   // Create a simple 16x16 icon
   const size = 16;
-  const canvas = Buffer.alloc(size * size * 4); // RGBA
+  const canvas = Buffer.alloc(size * size * 4);
 
-  // Fill with blue color (Messenger-ish)
-  for (let i = 0; i < size * size; i++) {
-    const offset = i * 4;
-    canvas[offset] = 0;      // R
-    canvas[offset + 1] = 132; // G
-    canvas[offset + 2] = 255; // B (Messenger blue)
-    canvas[offset + 3] = 255; // A
+  // Rounded blue disc (Messenger-ish) instead of a hard square
+  const center = size / 2;
+  const radius = size / 2 - 0.5;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const distance = Math.sqrt(
+        Math.pow(x + 0.5 - center, 2) + Math.pow(y + 0.5 - center, 2)
+      );
+      const coverage = Math.max(0, Math.min(1, radius - distance + 0.5));
+      if (coverage > 0) {
+        setPixel(canvas, (y * size + x) * 4, 0, 132, 255, Math.round(coverage * 255));
+      }
+    }
   }
 
   return nativeImage.createFromBuffer(canvas, {
@@ -125,64 +155,89 @@ function createGeneratedIcon(): NativeImage {
 }
 
 /**
- * Create an icon with unread badge overlay.
- * 
- * This is used on Windows where we can't easily update the tray icon.
- * On macOS, we use the dock badge instead.
+ * 3x5 pixel font for badge digits.
+ * Each glyph is 5 rows of 3 bits (MSB = left pixel).
  */
-function createBadgeIcon(count: number): NativeImage {
-  // For simplicity, we'll use text rendering in the main process
-  // A more sophisticated approach would use canvas or a native module
-  
-  // If count is 0, return base icon
-  if (count === 0) {
-    return createBaseIcon();
-  }
-
-  // For now, return base icon - badge is shown via overlay on Windows
-  // In a production app, you'd render the badge onto the icon
-  return createBaseIcon();
-}
+const BADGE_FONT: Record<string, number[] | undefined> = {
+  '0': [0b111, 0b101, 0b101, 0b101, 0b111],
+  '1': [0b010, 0b110, 0b010, 0b010, 0b111],
+  '2': [0b111, 0b001, 0b111, 0b100, 0b111],
+  '3': [0b111, 0b001, 0b111, 0b001, 0b111],
+  '4': [0b101, 0b101, 0b111, 0b001, 0b001],
+  '5': [0b111, 0b100, 0b111, 0b001, 0b111],
+  '6': [0b111, 0b100, 0b111, 0b101, 0b111],
+  '7': [0b111, 0b001, 0b010, 0b010, 0b010],
+  '8': [0b111, 0b101, 0b111, 0b101, 0b111],
+  '9': [0b111, 0b101, 0b111, 0b001, 0b111],
+  '+': [0b000, 0b010, 0b111, 0b010, 0b000],
+};
 
 /**
- * Create overlay icon for Windows taskbar.
- * Shows unread count as a small badge.
+ * Create overlay icon for the Windows taskbar: a red circle with the
+ * actual unread count rendered in white pixels ("99+" beyond 99).
+ *
+ * Rendered at 32x32 with scaleFactor 2 so it displays as a crisp
+ * 16 DIP badge on high-DPI screens.
  */
 function createOverlayIcon(count: number): NativeImage | null {
   if (count === 0) return null;
 
-  // Create a small badge icon (16x16)
-  const size = 16;
+  const size = 32;
   const canvas = Buffer.alloc(size * size * 4);
+  const center = size / 2;
+  const radius = size / 2 - 0.5;
 
-  // Red background for badge
-  for (let i = 0; i < size * size; i++) {
-    const offset = i * 4;
-    const x = i % size;
-    const y = Math.floor(i / size);
-    
-    // Circle mask
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - 1;
-    const distance = Math.sqrt(
-      Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
-    );
+  // Red circle with anti-aliased edge
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const distance = Math.sqrt(
+        Math.pow(x + 0.5 - center, 2) + Math.pow(y + 0.5 - center, 2)
+      );
+      // 0..1 coverage for a smooth edge
+      const coverage = Math.max(0, Math.min(1, radius - distance + 0.5));
+      if (coverage > 0) {
+        setPixel(canvas, (y * size + x) * 4, 255, 59, 48, Math.round(coverage * 255));
+      }
+    }
+  }
 
-    if (distance <= radius) {
-      canvas[offset] = 255;     // R (red badge)
-      canvas[offset + 1] = 59;  // G
-      canvas[offset + 2] = 48;  // B
-      canvas[offset + 3] = 255; // A (opaque)
-    } else {
-      canvas[offset + 3] = 0;   // A (transparent)
+  // Render the count text with the 3x5 pixel font
+  const text = count > 99 ? '99+' : String(count);
+  // Pixel scale chosen so the text fits inside the circle
+  const scale = text.length === 1 ? 4 : text.length === 2 ? 3 : 2;
+  const gap = scale; // space between characters (in canvas px)
+  const textWidth = text.length * 3 * scale + (text.length - 1) * gap;
+  const textHeight = 5 * scale;
+  const startX = Math.round((size - textWidth) / 2);
+  const startY = Math.round((size - textHeight) / 2);
+
+  for (let i = 0; i < text.length; i++) {
+    const glyph = BADGE_FONT[text[i]];
+    if (!glyph) continue;
+    const glyphX = startX + i * (3 * scale + gap);
+
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 3; col++) {
+        if ((glyph[row] >> (2 - col)) & 1) {
+          // Fill a scale x scale block of white pixels
+          for (let dy = 0; dy < scale; dy++) {
+            for (let dx = 0; dx < scale; dx++) {
+              const px = glyphX + col * scale + dx;
+              const py = startY + row * scale + dy;
+              if (px >= 0 && px < size && py >= 0 && py < size) {
+                setPixel(canvas, (py * size + px) * 4, 255, 255, 255, 255);
+              }
+            }
+          }
+        }
+      }
     }
   }
 
   return nativeImage.createFromBuffer(canvas, {
     width: size,
     height: size,
-    scaleFactor: 1.0,
+    scaleFactor: 2.0,
   });
 }
 
@@ -201,6 +256,17 @@ function createContextMenu(): Menu {
     },
     { type: 'separator' },
     {
+      label: 'Do Not Disturb',
+      type: 'checkbox',
+      checked: settings.getDoNotDisturb(),
+      click: (menuItem) => {
+        settings.setDoNotDisturb(menuItem.checked);
+        console.log(
+          `[Tray] Do Not Disturb: ${menuItem.checked ? 'ENABLED' : 'DISABLED'}`
+        );
+      },
+    },
+    {
       label: 'Start with System',
       type: 'checkbox',
       checked: app.getLoginItemSettings().openAtLogin,
@@ -209,6 +275,11 @@ function createContextMenu(): Menu {
           openAtLogin: menuItem.checked,
         });
       },
+    },
+    { type: 'separator' },
+    {
+      label: 'Check for Updates…',
+      click: () => checkForUpdatesInteractive(),
     },
     { type: 'separator' },
     {
@@ -326,15 +397,9 @@ function performUnreadUpdate(count: number): void {
 
   console.log(`[Tray] Unread count: ${previousCount} -> ${count}`);
 
-  // Update tray icon/tooltip
+  // Update tray tooltip
   if (tray) {
     tray.setToolTip(count > 0 ? `Messenger (${count} unread)` : 'Messenger');
-    
-    // On Windows/Linux, update the tray icon with badge
-    if (process.platform !== 'darwin') {
-      const badgeIcon = createBadgeIcon(count);
-      tray.setImage(badgeIcon);
-    }
   }
 
   // Platform-specific updates
@@ -342,7 +407,7 @@ function performUnreadUpdate(count: number): void {
     // macOS: Use dock badge
     app.dock?.setBadge(count > 0 ? (count > 99 ? '99+' : count.toString()) : '');
   } else if (process.platform === 'win32' && mainWindow) {
-    // Windows: Use taskbar overlay
+    // Windows: Numeric badge rendered onto the taskbar overlay
     const overlay = createOverlayIcon(count);
     mainWindow.setOverlayIcon(
       overlay,
@@ -351,7 +416,13 @@ function performUnreadUpdate(count: number): void {
   }
 
   // Flash taskbar if count increased and window not focused
-  if (count > previousCount && mainWindow && !mainWindow.isFocused()) {
+  // (suppressed while Do Not Disturb is on)
+  if (
+    count > previousCount &&
+    mainWindow &&
+    !mainWindow.isFocused() &&
+    !settings.getDoNotDisturb()
+  ) {
     flashWindow();
   }
 }

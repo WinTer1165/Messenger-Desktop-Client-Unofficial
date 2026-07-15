@@ -1,21 +1,18 @@
-# Messenger Desktop Client (Unofficial)
+# Messenger Desktop (Unofficial)
 
 <div align="center">
 
 <img src="assets/icon.png" width="128" height="128" alt="Messenger Desktop Icon">
-<br>
-<img src="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/blob/main/demo/messengerdemo110.jpg?raw=true" width="560"/>
 
 ### A Beautiful, Secure Desktop Client for Facebook Messenger
-
-> 🌐 **[Visit our official website](https://winter1165.github.io/Webpage-for-Messenger-Desktop-Client-Unofficial/)** for easy download and more information
 
 **Chat with your friends and family in a dedicated desktop app with premium themes and enhanced privacy**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)
+[![Downloads](https://img.shields.io/github/downloads/WinTer1165/Messenger-Desktop-Client-Unofficial/total?style=flat&logo=github)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases)
 
-[🌐 Website](https://winter1165.github.io/Webpage-for-Messenger-Desktop-Client-Unofficial/) • [⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use)
+[⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) • [❓ FAQ](#-faq) • [🛠️ Troubleshooting](#-troubleshooting)
 
 </div>
 
@@ -23,17 +20,16 @@
 
 ## 📥 Download
 
-### **Latest Version: 1.2.0**
+### **Latest Version: 2.0.0**
 
 Choose the version that matches your system:
-**[🌐 Visit our Website for Easy Download](https://winter1165.github.io/Webpage-for-Messenger-Desktop-Client-Unofficial/)**
 
 #### 🔹 Windows Installer (Recommended)
 **Perfect for most users - automatic installation with shortcuts**
 
-[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-Setup-1.2.0-Windows-x64.exe)
+[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest/download/Messenger-Desktop-Unofficial-Setup-2.0.0.exe)
 
-- **File:** `Messenger-Desktop-Setup-1.2.0-Windows-x64.exe`
+- **File:** `Messenger Desktop (Unofficial) Setup 2.0.0.exe`
 - **Size:** 185 MB
 - **For:** Windows 10/11 (64-bit Intel/AMD)
 - **Includes:** Auto-installer, desktop shortcut, start menu entry
@@ -43,9 +39,9 @@ Choose the version that matches your system:
 #### 🔹 Portable Version - x64 (Intel/AMD)
 **No installation required - extract and run**
 
-[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-1.2.0-Portable-x64.zip)
+[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
 
-- **File:** `Messenger-Desktop-1.2.0-Portable-x64.zip` (from releases)
+- **File:** `win-unpacked.zip` (from releases)
 - **For:** Windows 10/11 (64-bit Intel/AMD processors)
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
@@ -54,9 +50,9 @@ Choose the version that matches your system:
 #### 🔹 Portable Version - ARM64
 **For Windows on ARM devices (Surface Pro X, etc.)**
 
-[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-1.2.0-Portable-ARM64.zip)
+[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
 
-- **File:** `Messenger-Desktop-1.2.0-Portable-ARM64.zip` (from releases)
+- **File:** `win-arm64-unpacked.zip` (from releases)
 - **For:** Windows 10/11 on ARM64 processors
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
@@ -93,7 +89,7 @@ Download the installer from [above](#-download) or visit [Releases](https://gith
 
 #### Step 2: Run the Installer
 
-1. **Open the downloaded file** - Double-click `Messenger-Desktop-Setup-1.2.0-Windows-x64.exe`
+1. **Open the downloaded file** - Double-click `Messenger Desktop (Unofficial) Setup 2.0.0.exe`
 
 2. **Windows Security Warning** (Normal for unsigned apps):
    - If you see "Windows protected your PC":
@@ -143,8 +139,17 @@ After launching the app for the first time:
 - Persistent login - no need to sign in again
 - Direct credential submission to Facebook (never stored locally)
 
-### 🎨 **Premium Themes**
-Transform your Messenger with stunning color themes that apply everywhere.
+### 🎨 **6 Premium Themes**
+Transform your Messenger with stunning color themes that apply everywhere:
+
+| Theme | Description | Best For |
+|-------|-------------|----------|
+| **🌙 Dark** | Classic dark mode with blue accents | Night usage, reducing eye strain |
+| **☀️ Light** | Soft gradients with warm colors | Daytime use, bright environments |
+| **🌲 Lush Forest** | Deep greens and emerald tones | Relaxation, nature lovers |
+| **⚫ Contrast** | Pure black & white with blue highlights | Maximum readability, accessibility |
+| **🏜️ Desert** | Warm browns and sandy oranges | Cozy, earthy atmosphere |
+| **⚡ Electric** | Vibrant purple and pink neon | Bold, energetic look |
 
 **Themes apply to:** Main window, title bar, video calls, and audio calls!
 
@@ -154,7 +159,7 @@ Transform your Messenger with stunning color themes that apply everywhere.
 - One-click theme switching with palette icon
 - **Minimize to Tray toggle** - Choose behavior on window close
 - Smooth gradient backgrounds matching your theme
-- About button with GitHub project link
+- About button with GitHub link
 
 ### 📞 **Enhanced Communication**
 - ✅ Full audio and video call support
@@ -167,6 +172,9 @@ Transform your Messenger with stunning color themes that apply everywhere.
 - 📮 System tray icon with **live unread counter**
 - 💾 Window state memory (size, position, maximized state)
 - 🎛️ Configurable minimize-to-tray behavior
+- 🔔 Native desktop notifications
+- ⌨️ Keyboard shortcuts for all actions
+- 🔍 Zoom controls (Ctrl+Plus/Minus/0)
 
 ---
 
@@ -175,27 +183,18 @@ Transform your Messenger with stunning color themes that apply everywhere.
 ### Why This App is Safe
 
 ✅ **Open Source** - All code is public and auditable on GitHub
-
 ✅ **No Data Collection** - Zero tracking, analytics, or data harvesting
-
 ✅ **Sandboxed** - Web content runs in an isolated, secure container
-
 ✅ **Direct to Facebook** - Credentials go straight to Facebook's servers
-
 ✅ **Session-Only Storage** - Only saves your login session (like a browser)
-
 ✅ **No Third-Party Services** - No external dependencies or cloud services
 
 ### Security Features
 
 🛡️ **Context Isolation** - Prevents malicious code from accessing system APIs
-
 🛡️ **Content Security Policy** - Blocks XSS and injection attacks
-
 🛡️ **Rate Limiting** - Protects against message flooding
-
 🛡️ **Input Validation** - All internal messages are validated
-
 🛡️ **Navigation Control** - Only messenger.com and Facebook domains allowed
 
 ### What Data is Stored Locally?
@@ -225,20 +224,32 @@ Transform your Messenger experience with **6 stunning themes**!
 
 ### Available Themes
 
-| 🎨 Theme | Perfect For |
-|---------|-------------|
-| **🌙 Dark** | Night usage, less eye strain | 
-| **☀️ Light** | Daytime, bright environments | 
-| **🌲 Lush Forest** | Relaxation, focus | 
-| **⚫ Contrast** | Maximum readability | 
-| **🏜️ Desert** | Cozy atmosphere | 
-| **⚡ Electric** | Bold, energetic feel | 
+| 🎨 Theme | Perfect For | Vibe |
+|---------|-------------|------|
+| **🌙 Dark** | Night usage, less eye strain | Cool blue accents on dark background |
+| **☀️ Light** | Daytime, bright environments | Soft gradients, warm and inviting |
+| **🌲 Lush Forest** | Relaxation, focus | Calming emerald greens |
+| **⚫ Contrast** | Maximum readability | Pure black & white with blue highlights |
+| **🏜️ Desert** | Cozy atmosphere | Warm sandy browns and oranges |
+| **⚡ Electric** | Bold, energetic feel | Vibrant purple and pink neon |
 
 > **Note:** Your theme applies to **everything** - title bar, chat background, and even video call windows!
 
 ---
 
 ## 💡 How to Use
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + Plus` or `Ctrl + =` | **Zoom in** - Make text larger |
+| `Ctrl + Minus` or `Ctrl + -` | **Zoom out** - Make text smaller |
+| `Ctrl + 0` | **Reset zoom** - Back to default size |
+| `F11` | **Fullscreen** - Hide everything but Messenger |
+| `Ctrl + R` | **Reload** - Refresh the page |
+| `Ctrl + W` | **Close window** - Minimize to tray or quit (based on setting) |
+
 ### System Tray
 
 The app sits in your **system tray** (bottom-right corner of Windows taskbar):
@@ -247,6 +258,8 @@ The app sits in your **system tray** (bottom-right corner of Windows taskbar):
 - **Right click** - Open menu with options:
   - Show Messenger
   - Quit
+
+**Unread Badge** - Shows red number when you have unread messages!
 
 ### Minimize to Tray Toggle
 
@@ -281,7 +294,7 @@ Choose what happens when you click the **X** button:
 Not currently. You'll need to log out and log back in to switch accounts. Multi-account support may come in a future update!
 
 ### Why does Windows show a security warning?
-The app is not "code signed" (a digital signature that costs $300+/year). This is normal for free open-source software. Click "More info" → "Run anyway" to install.
+The app is not "code signed" (digital signature that costs $300+/year). This is normal for free open-source software. Click "More info" → "Run anyway" to install.
 
 ### Will my messages be private?
 **Absolutely!** This app is just a window to messenger.com - your messages go directly to Facebook's servers, exactly like using Messenger in Chrome or Edge. The app doesn't read, store, or send your messages anywhere else.
@@ -294,6 +307,9 @@ Not yet - currently Windows only. Mac and Linux support is planned for future re
 
 ### How do I uninstall?
 Go to Windows Settings → Apps → Find "Messenger Desktop (Unofficial)" → Click Uninstall
+
+### How do I update to a new version?
+Download the latest installer from [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest) and run it. It will update your existing installation.
 
 ---
 
@@ -324,7 +340,7 @@ Go to Windows Settings → Apps → Find "Messenger Desktop (Unofficial)" → Cl
 1. Check your internet connection
 2. Try restarting the app
 3. If still not working, check if Facebook.com works in your web browser
-4. Make sure you're not behind a firewall blocking Facebook
+4. Make sure you're not behind a corporate firewall blocking Facebook
 
 ---
 
@@ -366,6 +382,24 @@ Go to Windows Settings → Apps → Find "Messenger Desktop (Unofficial)" → Cl
 
 ---
 
+### 🔴 Problem: Can't see unread message count
+
+**Solution:**
+1. Refresh the app (Ctrl + R)
+2. Make sure you have unread messages
+3. Try sending a test message to yourself
+
+---
+
+### 🔴 Problem: Notifications not showing
+
+**Solution:**
+1. Windows Settings → System → Notifications
+2. Make sure "Messenger Desktop (Unofficial)" is enabled
+3. Check "Do Not Disturb" mode is off
+
+---
+
 ### Still having issues?
 
 [Open an issue on GitHub](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues) with:
@@ -379,25 +413,30 @@ Go to Windows Settings → Apps → Find "Messenger Desktop (Unofficial)" → Cl
 
 ### App Performance
 
-✅ **Lightweight** - Uses ~150-450 MB RAM (similar to a browser tab)
-
+✅ **Lightweight** - Uses ~150-250 MB RAM (similar to a browser tab)
 ✅ **Fast Startup** - Launches in 2-3 seconds
-
 ✅ **Stable** - Built on Electron 38 (same tech as VS Code, Discord, Slack)
-
 ✅ **Updates** - Manual updates when new versions are released
 
 ### Connection Reliability
 
 ✅ **Always Online** - Stays connected as long as you have internet
-
-✅ **Auto-Reconnect** - Automatically reconnects if the connection drops
-
+✅ **Auto-Reconnect** - Automatically reconnects if connection drops
 ✅ **Offline Mode** - Shows connection status
+
+### Data Usage
+
+- **Text messages** - Minimal data (same as web browser)
+- **Voice calls** - ~500 KB per minute
+- **Video calls** - ~3-5 MB per minute
+- **Screen sharing** - ~5-10 MB per minute
 
 ---
 
 ## 👨‍💻 For Developers
+
+Want to contribute or build from source? Check out the [Developer Guide](DEVELOPER.md) (coming soon)
+
 ### Quick Build
 
 ```bash
@@ -444,6 +483,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## 🙏 Acknowledgments
+
+- Built with [Electron](https://www.electronjs.org/)
+- Icons generated with [sharp](https://sharp.pixelplumbing.com/)
+- Theme system designed for aesthetics and usability
+- Inspired by the open source community
+
+---
+
 ## 💬 Support & Community
 
 Need help or want to chat?
@@ -451,12 +499,14 @@ Need help or want to chat?
 - 🐛 **Report Bugs**: [Open an Issue](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues)
 - 💡 **Feature Requests**: [Request a Feature](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues/new)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/discussions)
+- ⭐ **Show Support**: Star the repo if you find it useful!
 
 ---
 
 <div align="center">
 
 ### ⚠️ Important Disclaimer
+
 This is an **unofficial** desktop client for Facebook Messenger.
 
 **Not affiliated with, endorsed by, or connected to Meta/Facebook.**
@@ -465,7 +515,12 @@ This project is open source (MIT License) and provided as-is for personal use.
 
 Facebook® and Messenger® are registered trademarks of Meta Platforms, Inc.
 
-![Hits](https://hits.sh/github.com/WinTer1165/Messenger-Desktop-Client-Unofficial.svg?style=flat-square&label=Views&color=blue)
-
 ---
+
+Made with ❤️ by the open source community
+
+⭐ **[Star this project](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)** if you find it useful!
+
+**[⬆ Back to Top](#messenger-desktop-unofficial)**
+
 </div>

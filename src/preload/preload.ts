@@ -119,29 +119,26 @@ function setupTitleObserver(): void {
   });
 
   // Also observe for title element replacement
-  const head = document.head || document.querySelector('head');
-  if (head) {
-    const headObserver = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          // Check if title element was replaced
-          const newTitle = document.querySelector('title');
-          if (newTitle && newTitle !== titleElement) {
-            console.log('[Preload] Title element replaced, re-observing');
-            observer.disconnect();
-            setupTitleObserver();
-            return;
-          }
+  const headObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        // Check if title element was replaced
+        const newTitle = document.querySelector('title');
+        if (newTitle && newTitle !== titleElement) {
+          console.log('[Preload] Title element replaced, re-observing');
+          observer.disconnect();
+          setupTitleObserver();
+          return;
         }
       }
-    });
+    }
+  });
 
-    headObserver.observe(head, {
-      childList: true,
-    });
+  headObserver.observe(document.head, {
+    childList: true,
+  });
 
-    cleanupFunctions.push(() => headObserver.disconnect());
-  }
+  cleanupFunctions.push(() => headObserver.disconnect());
 
   // Initial check
   handleTitleChange();
@@ -154,9 +151,9 @@ function setupTitleObserver(): void {
 
 /**
  * Alternative: DOM-based unread detection.
- * 
- * @deprecated Kept for reference - enable manually if title observation fails
- * @example
+ *
+ * NOTE: Unused fallback, kept for reference - enable manually if title
+ * observation fails.
  */
 export function setupDOMObserver(): void {
   // Wait for page to load
@@ -224,12 +221,17 @@ export function setupDOMObserver(): void {
  * Set up focus change listener from main process.
  */
 function setupFocusListener(): void {
-  ipcRenderer.on(IPC_MAIN_CHANNELS.WINDOW_FOCUS_CHANGED, (_event, payload) => {
-    if (payload && typeof payload.focused === 'boolean') {
+  ipcRenderer.on(IPC_MAIN_CHANNELS.WINDOW_FOCUS_CHANGED, (_event, payload: unknown) => {
+    if (
+      typeof payload === 'object' &&
+      payload !== null &&
+      typeof (payload as { focused?: unknown }).focused === 'boolean'
+    ) {
+      const focused = (payload as { focused: boolean }).focused;
       // Notify all registered listeners
       for (const listener of focusChangeListeners) {
         try {
-          listener(payload.focused);
+          listener(focused);
         } catch (error) {
           console.error('[Preload] Focus listener error:', error);
         }
@@ -309,6 +311,15 @@ const messengerBridgeAPI: MessengerBridgeAPI = {
     return () => {
       focusChangeListeners.delete(callback);
     };
+  },
+
+  /**
+   * Request the main window to be shown and focused.
+   * Fire-and-forget - used when the user clicks a desktop notification.
+   * Rate-limited in the main process.
+   */
+  focusWindow: (): void => {
+    safeSend('focus-window');
   },
 
   /**

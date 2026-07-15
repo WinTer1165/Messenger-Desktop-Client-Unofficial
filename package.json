@@ -1,6 +1,6 @@
 {
   "name": "messenger-desktop-unofficial",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Messenger Desktop (Unofficial) - Secure desktop client for Facebook Messenger with native OS integration",
   "main": "dist/main/main.js",
   "author": "WinTer1165",
@@ -22,9 +22,11 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "electron-store": "^10.1.0"
+    "electron-store": "^10.1.0",
+    "electron-updater": "^6.8.9"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^22.10.0",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
@@ -34,7 +36,8 @@
     "png-to-ico": "^3.0.1",
     "sharp": "^0.34.5",
     "svg2img": "^1.0.0-beta.2",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.64.0"
   },
   "engines": {
     "node": ">=24.0.0"

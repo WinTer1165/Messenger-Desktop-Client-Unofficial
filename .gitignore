@@ -37,5 +37,24 @@ coverage/
 # Electron
 .electron/
 
-# Package lock 
+# Package lock
 # package-lock.json
+*.pfx
+messenger-desktop-cert.pfx
+cert.pfx
+
+# Code-signing tooling (contains/handles the certificate password - never commit)
+CREATE-CERTIFICATE.bat
+CREATE_CERTIFICATE.md
+create-certificate.ps1
+setup-cert.ps1
+scripts/setup-signing.ps1
+
+# Local release archives (binaries do not belong in git)
+allrelease/
+
+# Website lives in its own repo (Webpage-for-Messenger-Desktop-Client-Unofficial)
+webpage/
+
+# Claude Code local settings
+.claude/

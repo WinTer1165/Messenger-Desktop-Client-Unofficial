@@ -6,16 +6,16 @@
  * - About dialog
  */
 
-import { app, Menu, dialog, BrowserWindow, BrowserView } from 'electron';
+import { app, Menu, dialog, BrowserWindow, WebContentsView } from 'electron';
 
-let messengerView: BrowserView | null = null;
+let messengerView: WebContentsView | null = null;
 let mainWindow: BrowserWindow | null = null;
 let currentZoomLevel = 0;
 
 /**
- * Set the BrowserView reference for zoom controls
+ * Set the messenger view reference for zoom controls
  */
-export function setMessengerView(view: BrowserView): void {
+export function setMessengerView(view: WebContentsView): void {
   messengerView = view;
 }
 
@@ -23,7 +23,7 @@ export function setMessengerView(view: BrowserView): void {
  * Show About dialog
  */
 function showAboutDialog(window: BrowserWindow): void {
-  dialog.showMessageBox(window, {
+  void dialog.showMessageBox(window, {
     type: 'info',
     title: 'About Messenger Desktop (Unofficial)',
     message: 'Messenger Desktop (Unofficial)',

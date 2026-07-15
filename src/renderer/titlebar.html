@@ -468,6 +468,12 @@
     </div>
 
     <div class="right-section">
+        <button id="update-btn" class="about-btn" title="Check for Updates">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+                <polyline points="21 3 21 9 15 9"/>
+            </svg>
+        </button>
         <button id="about-btn" class="about-btn" title="About">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -526,7 +532,7 @@
     <div class="about-modal" id="about-modal">
         <button class="about-modal-close" id="about-close">×</button>
         <h2>Messenger Desktop</h2>
-        <p><strong>Version:</strong> 1.2.0</p>
+        <p><strong>Version:</strong> 2.0.0</p>
         <p><strong>Description:</strong> Unofficial desktop client for Facebook Messenger with native OS integration, custom themes, and enhanced privacy features.</p>
         <p><strong>GitHub:</strong> <a href="#" id="github-link">WinTer1165/Messenger-Desktop-Client-Unofficial</a></p>
         <p style="margin-top: 20px; font-size: 12px; color: #888;">Built with Electron • Made with ❤️</p>
@@ -537,32 +543,53 @@
         console.log('[TitleBar] electronAPI available:', !!window.electronAPI);
 
         // Theme Management
-        const themes = ['dark', 'light', 'lush-forest', 'contrast', 'desert', 'electric'];
+        // 'auto' follows the OS light/dark preference
+        const themes = ['auto', 'dark', 'light', 'lush-forest', 'contrast', 'desert', 'electric'];
         let currentThemeIndex = 0;
+
+        const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // Resolve a theme setting to the concrete theme used for styling
+        function resolveTheme(setting) {
+            if (setting === 'auto') {
+                return systemDarkQuery.matches ? 'dark' : 'light';
+            }
+            return setting;
+        }
+
+        // Apply a theme setting: style the titlebar with the resolved
+        // theme and tell the main process the setting itself
+        function applyTheme(setting, notifyMain) {
+            document.body.setAttribute('data-theme', resolveTheme(setting));
+            document.getElementById('theme-toggle').title =
+                setting === 'auto' ? 'Theme: Auto (follows system)' : 'Theme: ' + setting;
+
+            if (notifyMain && window.electronAPI && window.electronAPI.changeTheme) {
+                window.electronAPI.changeTheme(setting);
+            }
+        }
 
         // Load saved theme
         const savedTheme = localStorage.getItem('titlebar-theme') || 'dark';
         currentThemeIndex = themes.indexOf(savedTheme);
         if (currentThemeIndex === -1) currentThemeIndex = 0;
-        document.body.setAttribute('data-theme', themes[currentThemeIndex]);
+        applyTheme(themes[currentThemeIndex], true);
 
-        // Notify main process of initial theme
-        if (window.electronAPI && window.electronAPI.changeTheme) {
-            window.electronAPI.changeTheme(themes[currentThemeIndex]);
-        }
+        // Re-resolve when the OS theme changes while in auto mode
+        systemDarkQuery.addEventListener('change', () => {
+            if (themes[currentThemeIndex] === 'auto') {
+                console.log('[TitleBar] System theme changed, re-applying auto theme');
+                applyTheme('auto', true);
+            }
+        });
 
-        // Theme toggle button
+        // Theme toggle button cycles through the available themes
         document.getElementById('theme-toggle').addEventListener('click', () => {
             currentThemeIndex = (currentThemeIndex + 1) % themes.length;
             const newTheme = themes[currentThemeIndex];
-            document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('titlebar-theme', newTheme);
             console.log('[TitleBar] Theme changed to:', newTheme);
-
-            // Notify main process of theme change
-            if (window.electronAPI && window.electronAPI.changeTheme) {
-                window.electronAPI.changeTheme(newTheme);
-            }
+            applyTheme(newTheme, true);
         });
 
         // These will be handled by the preload script
@@ -654,6 +681,16 @@
             } else {
                 // Fallback for development
                 window.open(url, '_blank');
+            }
+        });
+
+        // Check for Updates button
+        document.getElementById('update-btn').addEventListener('click', () => {
+            console.log('[TitleBar] Check for updates clicked');
+            if (window.electronAPI && window.electronAPI.checkForUpdates) {
+                window.electronAPI.checkForUpdates();
+            } else {
+                console.error('[TitleBar] checkForUpdates not available!');
             }
         });
 

@@ -22,14 +22,17 @@
  * - Fail closed (reject invalid input silently)
  */
 
-import { ipcMain, IpcMainEvent, BrowserWindow } from 'electron';
+import { ipcMain, IpcMainEvent, BrowserWindow, shell } from 'electron';
 import {
   IPC_CHANNELS,
   isValidUnreadCount,
   isValidErrorReportPayload,
-  ErrorReportPayload,
+  ThemeSetting,
+  VALID_THEMES,
 } from '../shared/types';
 import { updateUnreadCount, stopFlashing } from './tray';
+import * as settings from './settings';
+import { checkForUpdatesInteractive } from './updater';
 
 // Import zoom functions from menu module
 let zoomInFunc: (() => void) | null = null;
@@ -39,14 +42,12 @@ let zoomResetFunc: (() => void) | null = null;
 // Theme change callback
 let themeChangeCallback: ((theme: string) => void) | null = null;
 
-// Minimize to tray setting
+// Minimize to tray setting (initialized from persistent settings
+// during registerIpcHandlers, updated + persisted via IPC)
 let minimizeToTray: boolean = false;
 
 // Go to home callback
 let goToHomeCallback: (() => void) | null = null;
-
-// Browser login callback
-let browserLoginCallback: (() => Promise<void>) | null = null;
 
 /**
  * Set zoom control functions from menu module
@@ -73,13 +74,6 @@ export function setThemeChangeCallback(callback: (theme: string) => void): void 
  */
 export function setGoToHomeCallback(callback: () => void): void {
   goToHomeCallback = callback;
-}
-
-/**
- * Set browser login callback from main module
- */
-export function setBrowserLoginCallback(callback: () => Promise<void>): void {
-  browserLoginCallback = callback;
 }
 
 /**
@@ -141,12 +135,6 @@ function isRateLimited(channel: string): boolean {
  * Only our preload script and attached BrowserViews should be able to send.
  */
 function isValidSender(event: IpcMainEvent): boolean {
-  // Check that sender is not null
-  if (!event.sender) {
-    console.warn('[IPC] Rejected: null sender');
-    return false;
-  }
-
   // Check that sender is not destroyed
   if (event.sender.isDestroyed()) {
     console.warn('[IPC] Rejected: destroyed sender');
@@ -184,7 +172,7 @@ function handleUnreadCountUpdate(_event: IpcMainEvent, payload: unknown): void {
   }
 
   // Valid! Update the tray
-  updateUnreadCount(data.count as number);
+  updateUnreadCount(data.count);
 }
 
 /**
@@ -196,7 +184,7 @@ function handleErrorReport(_event: IpcMainEvent, payload: unknown): void {
     return;
   }
 
-  const error = payload as ErrorReportPayload;
+  const error = payload;
   
   // Log the error (in production, send to error tracking service)
   console.error(`[Preload Error] [${error.context}] ${error.message}`);
@@ -282,8 +270,7 @@ function handleThemeChange(_event: IpcMainEvent, payload: unknown): void {
   const data = payload as Record<string, unknown>;
   const theme = data.theme as string;
 
-  const validThemes = ['dark', 'light', 'lush-forest', 'contrast', 'desert', 'electric'];
-  if (!validThemes.includes(theme)) {
+  if (!VALID_THEMES.includes(theme as ThemeSetting)) {
     console.warn('[IPC] Invalid theme value:', theme);
     return;
   }
@@ -342,15 +329,13 @@ function handleOpenExternal(_event: IpcMainEvent, url: unknown): void {
     return;
   }
 
-  // Import shell at runtime to avoid circular dependency
-  import('electron').then(({ shell }) => {
-    console.log('[IPC] Opening external URL:', url);
-    shell.openExternal(url as string);
-  });
+  console.log('[IPC] Opening external URL:', url);
+  void shell.openExternal(url);
 }
 
 /**
  * Handle minimize to tray setting change.
+ * Persisted so the choice survives restarts even before the titlebar loads.
  */
 function handleMinimizeToTray(_event: IpcMainEvent, enabled: unknown): void {
   // Validate input
@@ -360,7 +345,29 @@ function handleMinimizeToTray(_event: IpcMainEvent, enabled: unknown): void {
   }
 
   minimizeToTray = enabled;
+  settings.setMinimizeToTray(enabled);
   console.log('[IPC] Minimize to tray setting changed:', enabled ? 'ENABLED' : 'DISABLED');
+}
+
+/**
+ * Handle update check request from the titlebar.
+ */
+function handleCheckForUpdates(): void {
+  console.log('[IPC] Update check requested from titlebar');
+  checkForUpdatesInteractive();
+}
+
+/**
+ * Handle focus window request (e.g. from a notification click).
+ */
+function handleFocusWindow(): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.show();
+    mainWindow.focus();
+  }
 }
 
 /**
@@ -374,16 +381,6 @@ function handleGoToHome(): void {
 }
 
 /**
- * Handle browser login request from login window.
- */
-async function handleBrowserLogin(): Promise<void> {
-  console.log('[IPC] Browser login requested');
-  if (browserLoginCallback) {
-    await browserLoginCallback();
-  }
-}
-
-/**
  * Register all IPC handlers.
  * Call this once during app initialization.
  *
@@ -391,6 +388,10 @@ async function handleBrowserLogin(): Promise<void> {
  */
 export function registerIpcHandlers(window: BrowserWindow): void {
   mainWindow = window;
+
+  // Restore the persisted minimize-to-tray choice so it applies even
+  // before the titlebar loads and re-sends its own saved value
+  minimizeToTray = settings.getMinimizeToTray();
 
   // Unread count updates
   ipcMain.on(
@@ -466,10 +467,16 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     createHandler('go-to-home', handleGoToHome)
   );
 
-  // Browser login
+  // Focus window (notification click-to-focus)
   ipcMain.on(
-    'start-browser-login',
-    createHandler('start-browser-login', handleBrowserLogin)
+    'focus-window',
+    createHandler('focus-window', handleFocusWindow)
+  );
+
+  // Update check from titlebar
+  ipcMain.on(
+    'check-for-updates',
+    createHandler('check-for-updates', handleCheckForUpdates)
   );
 
   console.log('[IPC] Handlers registered');
@@ -490,8 +497,11 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('zoom-reset');
   ipcMain.removeAllListeners(IPC_CHANNELS.APP_READY);
   ipcMain.removeAllListeners(IPC_CHANNELS.THEME_CHANGE);
+  ipcMain.removeAllListeners('open-external');
+  ipcMain.removeAllListeners('minimize-to-tray');
   ipcMain.removeAllListeners('go-to-home');
-  ipcMain.removeAllListeners('start-browser-login');
+  ipcMain.removeAllListeners('focus-window');
+  ipcMain.removeAllListeners('check-for-updates');
 
   mainWindow = null;
   zoomInFunc = null;
@@ -499,7 +509,6 @@ export function unregisterIpcHandlers(): void {
   zoomResetFunc = null;
   themeChangeCallback = null;
   goToHomeCallback = null;
-  browserLoginCallback = null;
   rateLimiter.clear();
 
   console.log('[IPC] Handlers unregistered');

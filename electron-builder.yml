@@ -32,8 +32,13 @@ win:
   icon: assets/icon.ico
   # Request only necessary permissions
   requestedExecutionLevel: asInvoker
+  # Code signing: Set WIN_CSC_LINK and WIN_CSC_KEY_PASSWORD environment variables
+  # or use cscLink and cscKeyPassword properties
 
 nsis:
+  # No spaces/parens: GitHub sanitizes asset names on upload, which would
+  # break the latest.yml URL match that auto-update depends on.
+  artifactName: Messenger-Desktop-Unofficial-Setup-${version}.${ext}
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
@@ -41,6 +46,7 @@ nsis:
   shortcutName: Messenger Desktop (Unofficial)
 
 mac:
+  artifactName: Messenger-Desktop-Unofficial-${version}-${arch}.${ext}
   target:
     - target: dmg
       arch:
@@ -57,6 +63,7 @@ dmg:
   sign: false
 
 linux:
+  artifactName: Messenger-Desktop-Unofficial-${version}-${arch}.${ext}
   target:
     - target: AppImage
       arch:

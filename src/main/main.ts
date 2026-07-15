@@ -5,7 +5,7 @@
  * It orchestrates:
  * - Application lifecycle (ready, quit, activate)
  * - BrowserWindow creation with secure defaults
- * - BrowserView attachment for messenger.com
+ * - WebContentsView attachment for messenger.com
  * - Session/partition management for persistent login
  * - Integration with tray, IPC handlers, and window state
  * 
@@ -48,19 +48,25 @@
 import {
   app,
   BrowserWindow,
-  BrowserView,
+  WebContentsView,
   session,
   shell,
   WebContents,
   dialog,
+  nativeTheme,
+  Menu,
+  MenuItemConstructorOptions,
+  clipboard,
+  desktopCapturer,
 } from 'electron';
 import * as path from 'path';
-import ElectronStore from 'electron-store';
 import {
   MESSENGER_URL,
   SESSION_PARTITION,
-  USER_AGENT,
+  ThemeSetting,
 } from '../shared/types';
+import * as settings from './settings';
+import { initializeAutoUpdater } from './updater';
 import {
   getWindowState,
   attachWindowStateListeners,
@@ -74,6 +80,7 @@ import {
   setZoomFunctions,
   setThemeChangeCallback,
   setGoToHomeCallback,
+  getMinimizeToTray,
 } from './ipc-handlers';
 import { createApplicationMenu, setMessengerView, zoomIn, zoomOut, zoomReset } from './menu';
 
@@ -82,22 +89,22 @@ import { createApplicationMenu, setMessengerView, zoomIn, zoomOut, zoomReset } f
 // ═══════════════════════════════════════════════════════════════════
 
 let mainWindow: BrowserWindow | null = null;
-let messengerView: BrowserView | null = null;
-let currentTheme: string = 'dark';
+let messengerView: WebContentsView | null = null;
 
-// Persistent storage for user preferences
-interface StoreSchema {
-  hasLoggedIn: boolean;
+/**
+ * Resolve a theme setting to a concrete theme.
+ * 'auto' follows the OS light/dark preference.
+ */
+function resolveTheme(setting: ThemeSetting): string {
+  if (setting === 'auto') {
+    return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+  }
+  return setting;
 }
 
-const store = new ElectronStore<StoreSchema>({
-  defaults: {
-    hasLoggedIn: false,
-  },
-}) as ElectronStore<StoreSchema> & {
-  get<K extends keyof StoreSchema>(key: K): StoreSchema[K];
-  set<K extends keyof StoreSchema>(key: K, value: StoreSchema[K]): void;
-};
+// Concrete theme currently in effect (never 'auto').
+// Resolved from the saved setting during initializeApp().
+let currentTheme: string = 'dark';
 
 // ═══════════════════════════════════════════════════════════════════
 // PATH RESOLUTION
@@ -143,8 +150,14 @@ function configureSession(): Electron.Session {
     cache: true,
   });
 
-  // Set user agent to avoid bot detection
-  messengerSession.setUserAgent(USER_AGENT);
+  // Present a plain Chrome user agent: take the real one (so the Chrome
+  // version never goes stale) and strip the Electron/app tokens that
+  // trigger Facebook's "unsupported browser" detection.
+  const realUserAgent = messengerSession
+    .getUserAgent()
+    .replace(/\sElectron\/[\d.]+/i, '')
+    .replace(new RegExp(`\\s${app.getName()}/[\\d.]+`, 'i'), '');
+  messengerSession.setUserAgent(realUserAgent);
 
   // Configure permissions
   messengerSession.setPermissionRequestHandler(
@@ -156,6 +169,12 @@ function configureSession(): Electron.Session {
     ) => {
       // Log permission requests for debugging
       console.log(`[Session] Permission request: ${permission}`, details.requestingUrl);
+
+      // Do Not Disturb blocks notifications
+      if (permission === 'notifications' && settings.getDoNotDisturb()) {
+        callback(false);
+        return;
+      }
 
       // Whitelist permissions that Messenger needs
       const allowedPermissions = [
@@ -177,18 +196,13 @@ function configureSession(): Electron.Session {
     }
   );
 
-  // Handle screen sharing requests
-  messengerSession.setDisplayMediaRequestHandler((_request, callback) => {
-    console.log('[Session] Screen share request');
-    // Get all available screens and windows
-    const { screen } = require('electron');
-    const displays = screen.getAllDisplays();
-
-    // Return all available screens for sharing
-    callback({
-      video: displays[0], // Primary display
-      audio: 'loopback' as any // System audio
-    });
+  // Permission checks happen every time the page creates a Notification,
+  // so this is what makes the Do Not Disturb toggle take effect instantly.
+  messengerSession.setPermissionCheckHandler((_webContents, permission) => {
+    if (permission === 'notifications' && settings.getDoNotDisturb()) {
+      return false;
+    }
+    return true;
   });
 
   // Block unwanted content (ads, tracking)
@@ -217,82 +231,90 @@ function configureSession(): Electron.Session {
     }
   );
 
-  // Inject custom CSS to hide unwanted UI elements
-  messengerSession.webRequest.onHeadersReceived(
-    { urls: [`${MESSENGER_URL}/*`] },
-    (details, callback) => {
-      // Remove CSP to allow our injected scripts
-      const responseHeaders = { ...details.responseHeaders };
-      delete responseHeaders['Content-Security-Policy'];
-      delete responseHeaders['content-security-policy'];
-      callback({ responseHeaders });
-    }
-  );
+  // NOTE: We intentionally do NOT strip the Content-Security-Policy from
+  // messenger.com responses. insertCSS/executeJavaScript from the main
+  // process bypass page CSP, so removing it would only weaken the page's
+  // own XSS protection with no benefit to us.
 
   // Handle screen sharing requests
-  messengerSession.setDisplayMediaRequestHandler(
-    async (_request, callback) => {
-      console.log('[Session] Screen sharing request received');
-
-      try {
-        const { desktopCapturer } = await import('electron');
-        const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
-
-        console.log(`[Session] Found ${sources.length} screen/window sources`);
-
-        if (sources.length === 0) {
-          callback({});
-          return;
-        }
-
-        // Create picker options
-        const screens = sources.filter(s => s.id.startsWith('screen:'));
-        const windows = sources.filter(s => s.id.startsWith('window:'));
-
-        const options: string[] = [];
-        const sourceMap: { [key: number]: any } = {};
-        let index = 0;
-
-        // Add screens first
-        screens.forEach(screen => {
-          options.push(`🖥️ ${screen.name}`);
-          sourceMap[index++] = screen;
-        });
-
-        // Add windows
-        windows.forEach(window => {
-          options.push(`🪟 ${window.name}`);
-          sourceMap[index++] = window;
-        });
-
-        // Show picker dialog
-        const result = await dialog.showMessageBox({
-          type: 'question',
-          title: 'Share Your Screen',
-          message: 'Choose what to share:',
-          buttons: [...options, 'Cancel'],
-          defaultId: 0,
-          cancelId: options.length,
-        });
-
-        if (result.response === options.length) {
-          // User clicked Cancel
-          callback({});
-        } else {
-          // User selected a source
-          const selectedSource = sourceMap[result.response];
-          console.log(`[Session] User selected: ${selectedSource.name}`);
-          callback({ video: selectedSource });
-        }
-      } catch (error) {
-        console.error('[Session] Failed to get desktop sources:', error);
-        callback({});
-      }
-    }
-  );
+  messengerSession.setDisplayMediaRequestHandler((_request, callback) => {
+    console.log('[Session] Screen sharing request received');
+    handleDisplayMediaRequest(callback);
+  });
 
   console.log('[Session] Configured with partition:', SESSION_PARTITION);
   return messengerSession;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCREEN SHARE PICKER
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * List available screens/windows and let the user pick one via a
+ * native dialog. Returns null when there is nothing to share or the
+ * user cancels.
+ */
+async function pickScreenShareSource(
+  parent?: BrowserWindow
+): Promise<Electron.DesktopCapturerSource | null> {
+  const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
+  console.log(`[ScreenShare] Found ${sources.length} screen/window sources`);
+
+  if (sources.length === 0) {
+    return null;
+  }
+
+  // Screens first, then windows
+  const screens = sources.filter((s) => s.id.startsWith('screen:'));
+  const windows = sources.filter((s) => s.id.startsWith('window:'));
+  const ordered = [...screens, ...windows];
+
+  const messageBoxOptions: Electron.MessageBoxOptions = {
+    type: 'question',
+    title: 'Share Your Screen',
+    message: 'Choose what to share:',
+    buttons: [
+      ...screens.map((s) => `🖥️ ${s.name}`),
+      ...windows.map((s) => `🪟 ${s.name}`),
+      'Cancel',
+    ],
+    defaultId: 0,
+    cancelId: ordered.length,
+  };
+
+  const result = parent
+    ? await dialog.showMessageBox(parent, messageBoxOptions)
+    : await dialog.showMessageBox(messageBoxOptions);
+
+  if (result.response >= ordered.length) {
+    return null; // Cancelled
+  }
+  return ordered[result.response];
+}
+
+/**
+ * Shared handler for setDisplayMediaRequestHandler (used by both the
+ * messenger session and call child windows). The Electron handler
+ * expects a synchronous function, so the async picker is wrapped.
+ */
+function handleDisplayMediaRequest(
+  callback: (streams: Electron.Streams) => void,
+  parent?: BrowserWindow
+): void {
+  void pickScreenShareSource(parent)
+    .then((source) => {
+      if (source) {
+        console.log(`[ScreenShare] User selected: ${source.name} (ID: ${source.id})`);
+        callback({ video: source });
+      } else {
+        callback({});
+      }
+    })
+    .catch((error: unknown) => {
+      console.error('[ScreenShare] Failed to get desktop sources:', error);
+      callback({});
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -344,9 +366,9 @@ function getThemeCSS(theme: string): string {
 }
 
 /**
- * Inject custom CSS into the BrowserView.
+ * Inject custom CSS into the messenger view.
  */
-async function injectCustomCSS(view: BrowserView, theme: string = 'dark'): Promise<void> {
+async function injectCustomCSS(view: WebContentsView, theme: string = 'dark'): Promise<void> {
   try {
     await view.webContents.insertCSS(CUSTOM_CSS);
     await view.webContents.insertCSS(getThemeCSS(theme));
@@ -359,7 +381,7 @@ async function injectCustomCSS(view: BrowserView, theme: string = 'dark'): Promi
 /**
  * Inject JavaScript to auto-scroll to latest messages.
  */
-async function injectAutoScrollJS(view: BrowserView): Promise<void> {
+async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
   try {
     const autoScrollScript = `
       (function() {
@@ -407,13 +429,27 @@ async function injectAutoScrollJS(view: BrowserView): Promise<void> {
           return null;
         }
 
-        // Function to scroll to bottom
-        function scrollToBottom(smooth = true) {
+        // How close to the bottom (px) the user must be for auto-scroll
+        // to kick in. If they scrolled up to read history, leave them alone.
+        const NEAR_BOTTOM_THRESHOLD = 150;
+
+        function isNearBottom(el) {
+          return el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_THRESHOLD;
+        }
+
+        // Function to scroll to bottom.
+        // Unless force=true, only scrolls when the user is already near
+        // the bottom, so reading old messages is never interrupted.
+        function scrollToBottom(smooth = true, force = false) {
           if (!scrollContainer) {
             scrollContainer = findMessageContainer();
           }
 
           if (scrollContainer) {
+            if (!force && !isNearBottom(scrollContainer)) {
+              return; // User is reading history - don't yank them down
+            }
+
             const now = Date.now();
             if (now - lastScrollTime < SCROLL_DEBOUNCE) {
               return; // Debounce
@@ -459,8 +495,8 @@ async function injectAutoScrollJS(view: BrowserView): Promise<void> {
 
           console.log('[AutoScroll] MutationObserver set up');
 
-          // Initial scroll
-          setTimeout(() => scrollToBottom(false), 500);
+          // Initial scroll (forced - on load we always want the latest)
+          setTimeout(() => scrollToBottom(false, true), 500);
         }
 
         // Start observing
@@ -489,15 +525,135 @@ async function injectAutoScrollJS(view: BrowserView): Promise<void> {
 }
 
 /**
+ * Inject a wrapper around window.Notification so that clicking a
+ * desktop notification brings the app window to the front (Messenger's
+ * own click handling still runs - we only add focus behavior).
+ *
+ * Runs in the page's main world, where the contextBridge API
+ * (window.messengerBridge) is available.
+ */
+async function injectNotificationClickHandler(view: WebContentsView): Promise<void> {
+  const script = `
+    (function() {
+      if (window.__mdwNotificationPatched) return;
+      window.__mdwNotificationPatched = true;
+
+      const NativeNotification = window.Notification;
+      if (!NativeNotification) return;
+
+      function PatchedNotification(title, options) {
+        const notification = new NativeNotification(title, options);
+        notification.addEventListener('click', function() {
+          try {
+            if (window.messengerBridge && window.messengerBridge.focusWindow) {
+              window.messengerBridge.focusWindow();
+            }
+          } catch (e) { /* ignore */ }
+        });
+        return notification;
+      }
+
+      PatchedNotification.requestPermission =
+        NativeNotification.requestPermission.bind(NativeNotification);
+      Object.defineProperty(PatchedNotification, 'permission', {
+        get: function() { return NativeNotification.permission; },
+      });
+      PatchedNotification.prototype = NativeNotification.prototype;
+
+      window.Notification = PatchedNotification;
+      console.log('[NotificationPatch] Click-to-focus enabled');
+    })();
+  `;
+
+  try {
+    await view.webContents.executeJavaScript(script);
+  } catch (error) {
+    console.error('[NotificationPatch] Failed to inject:', error);
+  }
+}
+
+/**
+ * Attach a native right-click context menu to the messenger view.
+ * Provides spellcheck suggestions, clipboard actions, and link/image
+ * helpers that the frameless window otherwise lacks.
+ */
+function setupContextMenu(view: WebContentsView): void {
+  view.webContents.on('context-menu', (_event, params) => {
+    const template: MenuItemConstructorOptions[] = [];
+
+    // Spellcheck suggestions for the misspelled word under the cursor
+    if (params.misspelledWord) {
+      for (const suggestion of params.dictionarySuggestions.slice(0, 5)) {
+        template.push({
+          label: suggestion,
+          click: () => view.webContents.replaceMisspelling(suggestion),
+        });
+      }
+      template.push({
+        label: 'Add to Dictionary',
+        click: () =>
+          view.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord),
+      });
+      template.push({ type: 'separator' });
+    }
+
+    // Link helpers
+    if (params.linkURL) {
+      template.push({
+        label: 'Copy Link Address',
+        click: () => clipboard.writeText(params.linkURL),
+      });
+      template.push({ type: 'separator' });
+    }
+
+    // Image helpers
+    if (params.mediaType === 'image' && params.srcURL) {
+      template.push({
+        label: 'Copy Image',
+        click: () => view.webContents.copyImageAt(params.x, params.y),
+      });
+      template.push({ type: 'separator' });
+    }
+
+    // Clipboard actions based on what's actually possible here
+    if (params.isEditable && params.editFlags.canCut) {
+      template.push({ label: 'Cut', click: () => view.webContents.cut() });
+    }
+    if (params.editFlags.canCopy && params.selectionText.trim().length > 0) {
+      template.push({ label: 'Copy', click: () => view.webContents.copy() });
+    }
+    if (params.isEditable && params.editFlags.canPaste) {
+      template.push({ label: 'Paste', click: () => view.webContents.paste() });
+    }
+    if (params.isEditable && params.editFlags.canSelectAll) {
+      template.push({ label: 'Select All', click: () => view.webContents.selectAll() });
+    }
+
+    // Drop a trailing separator so the menu doesn't end with one
+    while (template.length > 0 && template[template.length - 1].type === 'separator') {
+      template.pop();
+    }
+
+    // Only show the menu when we have something useful to offer
+    if (template.length > 0 && mainWindow) {
+      Menu.buildFromTemplate(template).popup({ window: mainWindow });
+    }
+  });
+}
+
+/**
  * Handle theme change from titlebar.
+ * Accepts a theme setting (possibly 'auto'), persists it, and applies
+ * the resolved concrete theme.
  */
 function handleThemeChange(theme: string): void {
-  currentTheme = theme;
-  console.log('[Theme] Changing theme to:', theme);
+  settings.setTheme(theme as ThemeSetting);
+  currentTheme = resolveTheme(theme as ThemeSetting);
+  console.log(`[Theme] Setting: ${theme}, resolved: ${currentTheme}`);
 
   // Re-inject CSS into messenger view
   if (messengerView && !messengerView.webContents.isDestroyed()) {
-    messengerView.webContents.insertCSS(getThemeCSS(theme)).catch((error) => {
+    messengerView.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error: unknown) => {
       console.error('[Theme] Failed to inject theme CSS:', error);
     });
   }
@@ -510,27 +666,73 @@ function handleGoToHome(): void {
   console.log('[Navigation] Navigating to Messenger home');
 
   if (messengerView && !messengerView.webContents.isDestroyed()) {
-    messengerView.webContents.loadURL(MESSENGER_URL).catch((error) => {
+    messengerView.webContents.loadURL(MESSENGER_URL).catch((error: unknown) => {
       console.error('[Navigation] Failed to navigate to home:', error);
     });
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// BROWSERVIEW MANAGEMENT
+// MESSENGER VIEW MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Create and configure the BrowserView for messenger.com.
- * 
- * WHY BROWSERVIEW INSTEAD OF WEBVIEW TAG:
- * - BrowserView is out-of-process (more secure)
+ * React to navigations in the messenger view: detect a completed
+ * Facebook login (redirect to Messenger) and record when the user has
+ * reached messenger.com.
+ */
+async function handleMessengerNavigation(view: WebContentsView, url: string): Promise<void> {
+  const parsedUrl = new URL(url);
+  const hostname = parsedUrl.hostname;
+  const hasLoggedIn = settings.getHasLoggedIn();
+
+  // If user hasn't logged in yet and they're on Facebook
+  if (!hasLoggedIn && hostname.includes('facebook.com')) {
+    // Check if they've successfully logged in by looking for session cookies
+    const cookies = await view.webContents.session.cookies.get({ domain: '.facebook.com' });
+    const hasFacebookSession = cookies.some(cookie =>
+      cookie.name === 'c_user' || cookie.name === 'xs'
+    );
+
+    // Also check if they're on the homepage (not login page, not 2FA checkpoint)
+    const isOnHomepage = url === 'https://www.facebook.com/' ||
+                        url === 'https://www.facebook.com' ||
+                        url.startsWith('https://www.facebook.com/?');
+
+    if (hasFacebookSession && isOnHomepage) {
+      console.log('[Login] Facebook login confirmed with valid session, redirecting to Messenger in 3 seconds...');
+      // Give user a moment to see they're logged in, then redirect
+      setTimeout(() => {
+        if (!view.webContents.isDestroyed()) {
+          view.webContents.loadURL(MESSENGER_URL).catch((error: unknown) => {
+            console.error('[Login] Failed to navigate to Messenger:', error);
+          });
+        }
+      }, 3000);
+    }
+  }
+
+  // Check if user navigated to messenger.com successfully
+  // This indicates they completed the login flow
+  if (hostname.includes('messenger.com')) {
+    if (!hasLoggedIn) {
+      console.log('[Login] User has reached Messenger, marking login as complete');
+      settings.setHasLoggedIn(true);
+    }
+  }
+}
+
+/**
+ * Create and configure the WebContentsView for messenger.com.
+ *
+ * WHY WEBCONTENTSVIEW INSTEAD OF WEBVIEW TAG:
+ * - WebContentsView is out-of-process (more secure)
  * - webview tag is deprecated and has known security issues
- * - BrowserView integrates better with BrowserWindow lifecycle
+ * - WebContentsView is the successor to the deprecated BrowserView
  * - Easier to manage bounds and layering
  */
-function createMessengerView(parentSession: Electron.Session): BrowserView {
-  const view = new BrowserView({
+function createMessengerView(parentSession: Electron.Session): WebContentsView {
+  const view = new WebContentsView({
     webPreferences: {
       // ═══════════════════════════════════════════════════════════
       // SECURITY CRITICAL SETTINGS - DO NOT MODIFY
@@ -572,7 +774,7 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
       // Disable plugins
       plugins: false,
       
-      // Disable webview tag (we use BrowserView)
+      // Disable webview tag (we use WebContentsView)
       webviewTag: false,
     },
   });
@@ -598,52 +800,15 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
       console.log(`[Navigation] Blocked: ${url}`);
       event.preventDefault();
       // Open external URLs in default browser
-      shell.openExternal(url);
+      void shell.openExternal(url);
     } else {
       console.log(`[Navigation] Allowed: ${url}`);
     }
   });
 
   // Detect successful login and navigate to Messenger
-  view.webContents.on('did-navigate', async (_event, url) => {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname;
-    const hasLoggedIn = store.get('hasLoggedIn');
-
-    // If user hasn't logged in yet and they're on Facebook
-    if (!hasLoggedIn && hostname.includes('facebook.com')) {
-      // Check if they've successfully logged in by looking for session cookies
-      const cookies = await view.webContents.session.cookies.get({ domain: '.facebook.com' });
-      const hasFacebookSession = cookies.some(cookie =>
-        cookie.name === 'c_user' || cookie.name === 'xs'
-      );
-
-      // Also check if they're on the homepage (not login page, not 2FA checkpoint)
-      const isOnHomepage = url === 'https://www.facebook.com/' ||
-                          url === 'https://www.facebook.com' ||
-                          url.startsWith('https://www.facebook.com/?');
-
-      if (hasFacebookSession && isOnHomepage) {
-        console.log('[Login] Facebook login confirmed with valid session, redirecting to Messenger in 3 seconds...');
-        // Give user a moment to see they're logged in, then redirect
-        setTimeout(() => {
-          if (!view.webContents.isDestroyed()) {
-            view.webContents.loadURL(MESSENGER_URL).catch((error) => {
-              console.error('[Login] Failed to navigate to Messenger:', error);
-            });
-          }
-        }, 3000);
-      }
-    }
-
-    // Check if user navigated to messenger.com successfully
-    // This indicates they completed the login flow
-    if (hostname.includes('messenger.com')) {
-      if (!hasLoggedIn) {
-        console.log('[Login] User has reached Messenger, marking login as complete');
-        store.set('hasLoggedIn', true);
-      }
-    }
+  view.webContents.on('did-navigate', (_event, url) => {
+    void handleMessengerNavigation(view, url);
   });
 
   // Handle new window requests (for calls, media, etc.)
@@ -676,12 +841,12 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
       } else if (isAllowed) {
         // Other allowed domains, load in the current view
         console.log(`[Window] Loading in current view: ${url}`);
-        view.webContents.loadURL(url);
+        void view.webContents.loadURL(url);
         return { action: 'deny' };
       } else {
         // External URLs open in browser
         console.log(`[Window] Opening externally: ${url}`);
-        shell.openExternal(url);
+        void shell.openExternal(url);
         return { action: 'deny' };
       }
     } catch (error) {
@@ -743,68 +908,11 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
       }
     );
 
-    // Handle screen sharing requests
+    // Handle screen sharing requests (dialog parented to the call window)
     childWindow.webContents.session.setDisplayMediaRequestHandler(
-      async (_request, callback) => {
+      (_request, callback) => {
         console.log('[ChildWindow] Screen sharing request received');
-
-        try {
-          const { desktopCapturer } = await import('electron');
-          const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
-
-          console.log(`[ChildWindow] Found ${sources.length} screen/window sources`);
-
-          if (sources.length === 0) {
-            callback({});
-            return;
-          }
-
-          // Create picker options
-          const screens = sources.filter(s => s.id.startsWith('screen:'));
-          const windows = sources.filter(s => s.id.startsWith('window:'));
-
-          const options: string[] = [];
-          const sourceMap: { [key: number]: any } = {};
-          let index = 0;
-
-          // Add screens first
-          screens.forEach(screen => {
-            options.push(`🖥️ ${screen.name}`);
-            sourceMap[index++] = screen;
-          });
-
-          // Add windows
-          windows.forEach(window => {
-            options.push(`🪟 ${window.name}`);
-            sourceMap[index++] = window;
-          });
-
-          // Show picker dialog
-          const result = await dialog.showMessageBox(childWindow, {
-            type: 'question',
-            title: 'Share Your Screen',
-            message: 'Choose what to share:',
-            buttons: [...options, 'Cancel'],
-            defaultId: 0,
-            cancelId: options.length,
-          });
-
-          if (result.response === options.length) {
-            // User clicked Cancel
-            callback({});
-          } else {
-            // User selected a source
-            const selectedSource = sourceMap[result.response];
-            console.log(`[ChildWindow] User selected: ${selectedSource.name} (ID: ${selectedSource.id})`);
-            // Pass the source with type assertion to bypass TypeScript checking
-            callback({
-              video: selectedSource as any
-            });
-          }
-        } catch (error) {
-          console.error('[ChildWindow] Failed to get desktop sources:', error);
-          callback({});
-        }
+        handleDisplayMediaRequest(callback, childWindow);
       }
     );
 
@@ -832,7 +940,7 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
     // Inject theme CSS and auto-scroll into call window
     childWindow.webContents.on('did-finish-load', () => {
       console.log('[ChildWindow] Page loaded, injecting theme CSS and auto-scroll');
-      childWindow.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error) => {
+      childWindow.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error: unknown) => {
         console.error('[ChildWindow] Failed to inject theme CSS:', error);
       });
     });
@@ -840,20 +948,21 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
 
   // Handle page load events
   view.webContents.on('did-finish-load', () => {
-    console.log('[BrowserView] Page loaded');
-    injectCustomCSS(view, currentTheme);
-    injectAutoScrollJS(view);
+    console.log('[MessengerView] Page loaded');
+    void injectCustomCSS(view, currentTheme);
+    void injectAutoScrollJS(view);
+    void injectNotificationClickHandler(view);
   });
 
   // Handle page load errors
   view.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
-    console.error(`[BrowserView] Load failed: ${errorCode} - ${errorDescription}`);
+    console.error(`[MessengerView] Load failed: ${errorCode} - ${errorDescription}`);
     // Could show an error page here
   });
 
   // Handle crashes
   view.webContents.on('render-process-gone', (_event, details) => {
-    console.error('[BrowserView] Renderer crashed:', details.reason);
+    console.error('[MessengerView] Renderer crashed:', details.reason);
     // Attempt to recover by reloading
     if (details.reason !== 'killed') {
       setTimeout(() => {
@@ -866,20 +975,25 @@ function createMessengerView(parentSession: Electron.Session): BrowserView {
 
   // Handle certificate errors (production should be strict)
   view.webContents.on('certificate-error', (_event, url, error) => {
-    console.error(`[BrowserView] Certificate error for ${url}: ${error}`);
+    console.error(`[MessengerView] Certificate error for ${url}: ${error}`);
     // In production, do NOT bypass certificate errors
     // event.preventDefault() would bypass - we intentionally don't call it
   });
 
-  console.log('[BrowserView] Created with secure defaults');
+  // Native right-click menu (spellcheck, clipboard, links, images)
+  setupContextMenu(view);
+
+  console.log('[MessengerView] Created with secure defaults');
   return view;
 }
 
 /**
- * Attach BrowserView to window and manage bounds.
+ * Attach the messenger view to the window and manage bounds.
+ * WebContentsView has no setAutoResize, so bounds are recalculated on
+ * every window size change.
  */
-function attachBrowserView(window: BrowserWindow, view: BrowserView): void {
-  window.setBrowserView(view);
+function attachMessengerView(window: BrowserWindow, view: WebContentsView): void {
+  window.contentView.addChildView(view);
 
   const TITLE_BAR_HEIGHT = 40; // Custom title bar height
 
@@ -894,21 +1008,17 @@ function attachBrowserView(window: BrowserWindow, view: BrowserView): void {
     });
   };
 
-  // Update bounds on resize
+  // Update bounds on any window size change
   window.on('resize', updateBounds);
+  window.on('maximize', updateBounds);
+  window.on('unmaximize', updateBounds);
+  window.on('enter-full-screen', updateBounds);
+  window.on('leave-full-screen', updateBounds);
 
   // Initial bounds
   updateBounds();
 
-  // Auto-resize when ready
-  view.setAutoResize({
-    width: true,
-    height: true,
-    horizontal: false,
-    vertical: false,
-  });
-
-  console.log('[BrowserView] Attached to window with custom title bar offset');
+  console.log('[MessengerView] Attached to window with custom title bar offset');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -960,7 +1070,7 @@ function createMainWindow(): BrowserWindow {
   const titleBarPath = path.join(__dirname, '..', 'renderer', 'titlebar.html');
 
   console.log('[Window] Loading title bar from:', titleBarPath);
-  window.loadFile(titleBarPath).catch((error) => {
+  window.loadFile(titleBarPath).catch((error: unknown) => {
     console.error('[Window] Failed to load title bar:', error);
     console.error('[Window] Attempted path:', titleBarPath);
   });
@@ -998,10 +1108,11 @@ function createMainWindow(): BrowserWindow {
 
   // Handle close to tray (configurable by user)
   window.on('close', (event) => {
-    const { getMinimizeToTray } = require('./ipc-handlers');
     const shouldMinimizeToTray = getMinimizeToTray();
+    const isQuitting =
+      (app as unknown as { isQuitting?: boolean }).isQuitting === true;
 
-    if (shouldMinimizeToTray && !(app as any).isQuitting) {
+    if (shouldMinimizeToTray && !isQuitting) {
       event.preventDefault();
       window.hide();
       console.log('[Window] Minimized to tray (close behavior: minimize to tray)');
@@ -1030,6 +1141,16 @@ async function initializeApp(): Promise<void> {
   console.log(`[App] Node: ${process.versions.node}`);
   console.log(`[App] Platform: ${process.platform}`);
 
+  // Resolve the saved theme setting (may be 'auto')
+  currentTheme = resolveTheme(settings.getTheme());
+
+  // Re-resolve when the OS theme changes and the user chose 'auto'
+  nativeTheme.on('updated', () => {
+    if (settings.getTheme() === 'auto') {
+      handleThemeChange('auto');
+    }
+  });
+
   // Configure session
   const messengerSession = configureSession();
 
@@ -1042,9 +1163,9 @@ async function initializeApp(): Promise<void> {
   // Initialize tray
   initializeTray(mainWindow);
 
-  // Create and attach BrowserView
+  // Create and attach the messenger view
   messengerView = createMessengerView(messengerSession);
-  attachBrowserView(mainWindow, messengerView);
+  attachMessengerView(mainWindow, messengerView);
 
   // Create application menu
   createApplicationMenu(mainWindow);
@@ -1059,35 +1180,17 @@ async function initializeApp(): Promise<void> {
   // Set up go to home callback
   setGoToHomeCallback(handleGoToHome);
 
-  // Check if this is first-time launch
-  const hasLoggedIn = store.get('hasLoggedIn');
+  // Start the auto-updater (no-op in development / on unsupported platforms)
+  initializeAutoUpdater(() => mainWindow);
 
-  if (!hasLoggedIn) {
-    // First-time launch: load messenger.com in the main view
-    // If user has existing Facebook session in browser, they can use it
-    // Otherwise they log in fresh
-    console.log('[App] First-time launch detected, loading Messenger login');
-    await messengerView.webContents.loadURL(MESSENGER_URL);
+  // Load Messenger. Login detection lives in createMessengerView's
+  // did-navigate handler, so first launch and returning users share
+  // the same path.
+  console.log(`[App] Loading ${MESSENGER_URL}`);
+  await messengerView.webContents.loadURL(MESSENGER_URL);
 
-    // Show main window
-    mainWindow.show();
-
-    // Monitor for successful login
-    messengerView.webContents.on('did-navigate', (_event, url) => {
-      // Check if user successfully logged in
-      if (url.includes('messenger.com/t/') || url === 'https://www.messenger.com/') {
-        console.log('[App] Login detected, marking as logged in');
-        store.set('hasLoggedIn', true);
-      }
-    });
-  } else {
-    // User has logged in before: go directly to Messenger
-    console.log(`[App] Loading ${MESSENGER_URL}`);
-    await messengerView.webContents.loadURL(MESSENGER_URL);
-
-    // Show main window
-    mainWindow.show();
-  }
+  // Show main window
+  mainWindow.show();
 
   console.log('[App] Initialized successfully');
 }
@@ -1134,7 +1237,7 @@ if (!gotTheLock) {
   });
 
   // App ready
-  app.whenReady().then(initializeApp).catch((error) => {
+  app.whenReady().then(initializeApp).catch((error: unknown) => {
     console.error('[App] Initialization failed:', error);
     app.quit();
   });
@@ -1150,7 +1253,7 @@ if (!gotTheLock) {
   // Activate (macOS dock click)
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      initializeApp();
+      void initializeApp();
     } else if (mainWindow) {
       mainWindow.show();
     }
@@ -1184,7 +1287,7 @@ app.on('web-contents-created', (_event, contents) => {
   // Disable new window creation except through our handler
   contents.setWindowOpenHandler(({ url }) => {
     // Only allow specific URLs to open in new windows
-    shell.openExternal(url);
+    void shell.openExternal(url);
     return { action: 'deny' };
   });
 });

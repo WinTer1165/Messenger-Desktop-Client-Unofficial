@@ -72,6 +72,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     console.log('[TitleBarPreload] Sending go-to-home');
     ipcRenderer.send('go-to-home');
   },
+
+  // Check for updates
+  checkForUpdates: () => {
+    console.log('[TitleBarPreload] Sending check-for-updates');
+    ipcRenderer.send('check-for-updates');
+  },
 });
 
 console.log('[TitleBarPreload] APIs exposed successfully');

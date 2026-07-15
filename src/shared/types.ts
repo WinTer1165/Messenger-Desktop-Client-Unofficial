@@ -95,11 +95,35 @@ export interface WindowFocusPayload {
 }
 
 /**
+ * Theme setting chosen by the user.
+ * 'auto' follows the OS light/dark preference.
+ */
+export type ThemeSetting =
+  | 'auto'
+  | 'dark'
+  | 'light'
+  | 'lush-forest'
+  | 'contrast'
+  | 'desert'
+  | 'electric';
+
+/** All valid theme settings (used for IPC validation). */
+export const VALID_THEMES: readonly ThemeSetting[] = [
+  'auto',
+  'dark',
+  'light',
+  'lush-forest',
+  'contrast',
+  'desert',
+  'electric',
+] as const;
+
+/**
  * Payload for theme changes.
  */
 export interface ThemePayload {
   /** Current theme */
-  theme: 'dark' | 'light' | 'lush-forest' | 'contrast' | 'desert' | 'electric';
+  theme: ThemeSetting;
 }
 
 /**
@@ -177,7 +201,14 @@ export interface MessengerBridgeAPI {
    * Returns cleanup function to unregister.
    */
   onFocusChange: (callback: (focused: boolean) => void) => () => void;
-  
+
+  /**
+   * Request the main window to be shown and focused.
+   * Fire-and-forget, rate-limited in the main process.
+   * Used by the notification click handler.
+   */
+  focusWindow: () => void;
+
   /**
    * Get current platform for platform-specific behavior.
    * Returns sanitized platform string (no version info).
@@ -236,14 +267,11 @@ export function isValidErrorReportPayload(value: unknown): value is ErrorReportP
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════
 
-/** Messenger URL - the only allowed URL for BrowserView */
+/** Messenger URL - the only allowed URL for the messenger view */
 export const MESSENGER_URL = 'https://www.messenger.com';
 
 /** Session partition for persistent login */
 export const SESSION_PARTITION = 'persist:messenger';
-
-/** User agent override (optional, helps avoid bot detection) */
-export const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 /** Debounce delay for tray updates (ms) */
 export const TRAY_UPDATE_DEBOUNCE_MS = 500;
