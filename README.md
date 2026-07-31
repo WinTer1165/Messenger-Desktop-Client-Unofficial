@@ -9,7 +9,9 @@
 **Chat with your friends and family in a dedicated desktop app with premium themes and enhanced privacy**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](#-windows)
+[![macOS](https://img.shields.io/badge/macOS-11%2B-000000?logo=apple)](#-macos)
+[![Linux](https://img.shields.io/badge/Linux-AppImage%20%7C%20deb-FCC624?logo=linux&logoColor=black)](#-linux)
 [![Downloads](https://img.shields.io/github/downloads/WinTer1165/Messenger-Desktop-Client-Unofficial/total?style=flat&logo=github)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases)
 
 [⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) • [❓ FAQ](#-faq) • [🛠️ Troubleshooting](#-troubleshooting)
@@ -22,97 +24,225 @@
 
 ### **Latest Version: 2.0.0**
 
-Choose the version that matches your system:
-
-#### 🔹 Windows Installer (Recommended)
-**Perfect for most users - automatic installation with shortcuts**
-
-[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest/download/Messenger-Desktop-Unofficial-Setup-2.0.0.exe)
-
-- **File:** `Messenger Desktop (Unofficial) Setup 2.0.0.exe`
-- **Size:** 185 MB
-- **For:** Windows 10/11 (64-bit Intel/AMD)
-- **Includes:** Auto-installer, desktop shortcut, start menu entry
+Available for **Windows**, **macOS**, and **Linux**. Pick the file that matches your system — every download is free and requires no account.
 
 ---
 
-#### 🔹 Portable Version - x64 (Intel/AMD)
+### 🪟 Windows
+
+#### 🔹 Installer (Recommended)
+**Automatic installation with desktop and Start Menu shortcuts. Works on both Intel/AMD and ARM machines.**
+
+[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-Setup-2.0.0.exe)
+
+- **File:** `Messenger-Desktop-Unofficial-Setup-2.0.0.exe`
+- **Size:** 185 MB
+- **For:** Windows 10 (1809+) / 11 — x64 **and** ARM64 in one installer
+- **Includes:** Auto-installer, desktop shortcut, Start Menu entry, auto-updates
+
+#### 🔹 Portable - x64 (Intel/AMD)
 **No installation required - extract and run**
 
-[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest/download/Messenger-Desktop-Unofficial-2.0.0-Portable-x64.zip)
+[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-Portable-x64.zip)
 
 - **File:** `Messenger-Desktop-Unofficial-2.0.0-Portable-x64.zip`
-- **For:** Windows 10/11 (64-bit Intel/AMD processors)
+- **Size:** 135 MB
+- **For:** Windows 10/11 on 64-bit Intel/AMD processors
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
----
+#### 🔹 Portable - ARM64
+**For Windows on ARM devices (Surface Pro X, Snapdragon laptops, etc.)**
 
-#### 🔹 Portable Version - ARM64
-**For Windows on ARM devices (Surface Pro X, etc.)**
-
-[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-blue?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest/download/Messenger-Desktop-Unofficial-2.0.0-Portable-ARM64.zip)
+[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-Portable-ARM64.zip)
 
 - **File:** `Messenger-Desktop-Unofficial-2.0.0-Portable-ARM64.zip`
+- **Size:** 135 MB
 - **For:** Windows 10/11 on ARM64 processors
 - **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
 
 ---
 
+### 🍎 macOS
+
+#### 🔹 Apple Silicon (M1/M2/M3/M4)
+
+[![Download macOS ARM64](https://img.shields.io/badge/Download-macOS%20Apple%20Silicon-000000?style=for-the-badge&logo=apple)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-arm64.dmg)
+
+- **File:** `Messenger-Desktop-Unofficial-2.0.0-arm64.dmg`
+- **Size:** 95 MB
+- **For:** macOS 11 Big Sur or newer on Apple Silicon
+- **How to use:** Open the `.dmg` → drag the app into **Applications**
+
+#### 🔹 Intel Mac
+
+[![Download macOS x64](https://img.shields.io/badge/Download-macOS%20Intel-000000?style=for-the-badge&logo=apple)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-x64.dmg)
+
+- **File:** `Messenger-Desktop-Unofficial-2.0.0-x64.dmg`
+- **Size:** 99 MB
+- **For:** macOS 11 Big Sur or newer on Intel processors
+- **How to use:** Open the `.dmg` → drag the app into **Applications**
+
+> **First launch on macOS:** The app isn't notarized, so macOS will say it "cannot be opened". Right-click the app → **Open** → **Open**, or run `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"` once in Terminal.
+
+---
+
+### 🐧 Linux
+
+#### 🔹 AppImage - x86_64 (Recommended)
+**Runs on any distribution, no installation needed**
+
+[![Download AppImage x86_64](https://img.shields.io/badge/Download-AppImage%20x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage)
+
+- **File:** `Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage`
+- **Size:** 86 MB
+- **For:** Any 64-bit Intel/AMD Linux distro (Ubuntu, Fedora, Arch, Debian…)
+- **How to use:** `chmod +x Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage && ./Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage`
+
+#### 🔹 AppImage - ARM64
+**For ARM boards and laptops (Raspberry Pi 4/5, Ampere, etc.)**
+
+[![Download AppImage ARM64](https://img.shields.io/badge/Download-AppImage%20ARM64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-arm64.AppImage)
+
+- **File:** `Messenger-Desktop-Unofficial-2.0.0-arm64.AppImage`
+- **Size:** 80 MB
+- **For:** 64-bit ARM Linux distributions
+- **How to use:** `chmod +x` the file, then run it
+
+#### 🔹 Debian / Ubuntu Package (.deb)
+**Native install with menu entry and updates via your package manager**
+
+[![Download deb amd64](https://img.shields.io/badge/Download-.deb%20amd64-A81D33?style=for-the-badge&logo=debian)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-amd64.deb)
+
+- **File:** `Messenger-Desktop-Unofficial-2.0.0-amd64.deb`
+- **Size:** 77 MB
+- **For:** Debian, Ubuntu, Linux Mint, Pop!\_OS and derivatives (amd64)
+- **How to use:** `sudo apt install ./Messenger-Desktop-Unofficial-2.0.0-amd64.deb`
+
+---
+
+### 📦 All Downloads at a Glance
+
+| OS | Format | Architecture | Size | Download |
+|----|--------|--------------|------|----------|
+| 🪟 Windows | Installer (`.exe`) | x64 + ARM64 | 185 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-Setup-2.0.0.exe) |
+| 🪟 Windows | Portable (`.zip`) | x64 | 135 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-Portable-x64.zip) |
+| 🪟 Windows | Portable (`.zip`) | ARM64 | 135 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-Portable-ARM64.zip) |
+| 🍎 macOS | Disk image (`.dmg`) | Apple Silicon | 95 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-arm64.dmg) |
+| 🍎 macOS | Disk image (`.dmg`) | Intel (x64) | 99 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-x64.dmg) |
+| 🐧 Linux | AppImage | x86_64 | 86 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage) |
+| 🐧 Linux | AppImage | ARM64 | 80 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-arm64.AppImage) |
+| 🐧 Linux | Debian package (`.deb`) | amd64 | 77 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.0.0/Messenger-Desktop-Unofficial-2.0.0-amd64.deb) |
+
+> Always grabbing the newest build? [**View all releases →**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
+
+---
+
 ### 📋 System Requirements
 
-| Component | Requirement |
-|-----------|------------|
-| **OS** | Windows 10 (1809+) or Windows 11 |
-| **Processor** | x64 (Intel/AMD) or ARM64 |
-| **RAM** | 2 GB minimum, 4 GB recommended |
-| **Disk Space** | 300 MB free space |
-| **Internet** | Required for messaging |
+| Component | Windows | macOS | Linux |
+|-----------|---------|-------|-------|
+| **OS** | Windows 10 (1809+) or 11 | macOS 11 Big Sur or newer | Any modern 64-bit distro (glibc 2.28+) |
+| **Processor** | x64 (Intel/AMD) or ARM64 | Apple Silicon or Intel | x86_64 or ARM64 |
+| **RAM** | 2 GB minimum, 4 GB recommended | 2 GB minimum, 4 GB recommended | 2 GB minimum, 4 GB recommended |
+| **Disk Space** | 300 MB free space | 300 MB free space | 300 MB free space |
+| **Internet** | Required for messaging | Required for messaging | Required for messaging |
 
 ---
 
 ### ❓ Which Version Should I Download?
 
-- **🏠 Home User?** → Download the **Installer** (easiest)
-- **💼 Work Computer (can't install)?** → Use **Portable x64**
-- **📱 Surface Pro X or ARM device?** → Use **Portable ARM64**
-- **🎮 Want latest features?** → Check [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases) for beta versions
+- **🏠 Windows home user?** → **Windows Installer** (easiest, auto-updates)
+- **💼 Work computer you can't install on?** → **Portable x64**
+- **📱 Surface Pro X or Snapdragon laptop?** → **Portable ARM64** (the installer works too)
+- **🍎 Mac from 2020 or later?** → **macOS Apple Silicon**
+- **🍎 Older Intel Mac?** → **macOS Intel**
+- **🐧 Ubuntu / Debian / Mint?** → **.deb package**
+- **🐧 Any other Linux distro?** → **AppImage x86_64**
+- **🎮 Want the newest builds first?** → Check [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases) for pre-releases
+
+---
+
+### 🕘 Previous Versions
+
+| Version | Released | Downloads |
+|---------|----------|-----------|
+| **v1.2.0** | Dec 30, 2025 | [Installer](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-Setup-1.2.0-Windows-x64.exe) · [Portable x64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-1.2.0-Portable-x64.zip) · [Portable ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.2.0/Messenger-Desktop-1.2.0-Portable-ARM64.zip) |
+| **v1.0.0** | Dec 29, 2025 | [Installer](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.0.0/Messenger.Desktop.Unofficial.Setup.1.0.0.exe) · [Portable x64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.0.0/win-x64-portable.zip) · [Portable ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v1.0.0/win-arm64-portable.zip) |
+
+> Versions before 2.0.0 are Windows-only and don't include auto-updates. Full history on the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases).
 
 ---
 
 ## 🚀 Installation
 
-### Option 1: Using the Installer (Recommended)
+### 🪟 Windows
 
-#### Step 1: Download
+#### Option 1: Using the Installer (Recommended)
 
-Download the installer from [above](#-download) or visit [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
+1. **Download** the installer from [above](#-download) or visit [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
 
-#### Step 2: Run the Installer
+2. **Open the downloaded file** - Double-click `Messenger-Desktop-Unofficial-Setup-2.0.0.exe`
 
-1. **Open the downloaded file** - Double-click `Messenger Desktop (Unofficial) Setup 2.0.0.exe`
-
-2. **Windows Security Warning** (Normal for unsigned apps):
+3. **Windows Security Warning** (Normal for unsigned apps):
    - If you see "Windows protected your PC":
    - Click **More info**
    - Click **Run anyway**
    - This is safe - the app is open source and not code-signed
 
-3. **Follow the installer** - Click through the installation wizard
+4. **Follow the installer** - Click through the installation wizard
 
-4. **Launch the app** - It will open automatically after installation
+5. **Launch the app** - It will open automatically after installation
 
----
+#### Option 2: Using the Portable Version
 
-### Option 2: Using Portable Version
-
-#### For x64 (Intel/AMD) or ARM64
-
-1. **Download** the appropriate portable version from [above](#-download)
+1. **Download** the portable zip matching your CPU (x64 or ARM64)
 2. **Extract** the zip file to a folder (e.g., `C:\Apps\Messenger`)
 3. **Run** `Messenger Desktop (Unofficial).exe`
 4. **Optional:** Create a desktop shortcut manually
 
-> **Note:** Portable versions don't require installation but don't create Start Menu entries automatically.
+> **Note:** Portable versions don't require installation but don't create Start Menu entries or auto-update.
+
+---
+
+### 🍎 macOS
+
+1. **Download** the `.dmg` for your Mac — Apple Silicon (M-series) or Intel
+2. **Open** the downloaded `.dmg` file
+3. **Drag** `Messenger Desktop (Unofficial)` into your **Applications** folder
+4. **First launch:** Because the app isn't notarized, macOS blocks it by default. Either:
+   - **Right-click** the app → **Open** → **Open** in the dialog, **or**
+   - Run once in Terminal: `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"`
+5. **Eject** the disk image — you're done
+
+> **Which one do I need?** Apple menu →  **About This Mac**. "Apple M1/M2/M3/M4" → Apple Silicon. "Intel" → Intel build.
+
+---
+
+### 🐧 Linux
+
+#### Option 1: AppImage (Any distribution)
+
+```bash
+# Make it executable, then run it
+chmod +x Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage
+./Messenger-Desktop-Unofficial-2.0.0-x86_64.AppImage
+```
+
+> **Tip:** Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) if you want the app to show up in your application menu automatically.
+>
+> If the AppImage fails to start on a newer distro, run it with `--no-sandbox`, or install `libfuse2` (`sudo apt install libfuse2`) on Ubuntu 22.04+.
+
+#### Option 2: Debian package (Debian, Ubuntu, Mint, Pop!\_OS)
+
+```bash
+# Install (apt resolves dependencies automatically)
+sudo apt install ./Messenger-Desktop-Unofficial-2.0.0-amd64.deb
+
+# Launch from your app menu, or:
+messenger-desktop-unofficial
+```
+
+To remove it later: `sudo apt remove messenger-desktop-unofficial`
 
 ---
 
@@ -202,7 +332,10 @@ Transform your Messenger with stunning color themes that apply everywhere:
 The app stores these files on your computer:
 
 ```
-C:\Users\YourName\AppData\Roaming\messenger-desktop-unofficial\
+Windows: C:\Users\YourName\AppData\Roaming\messenger-desktop-unofficial\
+macOS:   ~/Library/Application Support/messenger-desktop-unofficial/
+Linux:   ~/.config/messenger-desktop-unofficial/
+
 ├── config.json          (Your theme preference, minimize-to-tray setting)
 └── window-state.json    (Window size and position)
 ```
@@ -303,13 +436,25 @@ The app is not "code signed" (digital signature that costs $300+/year). This is 
 This app is designed for personal Facebook Messenger accounts only.
 
 ### Can I use this on Mac or Linux?
-Not yet - currently Windows only. Mac and Linux support is planned for future releases!
+**Yes!** As of v2.0.0 there are builds for macOS (Apple Silicon and Intel `.dmg`) and Linux (AppImage for x86_64 and ARM64, plus a `.deb` package). See [Download](#-download).
+
+### Why does macOS say the app "cannot be opened"?
+The app isn't notarized by Apple (that requires a paid developer account). Right-click the app → **Open** → **Open**, or run `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"` once. You only need to do this the first time.
+
+### Which Mac download do I need?
+Apple menu →  **About This Mac**. If it says Apple M1/M2/M3/M4, use the **Apple Silicon** build; if it says Intel, use the **Intel** build.
+
+### AppImage vs .deb on Linux — which one?
+Use the **`.deb`** on Debian/Ubuntu-based distros for a normal system install with a menu entry. Use the **AppImage** anywhere else, or if you want a single portable file with no installation.
 
 ### How do I uninstall?
-Go to Windows Settings → Apps → Find "Messenger Desktop (Unofficial)" → Click Uninstall
+- **Windows:** Settings → Apps → find "Messenger Desktop (Unofficial)" → Uninstall
+- **macOS:** Drag the app from **Applications** to the Trash
+- **Linux (.deb):** `sudo apt remove messenger-desktop-unofficial`
+- **Linux (AppImage):** Just delete the `.AppImage` file
 
 ### How do I update to a new version?
-Download the latest installer from [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest) and run it. It will update your existing installation.
+The app checks for updates automatically and can download and install them for you (Windows, macOS, and Linux AppImage). You can also trigger a check manually from the tray menu → **Check for Updates**, or just download the newest build from [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest). `.deb` installs are updated by downloading and installing the new package.
 
 ---
 
@@ -416,7 +561,8 @@ Download the latest installer from [Releases](https://github.com/WinTer1165/Mess
 ✅ **Lightweight** - Uses ~150-250 MB RAM (similar to a browser tab)
 ✅ **Fast Startup** - Launches in 2-3 seconds
 ✅ **Stable** - Built on Electron 38 (same tech as VS Code, Discord, Slack)
-✅ **Updates** - Manual updates when new versions are released
+✅ **Cross-Platform** - Windows, macOS, and Linux from the same codebase
+✅ **Updates** - Automatic update checks with one-click install
 
 ### Connection Reliability
 
@@ -453,9 +599,13 @@ npm run build
 # Run
 npm start
 
-# Build installer
-npm run dist:win
+# Build installers
+npm run dist:win     # Windows: NSIS installer (x64 + ARM64) and portable zips
+npm run dist:mac     # macOS: .dmg for Apple Silicon and Intel
+npm run dist:linux   # Linux: AppImage (x86_64, ARM64) and .deb (amd64)
 ```
+
+> Each target has to be built on its own platform (macOS builds need a Mac). The published releases are produced by GitHub Actions across all three runners.
 
 ---
 
