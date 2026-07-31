@@ -32,6 +32,7 @@ import {
 } from '../shared/types';
 import { updateUnreadCount, stopFlashing } from './tray';
 import * as settings from './settings';
+import * as dnd from './do-not-disturb';
 import { checkForUpdatesInteractive } from './updater';
 
 // Import zoom functions from menu module
@@ -350,6 +351,27 @@ function handleMinimizeToTray(_event: IpcMainEvent, enabled: unknown): void {
 }
 
 /**
+ * Handle Do Not Disturb toggle from the titlebar.
+ */
+function handleSetDoNotDisturb(_event: IpcMainEvent, enabled: unknown): void {
+  if (typeof enabled !== 'boolean') {
+    console.warn('[IPC] Invalid do-not-disturb value:', enabled);
+    return;
+  }
+
+  dnd.setEnabled(enabled);
+}
+
+/**
+ * Push Do Not Disturb changes to the titlebar so its button stays in
+ * step with the tray checkbox and the keyboard shortcut.
+ * Declared at module scope so repeated registration is deduplicated.
+ */
+function broadcastDoNotDisturb(enabled: boolean): void {
+  sendToRenderer('do-not-disturb-changed', enabled);
+}
+
+/**
  * Handle update check request from the titlebar.
  */
 function handleCheckForUpdates(): void {
@@ -479,6 +501,18 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     createHandler('check-for-updates', handleCheckForUpdates)
   );
 
+  // Do Not Disturb toggle from titlebar
+  ipcMain.on(
+    'set-do-not-disturb',
+    createHandler('set-do-not-disturb', handleSetDoNotDisturb)
+  );
+
+  // Initial Do Not Disturb state for the titlebar button
+  ipcMain.handle('get-do-not-disturb', () => dnd.isEnabled());
+
+  // Keep the titlebar button in step with the tray and the shortcut
+  dnd.onChange(broadcastDoNotDisturb);
+
   console.log('[IPC] Handlers registered');
 }
 
@@ -502,6 +536,8 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners('go-to-home');
   ipcMain.removeAllListeners('focus-window');
   ipcMain.removeAllListeners('check-for-updates');
+  ipcMain.removeAllListeners('set-do-not-disturb');
+  ipcMain.removeHandler('get-do-not-disturb');
 
   mainWindow = null;
   zoomInFunc = null;

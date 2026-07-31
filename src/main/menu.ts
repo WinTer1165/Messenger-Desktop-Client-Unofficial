@@ -6,7 +6,8 @@
  * - About dialog
  */
 
-import { app, Menu, dialog, BrowserWindow, WebContentsView } from 'electron';
+import { app, Menu, dialog, BrowserWindow, WebContents, WebContentsView } from 'electron';
+import * as dnd from './do-not-disturb';
 
 let messengerView: WebContentsView | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -90,13 +91,82 @@ export function zoomReset(): void {
 }
 
 /**
- * Setup keyboard shortcuts for zoom and other features
+ * Reload the Messenger view.
  */
-export function setupKeyboardShortcuts(_window: BrowserWindow): void {
-  // Zoom shortcuts are handled via local shortcuts in the menu
-  // We'll use a minimal context menu instead
+export function reloadMessenger(ignoreCache = false): void {
+  if (!messengerView || messengerView.webContents.isDestroyed()) return;
 
-  console.log('[Menu] Keyboard shortcuts setup');
+  if (ignoreCache) {
+    messengerView.webContents.reloadIgnoringCache();
+  } else {
+    messengerView.webContents.reload();
+  }
+  console.log(`[Menu] Reloaded Messenger${ignoreCache ? ' (ignoring cache)' : ''}`);
+}
+
+/**
+ * Wire the app's keyboard shortcuts onto a webContents.
+ *
+ * WHY EVERY SURFACE NEEDS ITS OWN REGISTRATION:
+ * The title bar and the Messenger view are separate webContents, and a
+ * key event only reaches the one that currently has focus. Registering
+ * on the window alone is why these shortcuts used to work in the title
+ * bar and nowhere else - clicking into the Messenger UI moved focus to
+ * the view, whose webContents had no handler.
+ *
+ * There is no application menu on Windows/Linux, so this is also the
+ * only thing that makes the accelerators in our context menu real.
+ */
+export function registerShortcuts(contents: WebContents): void {
+  contents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+
+    const mod = input.control || input.meta;
+
+    // Reload works with or without a modifier
+    if (input.key === 'F5' || (mod && input.key.toLowerCase() === 'r')) {
+      event.preventDefault();
+      reloadMessenger(input.shift);
+      return;
+    }
+
+    if (!mod) return;
+
+    switch (input.key.toLowerCase()) {
+      case '=':
+      case '+':
+        event.preventDefault();
+        zoomIn();
+        break;
+
+      case '-':
+      case '_':
+        event.preventDefault();
+        zoomOut();
+        break;
+
+      case '0':
+        event.preventDefault();
+        zoomReset();
+        break;
+
+      case 'd':
+        // Ctrl/Cmd+Shift+D only - plain Ctrl+D is a browser habit we
+        // shouldn't steal from the page
+        if (input.shift) {
+          event.preventDefault();
+          dnd.toggle();
+        }
+        break;
+
+      case 'q':
+        event.preventDefault();
+        app.quit();
+        break;
+    }
+  });
+
+  console.log('[Menu] Keyboard shortcuts registered for webContents', contents.id);
 }
 
 /**
@@ -180,6 +250,17 @@ export function createApplicationMenu(window: BrowserWindow): void {
             click: zoomReset
           },
           { type: 'separator' as const },
+          {
+            label: 'Reload',
+            accelerator: 'CmdOrCtrl+R',
+            click: () => reloadMessenger()
+          },
+          {
+            label: 'Do Not Disturb',
+            accelerator: 'CmdOrCtrl+Shift+D',
+            click: () => dnd.toggle()
+          },
+          { type: 'separator' as const },
           { role: 'quit' as const }
         ]
       }
@@ -192,25 +273,11 @@ export function createApplicationMenu(window: BrowserWindow): void {
     Menu.setApplicationMenu(null);
   }
 
-  // Setup local keyboard shortcuts
-  window.webContents.on('before-input-event', (event, input) => {
-    const ctrl = input.control || input.meta;
+  // Shortcuts are registered per webContents by the caller (see
+  // registerShortcuts) - the window's own webContents only hosts the
+  // title bar, so registering here alone would miss the Messenger view
 
-    if (ctrl && input.type === 'keyDown') {
-      if (input.key === '=' || input.key === '+') {
-        event.preventDefault();
-        zoomIn();
-      } else if (input.key === '-' || input.key === '_') {
-        event.preventDefault();
-        zoomOut();
-      } else if (input.key === '0') {
-        event.preventDefault();
-        zoomReset();
-      }
-    }
-  });
-
-  console.log('[Menu] Minimal menu created with keyboard shortcuts');
+  console.log('[Menu] Minimal menu created');
 }
 
 /**

@@ -50,7 +50,6 @@ import {
   BrowserWindow,
   WebContentsView,
   session,
-  shell,
   WebContents,
   dialog,
   nativeTheme,
@@ -66,6 +65,14 @@ import {
   ThemeSetting,
 } from '../shared/types';
 import * as settings from './settings';
+import * as dnd from './do-not-disturb';
+import {
+  unwrapRedirectUrl,
+  isInAppUrl,
+  isPopupUrl,
+  isCallUrl,
+  openInBrowser,
+} from './navigation';
 import { initializeAutoUpdater } from './updater';
 import {
   getWindowState,
@@ -82,7 +89,14 @@ import {
   setGoToHomeCallback,
   getMinimizeToTray,
 } from './ipc-handlers';
-import { createApplicationMenu, setMessengerView, zoomIn, zoomOut, zoomReset } from './menu';
+import {
+  createApplicationMenu,
+  registerShortcuts,
+  setMessengerView,
+  zoomIn,
+  zoomOut,
+  zoomReset,
+} from './menu';
 
 // ═══════════════════════════════════════════════════════════════════
 // GLOBAL STATE
@@ -171,7 +185,7 @@ function configureSession(): Electron.Session {
       console.log(`[Session] Permission request: ${permission}`, details.requestingUrl);
 
       // Do Not Disturb blocks notifications
-      if (permission === 'notifications' && settings.getDoNotDisturb()) {
+      if (permission === 'notifications' && dnd.isEnabled()) {
         callback(false);
         return;
       }
@@ -199,7 +213,7 @@ function configureSession(): Electron.Session {
   // Permission checks happen every time the page creates a Notification,
   // so this is what makes the Do Not Disturb toggle take effect instantly.
   messengerSession.setPermissionCheckHandler((_webContents, permission) => {
-    if (permission === 'notifications' && settings.getDoNotDisturb()) {
+    if (permission === 'notifications' && dnd.isEnabled()) {
       return false;
     }
     return true;
@@ -676,6 +690,30 @@ function handleGoToHome(): void {
 // MESSENGER VIEW MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════
 
+/** Chromium's net::ERR_ABORTED - a navigation we cancelled ourselves. */
+const ERR_ABORTED = -3;
+
+/**
+ * Safety net for the chat view: if a blocked hop or a failed load left
+ * it somewhere that isn't Messenger, send it back. Without this the
+ * window stays blank until the user presses Home.
+ */
+function restoreIfStranded(view: WebContentsView): void {
+  if (view.webContents.isDestroyed()) return;
+
+  const current = view.webContents.getURL();
+
+  // Still on Messenger (or Facebook login) - nothing to recover
+  if (current && isInAppUrl(current)) return;
+
+  console.log(
+    `[Navigation] View stranded on ${current || '(nothing)'} - returning to Messenger`
+  );
+  view.webContents.loadURL(MESSENGER_URL).catch((error: unknown) => {
+    console.error('[Navigation] Failed to return to Messenger:', error);
+  });
+}
+
 /**
  * React to navigations in the messenger view: detect a completed
  * Facebook login (redirect to Messenger) and record when the user has
@@ -779,32 +817,32 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
     },
   });
 
-  // Navigation security - only allow messenger.com and related domains
-  view.webContents.on('will-navigate', (event, url) => {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname;
+  // Navigation policy: Messenger and Facebook render in-app, everything
+  // else goes to the browser. Redirects are covered too, because that is
+  // how Messenger's link shim reaches the real target.
+  const applyNavigationPolicy = (event: Electron.Event, url: string): void => {
+    const target = unwrapRedirectUrl(url);
 
-    // Allow messenger.com, facebook.com and their subdomains (for calls, media, etc.)
-    const allowedPatterns = [
-      /^(www\.)?messenger\.com$/,
-      /^(www\.)?facebook\.com$/,
-      /^.*\.messenger\.com$/,
-      /^.*\.facebook\.com$/,
-      /^.*\.fbcdn\.net$/,  // Facebook CDN for media
-      /^.*\.fbsbx\.com$/,  // Facebook sandbox
-    ];
-
-    const isAllowed = allowedPatterns.some(pattern => pattern.test(hostname));
-
-    if (!isAllowed) {
-      console.log(`[Navigation] Blocked: ${url}`);
-      event.preventDefault();
-      // Open external URLs in default browser
-      void shell.openExternal(url);
-    } else {
-      console.log(`[Navigation] Allowed: ${url}`);
+    if (isInAppUrl(target)) {
+      // Skip the shim and load the destination directly, so the view is
+      // never left sitting on a blank interstitial
+      if (target !== url) {
+        console.log(`[Navigation] Following shim to: ${target}`);
+        event.preventDefault();
+        view.webContents.loadURL(target).catch((error: unknown) => {
+          console.error('[Navigation] Failed to follow shim:', error);
+        });
+      }
+      return;
     }
-  });
+
+    event.preventDefault();
+    openInBrowser(target);
+    restoreIfStranded(view);
+  };
+
+  view.webContents.on('will-navigate', (event, url) => applyNavigationPolicy(event, url));
+  view.webContents.on('will-redirect', (event, url) => applyNavigationPolicy(event, url));
 
   // Detect successful login and navigate to Messenger
   view.webContents.on('did-navigate', (_event, url) => {
@@ -816,43 +854,31 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
     console.log(`[Window] New window requested: ${url}, frame: ${frameName}`);
 
     // Allow about:blank (used by Messenger for calls/popups)
-    if (url === 'about:blank' || url.startsWith('about:')) {
-      console.log(`[Window] Allowing about: URL`);
+    if (url.startsWith('about:')) {
+      console.log('[Window] Allowing about: URL');
       return { action: 'allow' };
     }
 
-    try {
-      const parsedUrl = new URL(url);
-      const hostname = parsedUrl.hostname;
+    const target = unwrapRedirectUrl(url);
 
-      // Only allow messenger.com to stay in the app
-      const allowedPatterns = [
-        /^(www\.)?messenger\.com$/,
-        /^.*\.messenger\.com$/,
-        /^.*\.fbcdn\.net$/,
-      ];
-
-      const isAllowed = allowedPatterns.some(pattern => pattern.test(hostname));
-
-      if (isAllowed && (url.includes('/videocall') || url.includes('/call') || url.includes('/room'))) {
-        // Allow calls to open in new window
-        console.log(`[Window] Allowing call window: ${url}`);
-        return { action: 'allow' };
-      } else if (isAllowed) {
-        // Other allowed domains, load in the current view
-        console.log(`[Window] Loading in current view: ${url}`);
-        void view.webContents.loadURL(url);
-        return { action: 'deny' };
-      } else {
-        // External URLs open in browser
-        console.log(`[Window] Opening externally: ${url}`);
-        void shell.openExternal(url);
-        return { action: 'deny' };
-      }
-    } catch (error) {
-      console.error(`[Window] Error parsing URL: ${url}`, error);
+    // Anything that isn't Messenger's own UI goes to the browser.
+    // This must not touch the chat view: navigating it onto a link shim
+    // is what used to leave the window blank until Home was pressed.
+    if (!isPopupUrl(target)) {
+      openInBrowser(target);
       return { action: 'deny' };
     }
+
+    if (isCallUrl(target)) {
+      console.log(`[Window] Allowing call window: ${target}`);
+      return { action: 'allow' };
+    }
+
+    console.log(`[Window] Loading in current view: ${target}`);
+    view.webContents.loadURL(target).catch((error: unknown) => {
+      console.error('[Window] Failed to load in current view:', error);
+    });
+    return { action: 'deny' };
   });
 
   // Handle child windows (for calls)
@@ -916,26 +942,24 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
       }
     );
 
-    // Handle child window navigation
-    childWindow.webContents.on('will-navigate', (event, url) => {
-      const parsedUrl = new URL(url);
-      const hostname = parsedUrl.hostname;
+    // Handle child window navigation - same policy as the main view, so
+    // a link clicked during a call opens in the browser instead of
+    // hijacking (or blanking) the call window
+    const applyChildNavigationPolicy = (event: Electron.Event, url: string): void => {
+      const target = unwrapRedirectUrl(url);
+      if (isInAppUrl(target)) return;
 
-      const allowedPatterns = [
-        /^(www\.)?messenger\.com$/,
-        /^(www\.)?facebook\.com$/,
-        /^.*\.messenger\.com$/,
-        /^.*\.facebook\.com$/,
-        /^.*\.fbcdn\.net$/,
-      ];
+      console.log(`[ChildWindow] Navigation sent to browser: ${target}`);
+      event.preventDefault();
+      openInBrowser(target);
+    };
 
-      const isAllowed = allowedPatterns.some(pattern => pattern.test(hostname));
-
-      if (!isAllowed) {
-        console.log(`[ChildWindow] Blocked navigation: ${url}`);
-        event.preventDefault();
-      }
-    });
+    childWindow.webContents.on('will-navigate', (event, url) =>
+      applyChildNavigationPolicy(event, url)
+    );
+    childWindow.webContents.on('will-redirect', (event, url) =>
+      applyChildNavigationPolicy(event, url)
+    );
 
     // Inject theme CSS and auto-scroll into call window
     childWindow.webContents.on('did-finish-load', () => {
@@ -955,10 +979,20 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
   });
 
   // Handle page load errors
-  view.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
-    console.error(`[MessengerView] Load failed: ${errorCode} - ${errorDescription}`);
-    // Could show an error page here
-  });
+  view.webContents.on(
+    'did-fail-load',
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      console.error(
+        `[MessengerView] Load failed: ${errorCode} - ${errorDescription} (${validatedURL})`
+      );
+
+      // ERR_ABORTED is what our own preventDefault() produces; the view
+      // still holds its previous page, so there is nothing to recover
+      if (isMainFrame && errorCode !== ERR_ABORTED) {
+        restoreIfStranded(view);
+      }
+    }
+  );
 
   // Handle crashes
   view.webContents.on('render-process-gone', (_event, details) => {
@@ -1171,6 +1205,12 @@ async function initializeApp(): Promise<void> {
   createApplicationMenu(mainWindow);
   setMessengerView(messengerView);
 
+  // Keyboard shortcuts have to be bound to every focusable surface: the
+  // title bar and the Messenger view are separate webContents, and only
+  // the focused one receives key events
+  registerShortcuts(mainWindow.webContents);
+  registerShortcuts(messengerView.webContents);
+
   // Set up zoom functions for IPC handlers
   setZoomFunctions(zoomIn, zoomOut, zoomReset);
 
@@ -1284,10 +1324,11 @@ app.on('web-contents-created', (_event, contents) => {
     }
   });
 
-  // Disable new window creation except through our handler
+  // Disable new window creation except through our handler.
+  // The messenger view replaces this with its own handler right after
+  // it is constructed; this is the fallback for everything else.
   contents.setWindowOpenHandler(({ url }) => {
-    // Only allow specific URLs to open in new windows
-    void shell.openExternal(url);
+    openInBrowser(url);
     return { action: 'deny' };
   });
 });

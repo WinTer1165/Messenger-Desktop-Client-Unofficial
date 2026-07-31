@@ -78,6 +78,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
     console.log('[TitleBarPreload] Sending check-for-updates');
     ipcRenderer.send('check-for-updates');
   },
+
+  // Do Not Disturb
+  setDoNotDisturb: (enabled: boolean) => {
+    console.log('[TitleBarPreload] Sending set-do-not-disturb:', enabled);
+    ipcRenderer.send('set-do-not-disturb', enabled);
+  },
+
+  getDoNotDisturb: (): Promise<boolean> =>
+    ipcRenderer.invoke('get-do-not-disturb') as Promise<boolean>,
+
+  // Fires when Do Not Disturb is toggled from the tray or the shortcut
+  onDoNotDisturbChange: (callback: (enabled: boolean) => void) => {
+    ipcRenderer.on('do-not-disturb-changed', (_event, enabled: boolean) => {
+      console.log('[TitleBarPreload] Do Not Disturb changed:', enabled);
+      callback(enabled);
+    });
+  },
 });
 
 console.log('[TitleBarPreload] APIs exposed successfully');

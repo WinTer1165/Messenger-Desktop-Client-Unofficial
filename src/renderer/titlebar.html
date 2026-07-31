@@ -203,6 +203,59 @@
             background: rgba(255, 255, 255, 0.3) !important;
         }
 
+        .dnd-toggle {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            padding: 6px 10px !important;
+            margin-right: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .dnd-toggle:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .dnd-toggle.active {
+            background: rgba(248, 113, 113, 0.3) !important;
+            border-color: rgba(248, 113, 113, 0.6) !important;
+        }
+
+        .dnd-toggle.active svg {
+            stroke: #f87171;
+        }
+
+        /* The strike-through only shows while notifications are muted */
+        .dnd-toggle .dnd-slash {
+            display: none;
+        }
+
+        .dnd-toggle.active .dnd-slash {
+            display: inline;
+        }
+
+        body[data-theme="light"] .dnd-toggle {
+            background: rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(0, 0, 0, 0.2) !important;
+        }
+
+        body[data-theme="light"] .dnd-toggle:hover {
+            background: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        body[data-theme="light"] .dnd-toggle.active {
+            background: rgba(220, 38, 38, 0.15) !important;
+            border-color: rgba(220, 38, 38, 0.5) !important;
+        }
+
+        body[data-theme="light"] .dnd-toggle.active svg {
+            stroke: #dc2626;
+        }
+
         .tray-toggle {
             background: rgba(255, 255, 255, 0.2) !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -487,6 +540,15 @@
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </button>
+        <button id="dnd-toggle" class="dnd-toggle" title="Do Not Disturb">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Bell -->
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                <!-- Strike-through, shown only while muted -->
+                <line class="dnd-slash" x1="3" y1="3" x2="21" y2="21"/>
+            </svg>
+        </button>
         <button id="minimize-to-tray-toggle" class="tray-toggle" title="Minimize to tray when closing">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <!-- Tray icon -->
@@ -532,7 +594,7 @@
     <div class="about-modal" id="about-modal">
         <button class="about-modal-close" id="about-close">×</button>
         <h2>Messenger Desktop</h2>
-        <p><strong>Version:</strong> 2.0.0</p>
+        <p><strong>Version:</strong> 2.1.0</p>
         <p><strong>Description:</strong> Unofficial desktop client for Facebook Messenger with native OS integration, custom themes, and enhanced privacy features.</p>
         <p><strong>GitHub:</strong> <a href="#" id="github-link">WinTer1165/Messenger-Desktop-Client-Unofficial</a></p>
         <p style="margin-top: 20px; font-size: 12px; color: #888;">Built with Electron • Made with ❤️</p>
@@ -742,6 +804,55 @@
             // Send to main process
             if (window.electronAPI && window.electronAPI.setMinimizeToTray) {
                 window.electronAPI.setMinimizeToTray(minimizeToTray);
+            }
+        });
+
+        // Do Not Disturb Toggle
+        // The main process owns this setting (the tray menu and the
+        // Ctrl+Shift+D shortcut change it too), so state is read from
+        // there rather than localStorage.
+        const dndBtn = document.getElementById('dnd-toggle');
+        let doNotDisturb = false;
+
+        function renderDndState() {
+            dndBtn.classList.toggle('active', doNotDisturb);
+            dndBtn.title = doNotDisturb
+                ? 'Do Not Disturb: ON - notifications muted (Ctrl+Shift+D)'
+                : 'Do Not Disturb: OFF - notifications on (Ctrl+Shift+D)';
+        }
+
+        renderDndState();
+
+        // Load the persisted state
+        if (window.electronAPI && window.electronAPI.getDoNotDisturb) {
+            window.electronAPI.getDoNotDisturb()
+                .then((enabled) => {
+                    doNotDisturb = !!enabled;
+                    console.log('[TitleBar] Do Not Disturb initial state:', doNotDisturb);
+                    renderDndState();
+                })
+                .catch((error) => {
+                    console.error('[TitleBar] Failed to read Do Not Disturb state:', error);
+                });
+        }
+
+        // Follow changes made from the tray menu or the shortcut
+        if (window.electronAPI && window.electronAPI.onDoNotDisturbChange) {
+            window.electronAPI.onDoNotDisturbChange((enabled) => {
+                doNotDisturb = !!enabled;
+                renderDndState();
+            });
+        }
+
+        dndBtn.addEventListener('click', () => {
+            doNotDisturb = !doNotDisturb;
+            renderDndState();
+            console.log('[TitleBar] Do Not Disturb:', doNotDisturb ? 'ENABLED' : 'DISABLED');
+
+            if (window.electronAPI && window.electronAPI.setDoNotDisturb) {
+                window.electronAPI.setDoNotDisturb(doNotDisturb);
+            } else {
+                console.error('[TitleBar] setDoNotDisturb not available!');
             }
         });
 

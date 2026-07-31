@@ -40,7 +40,7 @@ import {
 } from 'electron';
 import * as path from 'path';
 import { TRAY_UPDATE_DEBOUNCE_MS, TrayState } from '../shared/types';
-import * as settings from './settings';
+import * as dnd from './do-not-disturb';
 import { checkForUpdatesInteractive } from './updater';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -258,13 +258,8 @@ function createContextMenu(): Menu {
     {
       label: 'Do Not Disturb',
       type: 'checkbox',
-      checked: settings.getDoNotDisturb(),
-      click: (menuItem) => {
-        settings.setDoNotDisturb(menuItem.checked);
-        console.log(
-          `[Tray] Do Not Disturb: ${menuItem.checked ? 'ENABLED' : 'DISABLED'}`
-        );
-      },
+      checked: dnd.isEnabled(),
+      click: (menuItem) => dnd.setEnabled(menuItem.checked),
     },
     {
       label: 'Start with System',
@@ -289,6 +284,15 @@ function createContextMenu(): Menu {
       },
     },
   ]);
+}
+
+/**
+ * Rebuild the tray context menu so its checkbox states match settings.
+ */
+function refreshContextMenu(): void {
+  if (!tray || tray.isDestroyed()) return;
+
+  tray.setContextMenu(createContextMenu());
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -341,6 +345,10 @@ export function initializeTray(window: BrowserWindow): void {
   // Set up tray
   tray.setToolTip('Messenger');
   tray.setContextMenu(createContextMenu());
+
+  // Rebuild the menu when Do Not Disturb is toggled elsewhere (title bar
+  // button, keyboard shortcut) so the checkbox never goes stale
+  dnd.onChange(refreshContextMenu);
 
   // Click behavior (platform-specific)
   if (process.platform === 'darwin') {
@@ -421,7 +429,7 @@ function performUnreadUpdate(count: number): void {
     count > previousCount &&
     mainWindow &&
     !mainWindow.isFocused() &&
-    !settings.getDoNotDisturb()
+    !dnd.isEnabled()
   ) {
     flashWindow();
   }
