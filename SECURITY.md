@@ -12,10 +12,9 @@ patched — please update before reporting.
 
 | Version | Supported |
 | ------- | --------- |
-| 2.0.x   | ✅ Yes |
-| 1.2.x   | ❌ No |
-| 1.0.x   | ❌ No |
-| < 1.0   | ❌ No |
+| 2.1.x   | ✅ Yes |
+| 2.0.x   | ❌ No |
+| < 2.0   | ❌ No |
 
 Versions before 2.0.0 are Windows-only, predate the current sandboxing and
 auto-update work, and should be replaced rather than patched. The
