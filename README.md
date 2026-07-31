@@ -600,7 +600,11 @@ npm run dist:linux   # Linux: AppImage (x86_64, ARM64) and .deb (amd64)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
+Contributions are welcome! Read the **[Contributing Guidelines](CONTRIBUTING.md)** for
+development setup, project structure, coding standards, and the security rules
+that pull requests need to respect.
+
+The short version:
 
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
@@ -609,10 +613,17 @@ Contributions are welcome! Here's how you can help:
 5. **Open** a Pull Request
 
 Please ensure:
-- Code passes `npm test`
-- TypeScript types are properly defined
+- Code passes `npm test` (typecheck + lint)
+- TypeScript types are properly defined — no `any`
 - No security vulnerabilities are introduced
 - Features are documented in the README
+
+Everyone taking part is expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+### 🔐 Found a security issue?
+
+**Don't open a public issue.** See the [Security Policy](SECURITY.md) for how to
+report it privately.
 
 ---
 
@@ -638,6 +649,8 @@ Need help or want to chat?
 - 🐛 **Report Bugs**: [Open an Issue](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues)
 - 💡 **Feature Requests**: [Request a Feature](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues/new)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/discussions)
+- 🔐 **Security Issues**: [Security Policy](SECURITY.md) - report privately, not in an issue
+- 🤝 **Want to Contribute?**: [Contributing Guidelines](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 - ⭐ **Show Support**: Star the repo if you find it useful!
 
 ---
