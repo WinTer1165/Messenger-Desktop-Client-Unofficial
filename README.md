@@ -372,17 +372,6 @@ Transform your Messenger experience with **6 stunning themes**!
 
 ## 💡 How to Use
 
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + Plus` or `Ctrl + =` | **Zoom in** - Make text larger |
-| `Ctrl + Minus` or `Ctrl + -` | **Zoom out** - Make text smaller |
-| `Ctrl + 0` | **Reset zoom** - Back to default size |
-| `F11` | **Fullscreen** - Hide everything but Messenger |
-| `Ctrl + R` | **Reload** - Refresh the page |
-| `Ctrl + W` | **Close window** - Minimize to tray or quit (based on setting) |
-
 ### System Tray
 
 The app sits in your **system tray** (bottom-right corner of Windows taskbar):
