@@ -39,17 +39,61 @@ Rich notifications, an optional PIN lock, 14 themes and a window that stays out 
 
 ## Download
 
-Pick the file for your system. Every download is free and needs no account.
+<table>
+  <tr>
+    <th width="33%">Windows</th>
+    <th width="33%">macOS</th>
+    <th width="33%">Linux</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-Setup-3.0.0.exe"><img src="https://img.shields.io/badge/Installer-x64_%2B_ARM64-0078D4?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0wIDMuNCA5LjggMnY5LjVIMHptMTAuOS0xLjZMMjQgMHYxMS40SDEwLjl6TTAgMTIuNmg5LjhWMjJMMCAyMC42em0xMC45IDBIMjRWMjRsLTEzLjEtMS44eiIvPjwvc3ZnPg%3D%3D&logoColor=white" alt="Download the Windows installer"></a>
+      <br><sub><b>Recommended</b> · updates itself</sub>
+      <br><br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-x64.zip"><img src="https://img.shields.io/badge/Portable-x64-404040?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0wIDMuNCA5LjggMnY5LjVIMHptMTAuOS0xLjZMMjQgMHYxMS40SDEwLjl6TTAgMTIuNmg5LjhWMjJMMCAyMC42em0xMC45IDBIMjRWMjRsLTEzLjEtMS44eiIvPjwvc3ZnPg%3D%3D&logoColor=white" alt="Download the portable x64 zip"></a>
+      <br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-ARM64.zip"><img src="https://img.shields.io/badge/Portable-ARM64-404040?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0wIDMuNCA5LjggMnY5LjVIMHptMTAuOS0xLjZMMjQgMHYxMS40SDEwLjl6TTAgMTIuNmg5LjhWMjJMMCAyMC42em0xMC45IDBIMjRWMjRsLTEzLjEtMS44eiIvPjwvc3ZnPg%3D%3D&logoColor=white" alt="Download the portable ARM64 zip"></a>
+      <br><sub>No install needed</sub>
+      <br><br>
+    </td>
+    <td align="center" valign="top">
+      <br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.dmg"><img src="https://img.shields.io/badge/Apple_Silicon-M1_and_newer-111111?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Apple Silicon Macs"></a>
+      <br><sub><b>Most Macs</b> from late 2020 on</sub>
+      <br><br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x64.dmg"><img src="https://img.shields.io/badge/Intel-x64-404040?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Intel Macs"></a>
+      <br><sub>Older Intel Macs</sub>
+      <br><br>
+    </td>
+    <td align="center" valign="top">
+      <br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x86_64.AppImage"><img src="https://img.shields.io/badge/AppImage-x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Download the x86_64 AppImage"></a>
+      <br><sub><b>Any distribution</b> · updates itself</sub>
+      <br><br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-amd64.deb"><img src="https://img.shields.io/badge/.deb-amd64-A81D33?style=for-the-badge&logo=debian&logoColor=white" alt="Download the .deb package"></a>
+      <br><sub>Debian, Ubuntu, Mint, Pop!_OS</sub>
+      <br><br>
+      <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.AppImage"><img src="https://img.shields.io/badge/AppImage-ARM64-404040?style=for-the-badge&logo=linux&logoColor=white" alt="Download the ARM64 AppImage"></a>
+      <br><sub>Raspberry Pi and other ARM64</sub>
+    </td>
+  </tr>
+</table>
 
-| Platform | Download | Notes |
-|---|---|---|
-| **Windows** | [**Installer**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-Setup-3.0.0.exe) | Recommended. Works on Intel, AMD and ARM, updates itself |
-| | [Portable x64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-x64.zip) · [Portable ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-ARM64.zip) | No install needed, no auto-update |
-| **macOS** | [**Apple Silicon**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.dmg) · [Intel](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x64.dmg) | M1 or newer uses Apple Silicon |
-| **Linux** | [**AppImage x86_64**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x86_64.AppImage) · [AppImage ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.AppImage) | Any distribution, updates itself |
-| | [.deb (amd64)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-amd64.deb) | Debian, Ubuntu, Mint, Pop!\_OS |
+<p align="center">
+  <sub><b>Version 3.0.0</b> · free, no account needed · <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest">release notes</a> · <a href="https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases">older versions</a></sub>
+</p>
 
-Older versions are on the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases).
+<details>
+<summary><b>Which one do I need?</b></summary>
+
+<br>
+
+- **Windows:** the installer, on any Windows 10 or 11 PC. It works on Intel, AMD and ARM (Snapdragon, Surface Pro X) and keeps itself up to date. Take a portable zip if you can't install apps, for example on a work computer.
+- **macOS:** open the Apple menu → **About This Mac**. "Apple M…" means **Apple Silicon**, "Intel" means **Intel**.
+- **Linux:** the **.deb** on Debian, Ubuntu, Mint or Pop!\_OS for a normal install with a menu entry. The **AppImage** anywhere else, or if you want one portable file that updates itself.
+
+</details>
 
 <details>
 <summary><b>System requirements</b></summary>
