@@ -16,7 +16,7 @@ Rich notifications, an optional PIN lock, 14 themes and a window that stays out 
 
 <br>
 
-<img src="docs/screenshots/settings.png" alt="The Messenger Desktop settings page with the theme picker" width="880">
+<img src="docs/screenshots/app.png" alt="Messenger Desktop with the chat list and a conversation open" width="880">
 
 <sub>Unofficial app. Not affiliated with or endorsed by Meta.</sub>
 
