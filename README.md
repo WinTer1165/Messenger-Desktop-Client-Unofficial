@@ -1,688 +1,424 @@
-# Messenger Desktop (Unofficial)
-
 <div align="center">
 
-<img src="assets/icon.png" width="128" height="128" alt="Messenger Desktop Icon">
+<img src="assets/icon.png" width="112" height="112" alt="Messenger Desktop icon">
 
-### A Beautiful, Secure Desktop Client for Facebook Messenger
+# Messenger Desktop
 
-**Chat with your friends and family in a dedicated desktop app with premium themes and enhanced privacy**
+**A free, open-source desktop app for Facebook Messenger.**<br>
+Rich notifications, an optional PIN lock, 14 themes and a window that stays out of your way.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)](#-windows)
-[![macOS](https://img.shields.io/badge/macOS-11%2B-000000?logo=apple)](#-macos)
-[![Linux](https://img.shields.io/badge/Linux-AppImage%20%7C%20deb-FCC624?logo=linux&logoColor=black)](#-linux)
-[![Downloads](https://img.shields.io/github/downloads/WinTer1165/Messenger-Desktop-Client-Unofficial/total?style=flat&logo=github)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases)
+[![Latest release](https://img.shields.io/github/v/release/WinTer1165/Messenger-Desktop-Client-Unofficial?style=flat-square&label=release&color=0866ff)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/WinTer1165/Messenger-Desktop-Client-Unofficial/total?style=flat-square&color=0866ff)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0866ff?style=flat-square)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-0866ff?style=flat-square)](#download)
 
-[⬇️ Download](#-download) • [🚀 Installation](#-installation) • [✨ Features](#-features) • [🔒 Security](#-security--privacy) • [💡 How to Use](#-how-to-use) • [❓ FAQ](#-faq) • [🛠️ Troubleshooting](#-troubleshooting)
+**[Download](#download)** · **[What's new](#whats-new-in-v3)** · **[Screenshots](#screenshots)** · **[Features](#features)** · **[FAQ](#faq)** · **[Build from source](#build-from-source)**
+
+<br>
+
+<img src="docs/screenshots/settings.png" alt="The Messenger Desktop settings page with the theme picker" width="880">
+
+<sub>Unofficial app. Not affiliated with or endorsed by Meta.</sub>
 
 </div>
 
----
+<br>
+
+## What's new in v3
+
+- **Settings page** inside the window, with a theme picker and **7 new themes**
+- **Discord-style notifications** on Windows: the sender's round picture next to their message, and call cards with **Open Messenger** and **Dismiss**
+- **App lock** with a PIN, when the app starts, every time you open the window, or after you've been away
+- **Offline screen** that reloads Messenger by itself as soon as you're back online
+- **Hide message previews** and **pause notifications during calls**
+- **Unread dot** on the tray icon
+- A cleaner title bar, a centered login page and themed dialogs
+- Much lower idle CPU use, and the app's cache no longer grows without limit
+
+<br>
+
+## Download
+
+Pick the file for your system. Every download is free and needs no account.
+
+| Platform | Download | Notes |
+|---|---|---|
+| **Windows** | [**Installer**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-Setup-3.0.0.exe) | Recommended. Works on Intel, AMD and ARM, updates itself |
+| | [Portable x64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-x64.zip) · [Portable ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-Portable-ARM64.zip) | No install needed, no auto-update |
+| **macOS** | [**Apple Silicon**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.dmg) · [Intel](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x64.dmg) | M1 or newer uses Apple Silicon |
+| **Linux** | [**AppImage x86_64**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-x86_64.AppImage) · [AppImage ARM64](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-arm64.AppImage) | Any distribution, updates itself |
+| | [.deb (amd64)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-3.0.0-amd64.deb) | Debian, Ubuntu, Mint, Pop!\_OS |
+
+Older versions are on the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases).
+
+<details>
+<summary><b>System requirements</b></summary>
+
+<br>
+
+| | Windows | macOS | Linux |
+|---|---|---|---|
+| **System** | Windows 10 or 11 | macOS 11 Big Sur or newer | Ubuntu 18.04+, Debian 10+, Fedora 32+ or similar |
+| **Processor** | x64 or ARM64 | Apple Silicon or Intel | x86_64 or ARM64 |
+| **Memory** | 4 GB recommended | 4 GB recommended | 4 GB recommended |
+| **Disk space** | 400 MB | 400 MB | 400 MB |
+
+An internet connection is needed for messaging.
+
+</details>
+
+<br>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/login.png" alt="The login page, centered in the window">
+      <p align="center"><b>Login</b>, centered in any window size</p>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/settings.png" alt="The settings page">
+      <p align="center"><b>Settings</b>, with a preview of every theme</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <img src="docs/screenshots/lock.png" alt="The lock screen in the Northern Lights theme">
+      <p align="center"><b>App lock</b> in the Northern Lights theme</p>
+    </td>
+    <td valign="top">
+      <img src="docs/screenshots/dialog.png" alt="The Forgot your PIN dialog">
+      <p align="center"><b>Forgot your PIN?</b> signs you out safely</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <img src="docs/screenshots/offline.png" alt="The offline screen in the Deep Ocean theme">
+      <p align="center"><b>Offline screen</b> that reconnects by itself</p>
+    </td>
+    <td align="center" valign="top">
+      <br>
+      <img src="docs/screenshots/notification-message.png" alt="A message notification with the sender's picture" width="363">
+      <br><br>
+      <img src="docs/screenshots/notification-call.png" alt="An incoming call notification" width="363">
+      <p align="center"><b>Notifications</b> for messages and calls (Windows)</p>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## Features
+
+### Notifications
+
+- **Discord-style cards on Windows**: the sender's round picture, their name and message, with the app's name and icon on top
+- **Stay on screen for 8 seconds** instead of Windows' usual 5 (can be turned off)
+- **Incoming calls** get a call card with **Open Messenger** and **Dismiss** that stays until you act. The window comes forward and the taskbar flashes until you look
+- **Hide message previews**: "New message" instead of what was written
+- **Pause during calls**: no message pop-ups while a call window is open
+- **Do Not Disturb** from the title bar, the tray menu or `Ctrl/Cmd` + `Shift` + `D`
+- Clicking a notification brings Messenger to the front
+
+### App lock
+
+An optional PIN for shared computers. Choose when it asks:
 
-## 📥 Download
+- **When the app starts**
+- **Every time I open the window**, from the tray or the taskbar
+- **After I've been away** for 1, 5, 15, 30 or 60 minutes
 
-### **Latest Version: 2.1.0**
+It also locks when your computer locks or sleeps (except with "When the app starts"), and you can lock right away from Settings or the tray. While the app is locked, notifications show no names or text. The PIN is stored only as a salted hash, and wrong guesses slow down after a few tries. If you forget it, **Forgot PIN?** signs you out of Messenger on this computer and removes the lock.
 
-Available for **Windows**, **macOS**, and **Linux**. Pick the file that matches your system — every download is free and requires no account.
+> The lock hides Messenger on this computer. It doesn't encrypt your messages.
 
----
+### Window and tray
 
-### 🪟 Windows
+- **Custom title bar** with Home, a Facebook button (opens facebook.com in your browser), Do Not Disturb, Settings, zoom and window controls
+- **Tray icon** with a red dot while anything is unread, and a count on the Windows taskbar button
+- **Minimize to tray** when closing, so notifications keep arriving (Settings → Window & startup)
+- **Start with system** on Windows and macOS
+- **Offline screen**: start without internet, or right after waking your computer, and the app waits, then reloads Messenger by itself
+- **Remembers** its size and position
+- External links always open in your default browser
 
-#### 🔹 Installer (Recommended)
-**Automatic installation with desktop and Start Menu shortcuts. Works on both Intel/AMD and ARM machines.**
+### Themes
 
-[![Download Installer](https://img.shields.io/badge/Download-Windows%20Installer-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-Setup-2.1.0.exe)
+Pick one in **Settings → Appearance**. Themes color the title bar, the app's own screens and call windows. Messenger itself keeps its own look.
 
-- **File:** `Messenger-Desktop-Unofficial-Setup-2.1.0.exe`
-- **Size:** 185 MB
-- **For:** Windows 10 (1809+) / 11 — x64 **and** ARM64 in one installer
-- **Includes:** Auto-installer, desktop shortcut, Start Menu entry, auto-updates
+| | | | |
+|---|---|---|---|
+| Auto (follows your system) | Dark | Light | Northern Lights |
+| Deep Ocean | Cosmic Nebula | Sunset Drive | Neon City |
+| Sakura Bloom | Arctic Frost | Lush Forest | Desert |
+| Electric | High Contrast | | |
 
-#### 🔹 Portable - x64 (Intel/AMD)
-**No installation required - extract and run**
+### Keyboard shortcuts
 
-[![Download Portable x64](https://img.shields.io/badge/Download-Portable%20x64-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-Portable-x64.zip)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-Portable-x64.zip`
-- **Size:** 135 MB
-- **For:** Windows 10/11 on 64-bit Intel/AMD processors
-- **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
-
-#### 🔹 Portable - ARM64
-**For Windows on ARM devices (Surface Pro X, Snapdragon laptops, etc.)**
-
-[![Download Portable ARM64](https://img.shields.io/badge/Download-Portable%20ARM64-0078D6?style=for-the-badge&logo=windows)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-Portable-ARM64.zip)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-Portable-ARM64.zip`
-- **Size:** 135 MB
-- **For:** Windows 10/11 on ARM64 processors
-- **How to use:** Extract → Run `Messenger Desktop (Unofficial).exe`
-
----
-
-### 🍎 macOS
-
-#### 🔹 Apple Silicon (M1/M2/M3/M4)
-
-[![Download macOS ARM64](https://img.shields.io/badge/Download-macOS%20Apple%20Silicon-000000?style=for-the-badge&logo=apple)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-arm64.dmg)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-arm64.dmg`
-- **Size:** 95 MB
-- **For:** macOS 11 Big Sur or newer on Apple Silicon
-- **How to use:** Open the `.dmg` → drag the app into **Applications**
-
-#### 🔹 Intel Mac
-
-[![Download macOS x64](https://img.shields.io/badge/Download-macOS%20Intel-000000?style=for-the-badge&logo=apple)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-x64.dmg)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-x64.dmg`
-- **Size:** 99 MB
-- **For:** macOS 11 Big Sur or newer on Intel processors
-- **How to use:** Open the `.dmg` → drag the app into **Applications**
-
-> **First launch on macOS:** The app isn't notarized, so macOS will say it "cannot be opened". Right-click the app → **Open** → **Open**, or run `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"` once in Terminal.
-
----
-
-### 🐧 Linux
-
-#### 🔹 AppImage - x86_64 (Recommended)
-**Runs on any distribution, no installation needed**
-
-[![Download AppImage x86_64](https://img.shields.io/badge/Download-AppImage%20x86__64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage`
-- **Size:** 86 MB
-- **For:** Any 64-bit Intel/AMD Linux distro (Ubuntu, Fedora, Arch, Debian…)
-- **How to use:** `chmod +x Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage && ./Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage`
-
-#### 🔹 AppImage - ARM64
-**For ARM boards and laptops (Raspberry Pi 4/5, Ampere, etc.)**
-
-[![Download AppImage ARM64](https://img.shields.io/badge/Download-AppImage%20ARM64-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-arm64.AppImage)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-arm64.AppImage`
-- **Size:** 80 MB
-- **For:** 64-bit ARM Linux distributions
-- **How to use:** `chmod +x` the file, then run it
-
-#### 🔹 Debian / Ubuntu Package (.deb)
-**Native install with menu entry and updates via your package manager**
-
-[![Download deb amd64](https://img.shields.io/badge/Download-.deb%20amd64-A81D33?style=for-the-badge&logo=debian)](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-amd64.deb)
-
-- **File:** `Messenger-Desktop-Unofficial-2.1.0-amd64.deb`
-- **Size:** 77 MB
-- **For:** Debian, Ubuntu, Linux Mint, Pop!\_OS and derivatives (amd64)
-- **How to use:** `sudo apt install ./Messenger-Desktop-Unofficial-2.1.0-amd64.deb`
-
----
-
-### 📦 All Downloads at a Glance
-
-| OS | Format | Architecture | Size | Download |
-|----|--------|--------------|------|----------|
-| 🪟 Windows | Installer (`.exe`) | x64 + ARM64 | 185 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-Setup-2.1.0.exe) |
-| 🪟 Windows | Portable (`.zip`) | x64 | 135 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-Portable-x64.zip) |
-| 🪟 Windows | Portable (`.zip`) | ARM64 | 135 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-Portable-ARM64.zip) |
-| 🍎 macOS | Disk image (`.dmg`) | Apple Silicon | 95 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-arm64.dmg) |
-| 🍎 macOS | Disk image (`.dmg`) | Intel (x64) | 99 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-x64.dmg) |
-| 🐧 Linux | AppImage | x86_64 | 86 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage) |
-| 🐧 Linux | AppImage | ARM64 | 80 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-arm64.AppImage) |
-| 🐧 Linux | Debian package (`.deb`) | amd64 | 77 MB | [Download](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v2.1.0/Messenger-Desktop-Unofficial-2.1.0-amd64.deb) |
-
-> Always grabbing the newest build? [**View all releases →**](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
-
----
-
-### 📋 System Requirements
-
-| Component | Windows | macOS | Linux |
-|-----------|---------|-------|-------|
-| **OS** | Windows 10 (1809+) or 11 | macOS 11 Big Sur or newer | Any modern 64-bit distro (glibc 2.28+) |
-| **Processor** | x64 (Intel/AMD) or ARM64 | Apple Silicon or Intel | x86_64 or ARM64 |
-| **RAM** | 2 GB minimum, 4 GB recommended | 2 GB minimum, 4 GB recommended | 2 GB minimum, 4 GB recommended |
-| **Disk Space** | 300 MB free space | 300 MB free space | 300 MB free space |
-| **Internet** | Required for messaging | Required for messaging | Required for messaging |
-
----
-
-### ❓ Which Version Should I Download?
-
-- **🏠 Windows home user?** → **Windows Installer** (easiest, auto-updates)
-- **💼 Work computer you can't install on?** → **Portable x64**
-- **📱 Surface Pro X or Snapdragon laptop?** → **Portable ARM64** (the installer works too)
-- **🍎 Mac from 2020 or later?** → **macOS Apple Silicon**
-- **🍎 Older Intel Mac?** → **macOS Intel**
-- **🐧 Ubuntu / Debian / Mint?** → **.deb package**
-- **🐧 Any other Linux distro?** → **AppImage x86_64**
-- **🎮 Want the newest builds first?** → Check [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases) for pre-releases
-
----
-
-### 🕘 Previous Versions
-
-Older builds are listed on the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases).
-
----
-
-## 🚀 Installation
-
-### 🪟 Windows
-
-#### Option 1: Using the Installer (Recommended)
-
-1. **Download** the installer from [above](#-download) or visit [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest)
-
-2. **Open the downloaded file** - Double-click `Messenger-Desktop-Unofficial-Setup-2.1.0.exe`
-
-3. **Windows Security Warning** (Normal for unsigned apps):
-   - If you see "Windows protected your PC":
-   - Click **More info**
-   - Click **Run anyway**
-   - This is safe - the app is open source and not code-signed
-
-4. **Follow the installer** - Click through the installation wizard
-
-5. **Launch the app** - It will open automatically after installation
-
-#### Option 2: Using the Portable Version
-
-1. **Download** the portable zip matching your CPU (x64 or ARM64)
-2. **Extract** the zip file to a folder (e.g., `C:\Apps\Messenger`)
-3. **Run** `Messenger Desktop (Unofficial).exe`
-4. **Optional:** Create a desktop shortcut manually
-
-> **Note:** Portable versions don't require installation but don't create Start Menu entries or auto-update.
-
----
-
-### 🍎 macOS
-
-1. **Download** the `.dmg` for your Mac — Apple Silicon (M-series) or Intel
-2. **Open** the downloaded `.dmg` file
-3. **Drag** `Messenger Desktop (Unofficial)` into your **Applications** folder
-4. **First launch:** Because the app isn't notarized, macOS blocks it by default. Either:
-   - **Right-click** the app → **Open** → **Open** in the dialog, **or**
-   - Run once in Terminal: `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"`
-5. **Eject** the disk image — you're done
-
-> **Which one do I need?** Apple menu →  **About This Mac**. "Apple M1/M2/M3/M4" → Apple Silicon. "Intel" → Intel build.
-
----
-
-### 🐧 Linux
-
-#### Option 1: AppImage (Any distribution)
-
-```bash
-# Make it executable, then run it
-chmod +x Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage
-./Messenger-Desktop-Unofficial-2.1.0-x86_64.AppImage
-```
-
-> **Tip:** Install [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) if you want the app to show up in your application menu automatically.
->
-> If the AppImage fails to start on a newer distro, run it with `--no-sandbox`, or install `libfuse2` (`sudo apt install libfuse2`) on Ubuntu 22.04+.
-
-#### Option 2: Debian package (Debian, Ubuntu, Mint, Pop!\_OS)
-
-```bash
-# Install (apt resolves dependencies automatically)
-sudo apt install ./Messenger-Desktop-Unofficial-2.1.0-amd64.deb
-
-# Launch from your app menu, or:
-messenger-desktop-unofficial
-```
-
-To remove it later: `sudo apt remove messenger-desktop-unofficial`
-
----
-
-### First-Time Login (All Versions)
-
-After launching the app for the first time:
-
-1. **Facebook Login Page** opens automatically
-2. **Enter your credentials** - Log in with your Facebook account
-3. **Wait for confirmation** - App detects successful login via session cookies
-4. **Automatic redirect** - You'll be redirected to Messenger in ~3 seconds
-5. **Done!** - Future launches go directly to Messenger
-
-> **Privacy Note:** Your credentials are sent directly to Facebook, not stored by this app. The app only stores a session cookie, just like a web browser.
-
----
-
-## ✨ Features
-
-### 🚀 **Smart First-Time Login**
-- Seamless Facebook authentication on first launch
-- Automatic session detection via secure cookies
-- Auto-redirect to Messenger after successful login
-- Persistent login - no need to sign in again
-- Direct credential submission to Facebook (never stored locally)
-
-### 🎨 **6 Premium Themes**
-Transform your Messenger with stunning color themes that apply everywhere:
-
-| Theme | Description | Best For |
-|-------|-------------|----------|
-| **🌙 Dark** | Classic dark mode with blue accents | Night usage, reducing eye strain |
-| **☀️ Light** | Soft gradients with warm colors | Daytime use, bright environments |
-| **🌲 Lush Forest** | Deep greens and emerald tones | Relaxation, nature lovers |
-| **⚫ Contrast** | Pure black & white with blue highlights | Maximum readability, accessibility |
-| **🏜️ Desert** | Warm browns and sandy oranges | Cozy, earthy atmosphere |
-| **⚡ Electric** | Vibrant purple and pink neon | Bold, energetic look |
-
-**Themes apply to:** Main window, title bar, video calls, and audio calls!
-
-### 🪟 **Custom Title Bar**
-- Minimalistic pixelated Messenger logo
-- Native window controls (minimize, maximize, close)
-- One-click theme switching with palette icon
-- **Do Not Disturb toggle** - Mute notifications without leaving the app
-- **Minimize to Tray toggle** - Choose behavior on window close
-- Smooth gradient backgrounds matching your theme
-- About button with GitHub link
-
-### 📞 **Enhanced Communication**
-- ✅ Full audio and video call support
-- ✅ **Screen sharing** with intuitive picker (entire screen or specific window)
-- ✅ Call windows inherit your chosen theme
-- ✅ Custom Messenger icon for all windows
-- ✅ Multiple call windows supported
-
-### 🖥️ **System Integration**
-- 📮 System tray icon with **live unread counter**
-- 💾 Window state memory (size, position, maximized state)
-- 🎛️ Configurable minimize-to-tray behavior
-- 🔔 Native desktop notifications
-- 🔕 **Do Not Disturb** - Mute notifications from the title bar, the tray menu or a shortcut
-- 🔗 External links always open in your default browser, never inside the app
-
-### ⌨️ **Keyboard Shortcuts**
-
-Shortcuts work everywhere in the window, including while the Messenger UI has focus.
+These work everywhere in the window, including while you're typing in Messenger.
 
 | Shortcut | Action |
-|----------|--------|
-| `Ctrl/Cmd` + `+` | Zoom in |
-| `Ctrl/Cmd` + `-` | Zoom out |
-| `Ctrl/Cmd` + `0` | Reset zoom to 100% |
-| `Ctrl/Cmd` + `R` / `F5` | Reload Messenger |
-| `Ctrl/Cmd` + `Shift` + `R` | Reload, ignoring cache |
+|---|---|
+| `Ctrl/Cmd` + `,` | Open Settings |
+| `Ctrl/Cmd` + `+` / `-` / `0` | Zoom in, zoom out, reset zoom |
+| `Ctrl/Cmd` + `R` or `F5` | Reload Messenger |
+| `Ctrl/Cmd` + `Shift` + `R` | Reload, ignoring the cache |
 | `Ctrl/Cmd` + `Shift` + `D` | Toggle Do Not Disturb |
 | `Ctrl/Cmd` + `Q` | Quit |
 
----
+### Calls and screen sharing
 
-## 🔒 Security & Privacy
+Audio and video calls work like on messenger.com, in their own window. Screen sharing lets you pick a whole screen or a single window.
 
-### Why This App is Safe
+<br>
 
-✅ **Open Source** - All code is public and auditable on GitHub
-✅ **No Data Collection** - Zero tracking, analytics, or data harvesting
-✅ **Sandboxed** - Web content runs in an isolated, secure container
-✅ **Direct to Facebook** - Credentials go straight to Facebook's servers
-✅ **Session-Only Storage** - Only saves your login session (like a browser)
-✅ **No Third-Party Services** - No external dependencies or cloud services
+## Installation
 
-### Security Features
+<details>
+<summary><b>Windows</b></summary>
 
-🛡️ **Context Isolation** - Prevents malicious code from accessing system APIs
-🛡️ **Content Security Policy** - Blocks XSS and injection attacks
-🛡️ **Rate Limiting** - Protects against message flooding
-🛡️ **Input Validation** - All internal messages are validated
-🛡️ **Navigation Control** - Only messenger.com and Facebook domains allowed
+<br>
 
-### What Data is Stored Locally?
+**Installer**
 
-The app stores these files on your computer:
+1. Download the [installer](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/download/v3.0.0/Messenger-Desktop-Unofficial-Setup-3.0.0.exe) and run it.
+2. If Windows shows **"Windows protected your PC"**, click **More info**, then **Run anyway**. The app is open source but not code-signed, which costs several hundred dollars a year.
+3. Follow the installer. The app opens when it's done and updates itself from then on.
 
-```
-Windows: C:\Users\YourName\AppData\Roaming\messenger-desktop-unofficial\
-macOS:   ~/Library/Application Support/messenger-desktop-unofficial/
-Linux:   ~/.config/messenger-desktop-unofficial/
+**Portable**
 
-├── config.json          (Your theme preference, minimize-to-tray setting)
-└── window-state.json    (Window size and position)
-```
+1. Download the zip for your processor (x64 or ARM64) and extract it anywhere, for example `C:\Apps\Messenger`.
+2. Run `Messenger Desktop (Unofficial).exe`.
 
-**That's it!** No chat logs, no passwords, no personal data.
+Portable copies don't create Start Menu entries and don't update themselves.
 
----
+</details>
 
-## 🎨 Themes
+<details>
+<summary><b>macOS</b></summary>
 
-Transform your Messenger experience with **6 stunning themes**!
+<br>
 
-### How to Change Themes
+1. Download the `.dmg` for your Mac (Apple menu → **About This Mac**: "Apple M…" means Apple Silicon, "Intel" means Intel).
+2. Open it and drag **Messenger Desktop (Unofficial)** into **Applications**.
+3. The app isn't notarized by Apple, so the first launch is blocked. Right-click the app → **Open** → **Open**, or run this once in Terminal:
 
-1. Look at the **title bar** (top of the window)
-2. Click the **🎨 palette icon** (next to minimize button)
-3. Theme cycles through all 6 options
-4. Your choice is **saved automatically**
+   ```bash
+   xattr -cr "/Applications/Messenger Desktop (Unofficial).app"
+   ```
 
-### Available Themes
+</details>
 
-| 🎨 Theme | Perfect For | Vibe |
-|---------|-------------|------|
-| **🌙 Dark** | Night usage, less eye strain | Cool blue accents on dark background |
-| **☀️ Light** | Daytime, bright environments | Soft gradients, warm and inviting |
-| **🌲 Lush Forest** | Relaxation, focus | Calming emerald greens |
-| **⚫ Contrast** | Maximum readability | Pure black & white with blue highlights |
-| **🏜️ Desert** | Cozy atmosphere | Warm sandy browns and oranges |
-| **⚡ Electric** | Bold, energetic feel | Vibrant purple and pink neon |
+<details>
+<summary><b>Linux</b></summary>
 
-> **Note:** Your theme applies to **everything** - title bar, chat background, and even video call windows!
+<br>
 
----
-
-## 💡 How to Use
-
-### System Tray
-
-The app sits in your **system tray** (bottom-right corner of Windows taskbar):
-
-- **Single click** - Show/hide the window
-- **Right click** - Open menu with options:
-  - Show Messenger
-  - Quit
-
-**Unread Badge** - Shows red number when you have unread messages!
-
-### Minimize to Tray Toggle
-
-Choose what happens when you click the **X** button:
-
-1. Look for the **tray icon** 📥 in the title bar (next to themes)
-2. Click to toggle:
-   - **Blue/Active** = Window minimizes to tray (stays running)
-   - **Gray/Inactive** = App completely quits
-3. Your choice is saved automatically
-
-### Video Calls & Screen Sharing
-
-1. **Start a call** - Click video/audio call button in Messenger
-2. **Screen share** - Click share screen button in the call window
-3. **Choose what to share**:
-   - 🖥️ **Entire Screen** - Share everything
-   - 🪟 **Specific Window** - Share just one app
-4. **Click to select** - Start sharing!
-
----
-
-## ❓ FAQ (Frequently Asked Questions)
-
-### Is this safe to use?
-**Yes!** The app is completely open source (all code is visible on GitHub). It doesn't collect any data, doesn't store your password, and only saves your login session cookie - exactly like using Messenger in a web browser.
-
-### Do I need to log in every time?
-**No!** After your first login, the app remembers your session. You'll stay logged in until you manually log out.
-
-### Can I use multiple accounts?
-Not currently. You'll need to log out and log back in to switch accounts. Multi-account support may come in a future update!
-
-### Why does Windows show a security warning?
-The app is not "code signed" (digital signature that costs $300+/year). This is normal for free open-source software. Click "More info" → "Run anyway" to install.
-
-### Will my messages be private?
-**Absolutely!** This app is just a window to messenger.com - your messages go directly to Facebook's servers, exactly like using Messenger in Chrome or Edge. The app doesn't read, store, or send your messages anywhere else.
-
-### Does this work with Messenger Kids or Business?
-This app is designed for personal Facebook Messenger accounts only.
-
-### Can I use this on Mac or Linux?
-**Yes!** As of v2.1.0 there are builds for macOS (Apple Silicon and Intel `.dmg`) and Linux (AppImage for x86_64 and ARM64, plus a `.deb` package). See [Download](#-download).
-
-### Why does macOS say the app "cannot be opened"?
-The app isn't notarized by Apple (that requires a paid developer account). Right-click the app → **Open** → **Open**, or run `xattr -cr "/Applications/Messenger Desktop (Unofficial).app"` once. You only need to do this the first time.
-
-### Which Mac download do I need?
-Apple menu →  **About This Mac**. If it says Apple M1/M2/M3/M4, use the **Apple Silicon** build; if it says Intel, use the **Intel** build.
-
-### AppImage vs .deb on Linux — which one?
-Use the **`.deb`** on Debian/Ubuntu-based distros for a normal system install with a menu entry. Use the **AppImage** anywhere else, or if you want a single portable file with no installation.
-
-### How do I uninstall?
-- **Windows:** Settings → Apps → find "Messenger Desktop (Unofficial)" → Uninstall
-- **macOS:** Drag the app from **Applications** to the Trash
-- **Linux (.deb):** `sudo apt remove messenger-desktop-unofficial`
-- **Linux (AppImage):** Just delete the `.AppImage` file
-
-### How do I update to a new version?
-The app checks for updates automatically and can download and install them for you (Windows, macOS, and Linux AppImage). You can also trigger a check manually from the tray menu → **Check for Updates**, or just download the newest build from [Releases](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest). `.deb` installs are updated by downloading and installing the new package.
-
----
-
-## 🛠️ Troubleshooting
-
-### 🔴 Problem: "Windows protected your PC" warning
-
-**Solution:**
-1. Click "More info"
-2. Click "Run anyway"
-3. This is normal for unsigned apps - the app is safe (open source code)
-
----
-
-### 🔴 Problem: App won't start or crashes immediately
-
-**Solution 1:** Restart your computer
-**Solution 2:** Uninstall and reinstall:
-1. Windows Settings → Apps → Uninstall
-2. Download fresh installer
-3. Install again
-
----
-
-### 🔴 Problem: Can't log in / Login page won't load
-
-**Solution:**
-1. Check your internet connection
-2. Try restarting the app
-3. If still not working, check if Facebook.com works in your web browser
-4. Make sure you're not behind a corporate firewall blocking Facebook
-
----
-
-### 🔴 Problem: Video calls not working
-
-**Solution:**
-1. Allow camera/microphone permissions:
-   - Look for permission popup from Windows
-   - Click "Allow"
-2. Check Windows Settings → Privacy → Camera & Microphone
-3. Make sure Messenger Desktop is allowed
-
----
-
-### 🔴 Problem: Screen sharing not working
-
-**Solution:**
-1. Restart the app
-2. Make sure you have Windows 10 version 1809 or newer
-3. Try sharing a specific window instead of entire screen
-
----
-
-### 🔴 Problem: Theme not changing
-
-**Solution:**
-1. Try clicking the palette icon multiple times
-2. Restart the app - your theme should be remembered
-3. If still broken, reinstall the app
-
----
-
-### 🔴 Problem: App running slow
-
-**Solution:**
-1. Close and reopen the app (File → Quit)
-2. Check Task Manager - close other heavy apps
-3. Try the "Contrast" theme (uses less resources)
-
----
-
-### 🔴 Problem: Can't see unread message count
-
-**Solution:**
-1. Refresh the app (Ctrl + R)
-2. Make sure you have unread messages
-3. Try sending a test message to yourself
-
----
-
-### 🔴 Problem: Notifications not showing
-
-**Solution:**
-1. Windows Settings → System → Notifications
-2. Make sure "Messenger Desktop (Unofficial)" is enabled
-3. Check "Do Not Disturb" mode is off
-
----
-
-### Still having issues?
-
-[Open an issue on GitHub](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues) with:
-- What went wrong
-- What you tried
-- Screenshots (if applicable)
-
----
-
-## 📊 Reliability & Performance
-
-### App Performance
-
-✅ **Lightweight** - Uses ~150-250 MB RAM (similar to a browser tab)
-✅ **Fast Startup** - Launches in 2-3 seconds
-✅ **Stable** - Built on Electron 38 (same tech as VS Code, Discord, Slack)
-✅ **Cross-Platform** - Windows, macOS, and Linux from the same codebase
-✅ **Updates** - Automatic update checks with one-click install
-
-### Connection Reliability
-
-✅ **Always Online** - Stays connected as long as you have internet
-✅ **Auto-Reconnect** - Automatically reconnects if connection drops
-✅ **Offline Mode** - Shows connection status
-
-### Data Usage
-
-- **Text messages** - Minimal data (same as web browser)
-- **Voice calls** - ~500 KB per minute
-- **Video calls** - ~3-5 MB per minute
-- **Screen sharing** - ~5-10 MB per minute
-
----
-
-## 👨‍💻 For Developers
-
-Want to contribute or build from source? Check out the [Developer Guide](DEVELOPER.md) (coming soon)
-
-### Quick Build
+**AppImage** (any distribution)
 
 ```bash
-# Clone repo
-git clone https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial.git
-cd Messenger-Desktop-Client-Unofficial
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Run
-npm start
-
-# Build installers
-npm run dist:win     # Windows: NSIS installer (x64 + ARM64) and portable zips
-npm run dist:mac     # macOS: .dmg for Apple Silicon and Intel
-npm run dist:linux   # Linux: AppImage (x86_64, ARM64) and .deb (amd64)
+chmod +x Messenger-Desktop-Unofficial-3.0.0-x86_64.AppImage
+./Messenger-Desktop-Unofficial-3.0.0-x86_64.AppImage
 ```
 
-> Each target has to be built on its own platform (macOS builds need a Mac). The published releases are produced by GitHub Actions across all three runners.
+On Ubuntu 22.04 and newer you may need `sudo apt install libfuse2` first. [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) adds it to your app menu.
 
----
+**Debian package** (Debian, Ubuntu, Mint, Pop!\_OS)
 
-## 🤝 Contributing
+```bash
+sudo apt install ./Messenger-Desktop-Unofficial-3.0.0-amd64.deb
+```
 
-Contributions are welcome! Read the **[Contributing Guidelines](CONTRIBUTING.md)** for
-development setup, project structure, coding standards, and the security rules
-that pull requests need to respect.
+Remove it later with `sudo apt remove messenger-desktop-unofficial`.
 
-The short version:
+</details>
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+<details>
+<summary><b>First login</b></summary>
 
-Please ensure:
-- Code passes `npm test` (typecheck + lint)
-- TypeScript types are properly defined — no `any`
-- No security vulnerabilities are introduced
-- Features are documented in the README
+<br>
 
-Everyone taking part is expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+The app opens Messenger's own login page. Your email and password go straight to Facebook; the app never sees or stores them. It keeps only the login session, like a browser does, so you stay signed in next time.
 
-### 🔐 Found a security issue?
+</details>
 
-**Don't open a public issue.** See the [Security Policy](SECURITY.md) for how to
-report it privately.
+<br>
 
----
+## Privacy and security
 
-## 📄 License
+- **Open source**: every line of code is on GitHub.
+- **No tracking**: the app talks to Facebook, and to GitHub to check for updates. Nothing else.
+- **Sandboxed**: messenger.com runs isolated from your computer, with no access to your files or system.
+- **Your login stays with Facebook**: the login page is Facebook's own.
+- **Stays in the app**: only Messenger and Facebook load inside the window; every other link opens in your browser.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+What the app stores on your computer:
 
----
+| | |
+|---|---|
+| **Settings** | Your theme and preferences, plus the app lock PIN as a salted hash only |
+| **Window state** | Size and position |
+| **Messenger session** | Your login and Messenger's own cache, like a browser profile |
 
-## 🙏 Acknowledgments
+It lives in `%APPDATA%\messenger-desktop-unofficial` on Windows, `~/Library/Application Support/messenger-desktop-unofficial` on macOS and `~/.config/messenger-desktop-unofficial` on Linux.
 
-- Built with [Electron](https://www.electronjs.org/)
-- Icons generated with [sharp](https://sharp.pixelplumbing.com/)
-- Theme system designed for aesthetics and usability
-- Inspired by the open source community
+Found a security issue? Please don't open a public issue. See the [Security Policy](SECURITY.md).
 
----
+<br>
 
-## 💬 Support & Community
+## FAQ
 
-Need help or want to chat?
+<details>
+<summary><b>Is this safe to use?</b></summary>
 
-- 🐛 **Report Bugs**: [Open an Issue](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues)
-- 💡 **Feature Requests**: [Request a Feature](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues/new)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/discussions)
-- 🔐 **Security Issues**: [Security Policy](SECURITY.md) - report privately, not in an issue
-- 🤝 **Want to Contribute?**: [Contributing Guidelines](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
-- ⭐ **Show Support**: Star the repo if you find it useful!
+<br>
 
----
+Yes. The code is open for anyone to read, the app collects no data, and your password goes straight to Facebook. Messenger runs in a sandbox, exactly like in a browser tab.
 
-<div align="center">
+</details>
 
-### ⚠️ Important Disclaimer
+<details>
+<summary><b>Do I need to log in every time?</b></summary>
 
-This is an **unofficial** desktop client for Facebook Messenger.
+<br>
 
-**Not affiliated with, endorsed by, or connected to Meta/Facebook.**
+No. After your first login the app remembers your session until you log out. Tick **Keep me signed in** on the login page to stay signed in across restarts.
 
-This project is open source (MIT License) and provided as-is for personal use.
+</details>
 
-Facebook® and Messenger® are registered trademarks of Meta Platforms, Inc.
+<details>
+<summary><b>Why do notifications look different on macOS and Linux?</b></summary>
 
----
+<br>
 
-Made with ❤️ by the open source community
+The Discord-style cards use Windows' notification layout. macOS and Linux show your system's standard notifications, with the same Do Not Disturb, hidden previews and call handling. macOS decides itself how long a banner stays up.
 
-⭐ **[Star this project](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial)** if you find it useful!
+</details>
 
-**[⬆ Back to Top](#messenger-desktop-unofficial)**
+<details>
+<summary><b>What happens if I forget my app lock PIN?</b></summary>
 
-</div>
+<br>
+
+Click **Forgot PIN?** on the lock screen. After you confirm, the app signs you out of Messenger on this computer, removes the lock and takes you to the login page. Your account itself is untouched; just sign in again.
+
+</details>
+
+<details>
+<summary><b>Can I use more than one account?</b></summary>
+
+<br>
+
+Not yet. Log out and back in to switch accounts.
+
+</details>
+
+<details>
+<summary><b>How do I update?</b></summary>
+
+<br>
+
+The Windows installer and the Linux AppImage check for updates by themselves and ask you to restart when one is ready. You can also check from **Settings → About** or the tray menu. On macOS, and for portable copies and the `.deb`, download the new version from the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest).
+
+</details>
+
+<details>
+<summary><b>How do I uninstall?</b></summary>
+
+<br>
+
+- **Windows:** Settings → Apps → Messenger Desktop (Unofficial) → Uninstall
+- **macOS:** drag the app from Applications to the Trash
+- **Linux:** delete the AppImage, or `sudo apt remove messenger-desktop-unofficial`
+
+</details>
+
+<br>
+
+## Troubleshooting
+
+<details>
+<summary><b>Notifications don't show up</b></summary>
+
+<br>
+
+1. Make sure Do Not Disturb is off (the bell in the title bar).
+2. On Windows, open Settings → System → Notifications and make sure **Messenger Desktop (Unofficial)** is allowed, and that Windows' own Do Not Disturb or Focus is off.
+3. If they disappear too fast or stay too long, toggle **Show notifications for 8 seconds** in Settings → Notifications.
+
+</details>
+
+<details>
+<summary><b>The login page won't load</b></summary>
+
+<br>
+
+1. Check your connection. If you're offline, the app shows its offline screen and reloads Messenger once you're back.
+2. Check that facebook.com opens in your browser; some work or school networks block it.
+3. Press `Ctrl` + `Shift` + `R` to reload without the cache.
+
+</details>
+
+<details>
+<summary><b>Camera, microphone or screen sharing doesn't work</b></summary>
+
+<br>
+
+1. On Windows, open Settings → Privacy & security → Camera and Microphone, and allow desktop apps.
+2. On macOS, allow the app under System Settings → Privacy & Security.
+3. For screen sharing, try sharing a single window instead of the whole screen.
+
+</details>
+
+<details>
+<summary><b>The app won't start</b></summary>
+
+<br>
+
+1. Check that it isn't already running in the tray.
+2. Restart your computer.
+3. Reinstall the latest version from the [Releases page](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/releases/latest).
+
+</details>
+
+Still stuck? [Open an issue](https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial/issues) with what happened, what you tried and a screenshot if you can.
+
+<br>
+
+## Build from source
+
+You need [Node.js](https://nodejs.org/) 24 or newer.
+
+```bash
+git clone https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial.git
+cd Messenger-Desktop-Client-Unofficial
+npm install
+
+npm run dev          # build and run
+npm test             # typecheck and lint
+
+npm run dist:win     # Windows installer (x64 + ARM64)
+npm run dist:mac     # macOS .dmg (Apple Silicon and Intel)
+npm run dist:linux   # Linux AppImage (x86_64, ARM64) and .deb
+```
+
+Each platform's packages have to be built on that platform. Published releases are built by GitHub Actions on all three.
+
+<br>
+
+## Contributing
+
+Contributions are welcome. Read the [Contributing Guidelines](CONTRIBUTING.md) for the setup, project structure and the security rules pull requests need to follow, and please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+1. Fork the repository and create a branch
+2. Make your change and run `npm test`
+3. Open a pull request
+
+<br>
+
+## License
+
+[MIT](LICENSE). Built with [Electron](https://www.electronjs.org/).
+
+Messenger Desktop is an unofficial app and is not affiliated with, endorsed by or connected to Meta Platforms, Inc. Messenger and Facebook are trademarks of Meta Platforms, Inc.
