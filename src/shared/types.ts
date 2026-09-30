@@ -29,9 +29,6 @@ export const IPC_CHANNELS = {
 
   // Error reporting from preload
   ERROR_REPORT: 'error:report',
-
-  // Theme change from titlebar
-  THEME_CHANGE: 'theme:change',
 } as const;
 
 /**
@@ -105,7 +102,14 @@ export type ThemeSetting =
   | 'lush-forest'
   | 'contrast'
   | 'desert'
-  | 'electric';
+  | 'electric'
+  | 'northern-lights'
+  | 'sakura-bloom'
+  | 'deep-ocean'
+  | 'cosmic-nebula'
+  | 'sunset-drive'
+  | 'arctic-frost'
+  | 'neon-city';
 
 /** All valid theme settings (used for IPC validation). */
 export const VALID_THEMES: readonly ThemeSetting[] = [
@@ -116,7 +120,123 @@ export const VALID_THEMES: readonly ThemeSetting[] = [
   'contrast',
   'desert',
   'electric',
+  'northern-lights',
+  'sakura-bloom',
+  'deep-ocean',
+  'cosmic-nebula',
+  'sunset-drive',
+  'arctic-frost',
+  'neon-city',
 ] as const;
+
+/**
+ * When the app lock asks for the PIN.
+ * off    - never
+ * launch - when the app starts
+ * open   - when the app starts, and whenever the window comes back
+ *          from the tray or the taskbar
+ * away   - when the app starts, and after the window has gone
+ *          unused for `awayMinutes`
+ * 'open' and 'away' also lock when the computer locks or goes to sleep.
+ */
+export type AppLockMode = 'off' | 'launch' | 'open' | 'away';
+
+/** All valid lock modes (used for IPC validation). */
+export const VALID_LOCK_MODES: readonly AppLockMode[] = ['off', 'launch', 'open', 'away'] as const;
+
+/** Choices for "lock after I've been away for". */
+export const LOCK_AWAY_MINUTES: readonly number[] = [1, 5, 15, 30, 60] as const;
+
+/**
+ * Everything the settings page shows. The main process owns it; the
+ * title bar document reads it and asks for changes.
+ */
+export interface AppSettings {
+  theme: ThemeSetting;
+  doNotDisturb: boolean;
+  /** Keep message notifications up for 8 seconds */
+  keepNotificationsOnScreen: boolean;
+  /** Show "New message" instead of the text */
+  hideMessagePreviews: boolean;
+  /** No message notifications while a call window is open */
+  pauseNotificationsDuringCalls: boolean;
+  minimizeToTray: boolean;
+  startWithSystem: boolean;
+  appLock: {
+    mode: AppLockMode;
+    awayMinutes: number;
+    hasPin: boolean;
+  };
+}
+
+/** Settings the settings page may change directly (validated in main). */
+export type BooleanSettingKey =
+  | 'doNotDisturb'
+  | 'keepNotificationsOnScreen'
+  | 'hideMessagePreviews'
+  | 'pauseNotificationsDuringCalls'
+  | 'minimizeToTray'
+  | 'startWithSystem';
+
+/** Outcome of an app lock request (unlock, PIN change, mode change). */
+export interface LockResult {
+  ok: boolean;
+  /** Why it failed: 'wrong-pin', 'invalid-pin', 'no-pin', 'locked' */
+  error?: string;
+  /** Too many wrong PINs: wait this long before trying again */
+  retryAfterMs?: number;
+}
+
+/** A themed message box, drawn by the title bar document. */
+export interface AppDialogOptions {
+  /** Picks the icon and its colour */
+  type: 'info' | 'success' | 'warning' | 'error' | 'question' | 'update';
+  title: string;
+  message: string;
+  detail?: string;
+  buttons: string[];
+  /** Button for Enter (drawn as the main button) */
+  defaultId?: number;
+  /** Button for Esc and clicks outside */
+  cancelId?: number;
+  /** Button drawn in red, for something that can't be undone */
+  dangerId?: number;
+}
+
+/**
+ * Short version for display: trailing .0 parts dropped, so
+ * 3.0.0 -> 3, 3.1.0 -> 3.1, 3.1.2 -> 3.1.2.
+ */
+export function toDisplayVersion(version: string): string {
+  return version.replace(/(\.0)+$/, '');
+}
+
+/** App and runtime versions for the title bar and the About section. */
+export interface AppInfo {
+  /** Full version, e.g. 3.0.0 */
+  version: string;
+  /** Short version with trailing .0 parts dropped, e.g. 3 */
+  displayVersion: string;
+  electron: string;
+  chrome: string;
+  platform: 'win32' | 'darwin' | 'linux';
+}
+
+/**
+ * A notification Messenger's page asked for, relayed to the main
+ * process to be shown natively.
+ */
+export interface NotificationRequest {
+  /** The page script's id for it, used to relay events back */
+  id: number;
+  title: string;
+  body: string;
+  /** Avatar URL (https or data:image) - may be empty */
+  icon: string;
+  /** A newer notification with the same tag replaces this one */
+  tag: string;
+  silent: boolean;
+}
 
 /**
  * Payload for theme changes.
@@ -132,6 +252,21 @@ export interface ThemePayload {
 export interface NetworkStatusPayload {
   /** Whether app is online */
   online: boolean;
+}
+
+/**
+ * Whether Messenger could be reached, sent to the title bar so it can
+ * show or hide the offline screen.
+ */
+export interface ConnectionStatus {
+  /**
+   * online     - Messenger is loaded (offline screen hidden)
+   * offline    - the last load failed; retrying automatically
+   * connecting - a retry is in flight
+   */
+  state: 'online' | 'offline' | 'connecting';
+  /** Whether the OS reports any network connection at all */
+  networkAvailable: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -208,6 +343,19 @@ export interface MessengerBridgeAPI {
    * Used by the notification click handler.
    */
   focusWindow: () => void;
+
+  /**
+   * Show a notification natively (see main/notifications.ts). Events
+   * come back through window.__mdwNotificationEvent(id, type).
+   * Fire-and-forget, rate-limited in the main process.
+   */
+  showNotification: (request: NotificationRequest) => void;
+
+  /**
+   * Close a notification shown with showNotification.
+   * Fire-and-forget, rate-limited in the main process.
+   */
+  closeNotification: (id: number) => void;
 
   /**
    * Get current platform for platform-specific behavior.

@@ -6,12 +6,24 @@
  * - About dialog
  */
 
-import { app, Menu, dialog, BrowserWindow, WebContents, WebContentsView } from 'electron';
+import { app, Menu, BrowserWindow, WebContents, WebContentsView } from 'electron';
 import * as dnd from './do-not-disturb';
+import { showAppDialog } from './app-dialog';
+import { toDisplayVersion } from '../shared/types';
 
 let messengerView: WebContentsView | null = null;
 let mainWindow: BrowserWindow | null = null;
 let currentZoomLevel = 0;
+
+// Opens the settings page (set by main)
+let openSettingsHandler: (() => void) | null = null;
+
+/**
+ * Set what Ctrl/Cmd+, does (open the settings page)
+ */
+export function setOpenSettingsHandler(handler: () => void): void {
+  openSettingsHandler = handler;
+}
 
 /**
  * Set the messenger view reference for zoom controls
@@ -23,21 +35,15 @@ export function setMessengerView(view: WebContentsView): void {
 /**
  * Show About dialog
  */
-function showAboutDialog(window: BrowserWindow): void {
-  void dialog.showMessageBox(window, {
+function showAboutDialog(): void {
+  void showAppDialog({
     type: 'info',
-    title: 'About Messenger Desktop (Unofficial)',
-    message: 'Messenger Desktop (Unofficial)',
-    detail: `Version: ${app.getVersion()}
-Electron: ${process.versions.electron}
-Chrome: ${process.versions.chrome}
-Node: ${process.versions.node}
-
-A secure desktop client for Facebook Messenger with native OS integration.
-
-© 2025`,
+    title: 'About Messenger Desktop',
+    message: `Messenger Desktop v${toDisplayVersion(app.getVersion())} - an unofficial desktop app for Facebook Messenger.`,
+    detail: `Version ${app.getVersion()} · Electron ${process.versions.electron} · Chromium ${process.versions.chrome.split('.')[0]}. Not affiliated with or endorsed by Meta.`,
     buttons: ['OK'],
-    icon: undefined,
+    defaultId: 0,
+    cancelId: 0,
   });
 }
 
@@ -159,6 +165,11 @@ export function registerShortcuts(contents: WebContents): void {
         }
         break;
 
+      case ',':
+        event.preventDefault();
+        openSettingsHandler?.();
+        break;
+
       case 'q':
         event.preventDefault();
         app.quit();
@@ -172,7 +183,7 @@ export function registerShortcuts(contents: WebContents): void {
 /**
  * Create a minimal context menu for right-click
  */
-export function createContextMenu(window: BrowserWindow): Menu {
+export function createContextMenu(): Menu {
   const contextMenuTemplate: Electron.MenuItemConstructorOptions[] = [
     {
       label: 'Zoom In',
@@ -202,7 +213,7 @@ export function createContextMenu(window: BrowserWindow): Menu {
     { type: 'separator' as const },
     {
       label: 'About Messenger Desktop (Unofficial)',
-      click: () => showAboutDialog(window)
+      click: () => showAboutDialog()
     },
     { type: 'separator' as const },
     {
@@ -231,7 +242,7 @@ export function createApplicationMenu(window: BrowserWindow): void {
         submenu: [
           {
             label: 'About Messenger Desktop (Unofficial)',
-            click: () => showAboutDialog(window)
+            click: () => showAboutDialog()
           },
           { type: 'separator' as const },
           {

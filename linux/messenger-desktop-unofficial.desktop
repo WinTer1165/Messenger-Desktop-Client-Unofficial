@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Messenger Desktop (Unofficial)
+Exec=AppRun --no-sandbox %U
+Terminal=false
+Type=Application
+Icon=messenger-desktop-unofficial
+StartupWMClass=Messenger Desktop (Unofficial)
+Comment=Messenger Desktop (Unofficial) - Secure desktop client for Facebook Messenger with native OS integration
+Categories=Network;

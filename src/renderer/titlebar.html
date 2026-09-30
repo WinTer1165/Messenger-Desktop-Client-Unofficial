@@ -11,607 +11,1520 @@
             box-sizing: border-box;
         }
 
+        /*
+         * This document fills the whole window. The title bar is its top
+         * 40px; the Messenger view covers everything below, except while
+         * one of the screens here takes its place (the main process hides
+         * the view): the lock screen, the settings page or the offline
+         * screen.
+         *
+         * No backdrop filters, shadows or looping animations on the title
+         * bar: it is always on screen, and those kept the GPU drawing
+         * frames even while the app sat idle.
+         */
+
+        /* ── Theme tokens ──────────────────────────────────────────
+           Keyed on data-theme on any element, so the theme picker's
+           previews render each theme with its real colours. The bar
+           keeps a gradient; the screens use a flat tone of the theme. */
+
+        [data-theme] {
+            color-scheme: dark;
+            --dnd-on-bg: rgba(248, 113, 113, 0.24);
+            --dnd-on-fg: #fecaca;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.09);
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --switch-off: rgba(255, 255, 255, 0.22);
+            --danger: #fca5a5;
+            /* Opaque surfaces for pop-up menus and dialogs */
+            --menu-bg: color-mix(in srgb, var(--page-bg), #ffffff 8%);
+            --menu-hover: color-mix(in srgb, var(--accent) 22%, transparent);
+            --dialog-bg: color-mix(in srgb, var(--page-bg), #ffffff 5%);
+        }
+
+        [data-theme="light"],
+        [data-theme="sakura-bloom"],
+        [data-theme="arctic-frost"] {
+            color-scheme: light;
+            --dnd-on-bg: rgba(220, 38, 38, 0.12);
+            --dnd-on-fg: #dc2626;
+            --card-bg: #ffffff;
+            --card-border: rgba(15, 23, 42, 0.09);
+            --input-bg: rgba(15, 23, 42, 0.04);
+            --switch-off: rgba(15, 23, 42, 0.2);
+            --danger: #dc2626;
+            --menu-bg: #ffffff;
+            --menu-hover: color-mix(in srgb, var(--accent) 12%, transparent);
+            --dialog-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bar-bg: linear-gradient(135deg, #1a1d29 0%, #2d3748 50%, #1e3a5f 100%);
+            --fg: #ffffff;
+            --fg-muted: rgba(255, 255, 255, 0.62);
+            --hover: rgba(255, 255, 255, 0.1);
+            --press: rgba(255, 255, 255, 0.18);
+            --divider: rgba(255, 255, 255, 0.18);
+            --page-bg: #15171e;
+            --page-fg: #f1f5f9;
+            --page-muted: #94a3b8;
+            --page-icon-bg: rgba(255, 255, 255, 0.06);
+            --accent: #0866ff;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="light"] {
+            --bar-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            --fg: #1e293b;
+            --fg-muted: #64748b;
+            --hover: rgba(15, 23, 42, 0.07);
+            --press: rgba(15, 23, 42, 0.13);
+            --divider: rgba(15, 23, 42, 0.15);
+            --page-bg: #f3f5f9;
+            --page-fg: #0f172a;
+            --page-muted: #475569;
+            --page-icon-bg: rgba(15, 23, 42, 0.06);
+            --accent: #0866ff;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="contrast"] {
+            --bar-bg: linear-gradient(135deg, #000000 0%, #0f0f0f 50%, #1a1a1a 100%);
+            --fg: #00ff41;
+            --fg-muted: rgba(0, 255, 65, 0.65);
+            --hover: rgba(0, 255, 65, 0.12);
+            --press: rgba(0, 255, 65, 0.22);
+            --divider: rgba(0, 255, 65, 0.35);
+            --page-bg: #000000;
+            --page-fg: #00ff41;
+            --page-muted: #00c932;
+            --page-icon-bg: rgba(0, 255, 65, 0.1);
+            --accent: #00ff41;
+            --accent-fg: #000000;
+            --card-border: rgba(0, 255, 65, 0.3);
+        }
+
+        [data-theme="lush-forest"] {
+            --bar-bg: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+            --fg: #ecfdf5;
+            --fg-muted: rgba(236, 253, 245, 0.7);
+            --hover: rgba(255, 255, 255, 0.14);
+            --press: rgba(255, 255, 255, 0.22);
+            --divider: rgba(236, 253, 245, 0.3);
+            --page-bg: #052e24;
+            --page-fg: #ecfdf5;
+            --page-muted: #a7f3d0;
+            --page-icon-bg: rgba(236, 253, 245, 0.08);
+            --accent: #047857;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="desert"] {
+            --bar-bg: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%);
+            --fg: #fffbeb;
+            --fg-muted: rgba(255, 251, 235, 0.75);
+            --hover: rgba(255, 255, 255, 0.16);
+            --press: rgba(255, 255, 255, 0.24);
+            --divider: rgba(255, 251, 235, 0.35);
+            --page-bg: #2a1206;
+            --page-fg: #fffbeb;
+            --page-muted: #fdba74;
+            --page-icon-bg: rgba(255, 251, 235, 0.08);
+            --accent: #c2410c;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="electric"] {
+            --bar-bg: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%);
+            --fg: #faf5ff;
+            --fg-muted: rgba(250, 245, 255, 0.72);
+            --hover: rgba(255, 255, 255, 0.14);
+            --press: rgba(255, 255, 255, 0.22);
+            --divider: rgba(250, 245, 255, 0.32);
+            --page-bg: #1c0b3a;
+            --page-fg: #faf5ff;
+            --page-muted: #c4b5fd;
+            --page-icon-bg: rgba(250, 245, 255, 0.08);
+            --accent: #7c3aed;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="northern-lights"] {
+            --bar-bg: linear-gradient(135deg, #0b1320 0%, #0e3b43 45%, #11998e 78%, #38ef7d 100%);
+            --fg: #eafff7;
+            --fg-muted: rgba(234, 255, 247, 0.68);
+            --hover: rgba(255, 255, 255, 0.12);
+            --press: rgba(255, 255, 255, 0.2);
+            --divider: rgba(234, 255, 247, 0.25);
+            --page-bg: #07141a;
+            --page-fg: #eafff7;
+            --page-muted: #7fd9c0;
+            --page-icon-bg: rgba(127, 217, 192, 0.1);
+            --accent: #0d9488;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="sakura-bloom"] {
+            --bar-bg: linear-gradient(135deg, #fff1f7 0%, #fbcfe8 55%, #f9a8d4 100%);
+            --fg: #831843;
+            --fg-muted: #b0567f;
+            --hover: rgba(131, 24, 67, 0.08);
+            --press: rgba(131, 24, 67, 0.15);
+            --divider: rgba(131, 24, 67, 0.2);
+            --page-bg: #fff5fa;
+            --page-fg: #500724;
+            --page-muted: #9d4b73;
+            --page-icon-bg: rgba(219, 39, 119, 0.08);
+            --accent: #db2777;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="deep-ocean"] {
+            --bar-bg: linear-gradient(135deg, #020617 0%, #0c4a6e 60%, #0369a1 100%);
+            --fg: #e0f2fe;
+            --fg-muted: rgba(224, 242, 254, 0.68);
+            --hover: rgba(255, 255, 255, 0.12);
+            --press: rgba(255, 255, 255, 0.2);
+            --divider: rgba(224, 242, 254, 0.25);
+            --page-bg: #04111f;
+            --page-fg: #e0f2fe;
+            --page-muted: #7dd3fc;
+            --page-icon-bg: rgba(125, 211, 252, 0.1);
+            --accent: #0284c7;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="cosmic-nebula"] {
+            --bar-bg: linear-gradient(135deg, #120424 0%, #3b0764 45%, #86198f 80%, #db2777 100%);
+            --fg: #fdf4ff;
+            --fg-muted: rgba(253, 244, 255, 0.7);
+            --hover: rgba(255, 255, 255, 0.12);
+            --press: rgba(255, 255, 255, 0.2);
+            --divider: rgba(253, 244, 255, 0.25);
+            --page-bg: #10061d;
+            --page-fg: #fdf4ff;
+            --page-muted: #e9a8f5;
+            --page-icon-bg: rgba(233, 168, 245, 0.1);
+            --accent: #a21caf;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="sunset-drive"] {
+            --bar-bg: linear-gradient(135deg, #1e1b4b 0%, #7e22ce 40%, #db2777 72%, #f97316 100%);
+            --fg: #fff7ed;
+            --fg-muted: rgba(255, 247, 237, 0.72);
+            --hover: rgba(255, 255, 255, 0.14);
+            --press: rgba(255, 255, 255, 0.22);
+            --divider: rgba(255, 247, 237, 0.3);
+            --page-bg: #150f2e;
+            --page-fg: #fff7ed;
+            --page-muted: #fbb6ce;
+            --page-icon-bg: rgba(251, 182, 206, 0.1);
+            --accent: #db2777;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="arctic-frost"] {
+            --bar-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 55%, #bae6fd 100%);
+            --fg: #0c4a6e;
+            --fg-muted: #3f6c8a;
+            --hover: rgba(12, 74, 110, 0.08);
+            --press: rgba(12, 74, 110, 0.15);
+            --divider: rgba(12, 74, 110, 0.2);
+            --page-bg: #f4faff;
+            --page-fg: #082f49;
+            --page-muted: #3f6c8a;
+            --page-icon-bg: rgba(2, 132, 199, 0.08);
+            --accent: #0284c7;
+            --accent-fg: #ffffff;
+        }
+
+        [data-theme="neon-city"] {
+            --bar-bg: linear-gradient(135deg, #0a0a12 0%, #1a0b2e 55%, #2d0b3a 100%);
+            --fg: #67e8f9;
+            --fg-muted: rgba(103, 232, 249, 0.65);
+            --hover: rgba(236, 72, 153, 0.18);
+            --press: rgba(236, 72, 153, 0.28);
+            --divider: rgba(236, 72, 153, 0.4);
+            --page-bg: #07070d;
+            --page-fg: #e0f7ff;
+            --page-muted: #f0abfc;
+            --page-icon-bg: rgba(236, 72, 153, 0.12);
+            --accent: #ec4899;
+            --accent-fg: #ffffff;
+            --card-border: rgba(236, 72, 153, 0.25);
+        }
+
+        /* ── Base ──────────────────────────────────────────────── */
+
+        html,
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            -webkit-app-region: drag;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             user-select: none;
+            overflow: hidden;
+            background: var(--page-bg);
+            color: var(--fg);
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+            color: inherit;
+        }
+
+        button {
+            border: none;
+            background: transparent;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* ── Title bar ─────────────────────────────────────────── */
+
+        .titlebar {
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            padding-left: 12px;
+            background: var(--bar-bg);
+            color: var(--fg);
+            -webkit-app-region: drag;
         }
 
-        /* Theme Styles */
-        body[data-theme="dark"] {
-            background: linear-gradient(135deg, #1a1d29 0%, #2d3748 50%, #1e3a5f 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
         }
 
-        body[data-theme="light"] {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
-            color: #1e293b;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        .app-icon {
+            width: 22px;
+            height: 22px;
+            flex: none;
         }
 
-        body[data-theme="contrast"] {
-            background: linear-gradient(135deg, #000000 0%, #0f0f0f 50%, #1a1a1a 100%);
-            color: #00ff41;
-            box-shadow: 0 4px 20px rgba(0, 255, 65, 0.5), inset 0 1px 0 rgba(0, 255, 65, 0.3);
-        }
-
-        body[data-theme="lush-forest"] {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
-            color: #ecfdf5;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(236, 253, 245, 0.2);
-        }
-
-        body[data-theme="desert"] {
-            background: linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%);
-            color: #fffbeb;
-            box-shadow: 0 4px 20px rgba(234, 88, 12, 0.6), inset 0 1px 0 rgba(255, 251, 235, 0.2);
-        }
-
-        body[data-theme="electric"] {
-            background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%);
-            color: #faf5ff;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.7), inset 0 1px 0 rgba(250, 245, 255, 0.2);
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg,
-                rgba(255, 255, 255, 0.1) 0%,
-                transparent 50%,
-                rgba(255, 255, 255, 0.05) 100%);
-            pointer-events: none;
-        }
-
-        body[data-theme="light"]::before {
-            background: linear-gradient(90deg,
-                rgba(0, 0, 0, 0.05) 0%,
-                transparent 50%,
-                rgba(0, 0, 0, 0.02) 100%);
-        }
-
-        .title {
+        .app-name {
             font-size: 13px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
-            z-index: 1;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .icon {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
-            animation: pulse 3s ease-in-out infinite;
+        .app-name-suffix {
+            font-weight: 400;
+            color: var(--fg-muted);
         }
 
-        .icon svg {
-            width: 100%;
+        .version {
+            flex: none;
+            padding: 1px 6px;
+            border-radius: 6px;
+            background: var(--hover);
+            color: var(--fg-muted);
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 16px;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
             height: 100%;
+            -webkit-app-region: no-drag;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding: 6px 10px !important;
-            margin-right: 8px;
-            width: 36px;
-            height: 36px;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-        }
-
-        .theme-toggle svg {
-            transition: transform 0.3s ease, filter 0.3s ease;
-        }
-
-        .theme-toggle:hover svg {
-            transform: scale(1.1) rotate(5deg);
-            filter: brightness(1.2);
-        }
-
-        body[data-theme="light"] .theme-toggle {
-            background: rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(0, 0, 0, 0.2) !important;
-        }
-
-        body[data-theme="light"] .theme-toggle:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
-        }
-
-        body[data-theme="light"] button {
-            color: #2c3e50;
-            border-color: rgba(0, 0, 0, 0.2);
-        }
-
-        body[data-theme="contrast"] button {
-            color: #00ff00;
-            border-color: #00ff00;
-        }
-
-        .about-btn {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding: 6px 10px !important;
-            margin-right: 8px;
-            width: 36px;
-            height: 36px;
+        .toolbar {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 2px;
         }
 
-        .about-btn svg {
-            transition: transform 0.3s ease;
+        .icon-btn {
+            width: 32px;
+            height: 28px;
+            border-radius: 6px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
+            transition: background-color 0.12s ease, color 0.12s ease;
         }
 
-        .about-btn:hover svg {
-            transform: scale(1.1);
+        .icon-btn:hover {
+            background: var(--hover);
         }
 
-        .about-btn:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
+        .icon-btn:active,
+        .icon-btn.active {
+            background: var(--press);
         }
 
-        .home-btn {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding: 6px 10px !important;
-            margin-right: 8px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.9;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
-        .home-btn svg {
-            transition: transform 0.3s ease;
+        /* Opens facebook.com in the browser; the logo keeps its colours */
+        .facebook-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke: none;
         }
 
-        .home-btn:hover svg {
-            transform: scale(1.1);
-        }
-
-        .home-btn:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-        }
-
-        .dnd-toggle {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding: 6px 10px !important;
-            margin-right: 8px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .dnd-toggle:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-        }
-
-        .dnd-toggle.active {
-            background: rgba(248, 113, 113, 0.3) !important;
-            border-color: rgba(248, 113, 113, 0.6) !important;
-        }
-
-        .dnd-toggle.active svg {
-            stroke: #f87171;
-        }
-
-        /* The strike-through only shows while notifications are muted */
-        .dnd-toggle .dnd-slash {
+        /* Do Not Disturb: bell, or struck-out bell while muted */
+        .dnd-toggle .bell-off,
+        .dnd-toggle.on .bell-on {
             display: none;
         }
 
-        .dnd-toggle.active .dnd-slash {
+        .dnd-toggle.on .bell-off {
             display: inline;
         }
 
-        body[data-theme="light"] .dnd-toggle {
-            background: rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(0, 0, 0, 0.2) !important;
+        .dnd-toggle.on {
+            background: var(--dnd-on-bg);
+            color: var(--dnd-on-fg);
         }
 
-        body[data-theme="light"] .dnd-toggle:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
+        .divider {
+            width: 1px;
+            height: 20px;
+            margin: 0 8px;
+            background: var(--divider);
         }
 
-        body[data-theme="light"] .dnd-toggle.active {
-            background: rgba(220, 38, 38, 0.15) !important;
-            border-color: rgba(220, 38, 38, 0.5) !important;
-        }
-
-        body[data-theme="light"] .dnd-toggle.active svg {
-            stroke: #dc2626;
-        }
-
-        .tray-toggle {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding: 6px 10px !important;
-            margin-right: 8px;
-            width: 36px;
-            height: 36px;
+        .zoom {
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .tray-toggle:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-        }
-
-        .tray-toggle.active {
-            background: rgba(0, 184, 255, 0.3) !important;
-            border-color: rgba(0, 184, 255, 0.6) !important;
-        }
-
-        .tray-toggle.active svg {
-            stroke: #00b8ff;
-        }
-
-        body[data-theme="light"] .tray-toggle {
-            background: rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(0, 0, 0, 0.2) !important;
-        }
-
-        body[data-theme="light"] .tray-toggle.active {
-            background: rgba(0, 184, 255, 0.2) !important;
-            border-color: rgba(0, 184, 255, 0.5) !important;
-        }
-
-        body[data-theme="light"] .about-btn {
-            background: rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(0, 0, 0, 0.2) !important;
-        }
-
-        body[data-theme="light"] .about-btn:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
-        }
-
-        body[data-theme="light"] .home-btn {
-            background: rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(0, 0, 0, 0.2) !important;
-        }
-
-        body[data-theme="light"] .home-btn:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
-        }
-
-        /* About Modal */
-        .about-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(30, 35, 45, 0.98);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            min-width: 400px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .about-modal.show {
-            display: block;
-        }
-
-        .about-modal h2 {
-            margin: 0 0 20px 0;
-            font-size: 24px;
-            color: #fff;
-        }
-
-        .about-modal p {
-            margin: 10px 0;
-            color: #ccc;
-            line-height: 1.6;
-        }
-
-        .about-modal a {
-            color: #0099ff;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .about-modal a:hover {
-            color: #00ccff;
-            text-decoration: underline;
-        }
-
-        .about-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #fff;
-            font-size: 20px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .about-modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .about-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 999;
-        }
-
-        .about-overlay.show {
-            display: block;
-        }
-
-        .right-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            -webkit-app-region: no-drag;
-            z-index: 1;
-        }
-
-        .controls {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        button {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 12px;
+            padding: 2px;
             border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            -webkit-app-region: no-drag;
-            backdrop-filter: blur(10px);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background: var(--hover);
         }
 
-        button:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        .zoom .icon-btn {
+            width: 26px;
+            height: 24px;
         }
 
-        button:active {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(0) scale(0.98);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        .zoom .icon-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
-        .zoom-label {
-            min-width: 48px;
-            padding: 6px 10px;
+        .zoom-level {
+            min-width: 46px;
+            height: 24px;
+            padding: 0 4px;
+            border-radius: 6px;
             font-size: 12px;
-            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
         }
 
+        .zoom-level:hover {
+            background: var(--hover);
+        }
+
+        /* While locked, only the window controls stay */
+        body.is-locked .toolbar,
+        body.is-locked .zoom,
+        body.is-locked .divider {
+            visibility: hidden;
+        }
+
+        /* Windows-style caption buttons, full bar height */
         .window-controls {
             display: flex;
-            gap: 0;
-            -webkit-app-region: no-drag;
+            height: 100%;
+            margin-left: 4px;
         }
 
         .window-controls button {
             width: 46px;
-            height: 32px;
-            font-size: 12px;
-            border-radius: 0;
-            padding: 0;
-            background: transparent;
-            border: none;
-        }
-
-        .window-controls button:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .window-controls button:last-child {
-            border-radius: 0 8px 8px 0;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            -webkit-app-region: no-drag;
+            transition: background-color 0.1s ease;
         }
 
         .window-controls button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: none;
-            box-shadow: none;
+            background: var(--hover);
         }
 
         .window-controls button:active {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--press);
         }
 
-        .window-controls button.close:hover {
-            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-            box-shadow: 0 2px 8px rgba(255, 65, 108, 0.4);
+        .window-controls .close:hover,
+        .window-controls .close:active {
+            background: #e81123;
+            color: #ffffff;
         }
 
-        .separator {
-            width: 1px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+        .window-controls svg {
+            width: 10px;
+            height: 10px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1;
+        }
+
+        #maximize .glyph-restore,
+        #maximize.maximized .glyph-maximize {
+            display: none;
+        }
+
+        #maximize.maximized .glyph-restore {
+            display: inline;
+        }
+
+        /* ── Screens shown in place of Messenger ───────────────── */
+
+        .screen {
+            position: fixed;
+            top: 40px;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: var(--page-bg);
+            color: var(--page-fg);
+        }
+
+        .centered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .centered-card {
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .screen h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .muted {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--page-muted);
+        }
+
+        .round-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 6px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--page-icon-bg);
+            color: var(--page-muted);
+        }
+
+        .round-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .primary-btn {
+            min-width: 128px;
+            height: 36px;
+            padding: 0 20px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--accent);
+            color: var(--accent-fg);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .primary-btn:hover {
+            filter: brightness(1.08);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: default;
+            filter: none;
+        }
+
+        .link-btn {
+            color: var(--page-muted);
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .link-btn:hover {
+            color: var(--page-fg);
+        }
+
+        .form-error {
+            min-height: 18px;
+            font-size: 13px;
+            color: var(--danger);
+        }
+
+        /* Only exists while a retry is in flight */
+        .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .primary-btn.busy .spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .offline .retry-btn {
+            margin-top: 10px;
+        }
+
+        /* ── Lock screen ───────────────────────────────────────── */
+
+        .lock .app-icon {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 8px;
+        }
+
+        .pin-input {
+            width: 220px;
+            height: 44px;
+            margin-top: 8px;
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--page-fg);
+            font-size: 22px;
+            letter-spacing: 8px;
+            text-align: center;
+            user-select: text;
+        }
+
+        .pin-input:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 0;
+            border-color: transparent;
+        }
+
+        /* ── Settings page ─────────────────────────────────────── */
+
+        .settings-scroll {
+            height: 100%;
+            overflow-y: auto;
+            /* Scrolls by wheel and keyboard; no bar at the window edge */
+            scrollbar-width: none;
+        }
+
+        .settings-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 18px 24px 40px;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .settings-header .icon-btn {
+            width: 34px;
+            height: 34px;
+            color: var(--page-fg);
+        }
+
+        .settings-header .icon-btn:hover {
+            background: var(--page-icon-bg);
+        }
+
+        .card {
+            margin-bottom: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+        }
+
+        .card h2 {
+            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--page-muted);
+        }
+
+        .card > .help {
+            margin: 2px 0 12px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 11px 0;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .card h2 + .row {
+            border-top: none;
+        }
+
+        .row-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .help {
+            margin-top: 2px;
+            font-size: 12.5px;
+            line-height: 1.45;
+            color: var(--page-muted);
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 8px;
+            flex: none;
+        }
+
+        .switch {
+            appearance: none;
+            flex: none;
+            position: relative;
+            width: 38px;
+            height: 22px;
+            border-radius: 11px;
+            background: var(--switch-off);
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: transform 0.15s ease;
+        }
+
+        .switch:checked {
+            background: var(--accent);
+        }
+
+        .switch:checked::after {
+            transform: translateX(16px);
+        }
+
+        /* Dropdown: drawn by us, because Windows draws a native select's
+           list in its own light colours, whatever the theme */
+        .dropdown {
+            position: relative;
+            flex: none;
+            width: 236px;
+        }
+
+        .dropdown-button {
+            width: 100%;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 0 12px 0 14px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--page-fg);
+            font-size: 13px;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.12s ease;
+        }
+
+        .dropdown-button:hover {
+            border-color: var(--page-muted);
+        }
+
+        .dropdown.open .dropdown-button {
+            border-color: var(--accent);
+        }
+
+        .dropdown-button svg,
+        .dropdown-check {
+            flex: none;
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dropdown-button svg {
+            color: var(--page-muted);
+            transition: transform 0.15s ease;
+        }
+
+        .dropdown.open .dropdown-button svg {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            z-index: 20;
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: var(--menu-bg);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+            list-style: none;
+        }
+
+        .dropdown-menu.up {
+            top: auto;
+            bottom: calc(100% + 6px);
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            color: var(--page-fg);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .dropdown-option.highlighted {
+            background: var(--menu-hover);
+        }
+
+        .dropdown-check {
+            visibility: hidden;
+            color: var(--accent);
+        }
+
+        .dropdown-option[aria-selected="true"] {
+            font-weight: 600;
+        }
+
+        .dropdown-option[aria-selected="true"] .dropdown-check {
+            visibility: visible;
+        }
+
+        .btn {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--page-fg);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            border-color: var(--page-muted);
+        }
+
+        .btn.primary {
+            border-color: transparent;
+            background: var(--accent);
+            color: var(--accent-fg);
+        }
+
+        .btn.primary:hover {
+            filter: brightness(1.08);
+        }
+
+        /* Theme picker */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+            gap: 10px;
+            padding-bottom: 6px;
+        }
+
+        .theme-tile {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 4px;
+            border-radius: 11px;
+            border: 2px solid transparent;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .theme-tile:hover {
+            border-color: var(--card-border);
+        }
+
+        .theme-tile[aria-checked="true"] {
+            border-color: var(--accent);
+        }
+
+        .theme-preview {
+            position: relative;
+            display: flex;
+            height: 62px;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .theme-preview > span {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-bar {
+            height: 16px;
+            background: var(--bar-bg);
+        }
+
+        .preview-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            padding: 0 9px;
+            background: var(--page-bg);
+        }
+
+        .preview-line {
+            width: 70%;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--page-muted);
+            opacity: 0.55;
+        }
+
+        .preview-line.accent {
+            width: 42%;
+            background: var(--accent);
+            opacity: 1;
+        }
+
+        .theme-name {
+            padding: 0 4px 2px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--page-fg);
+        }
+
+        /* About */
+        .about {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0 12px;
+        }
+
+        .about .app-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .about-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .about-name .version {
+            background: var(--page-icon-bg);
+            color: var(--page-muted);
+        }
+
+        .about-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 4px 0 10px;
+        }
+
+        /* ── Dialogs ───────────────────────────────────────────────
+           PIN prompts and app dialogs (update results, "Forgot PIN?",
+           About) share one look. App dialogs sit over a dimmed capture
+           of Messenger (see app-dialog.ts). */
+
+        .dialog-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.5);
+            -webkit-app-region: no-drag;
+            animation: fade-in 0.14s ease-out;
+        }
+
+        #app-dialog {
+            z-index: 40;
+        }
+
+        .dialog-snapshot {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 40px);
+            object-fit: cover;
+            filter: blur(3px) brightness(0.6);
+        }
+
+        .dialog {
+            position: relative;
+            width: min(400px, 100%);
+            padding: 28px 28px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: var(--dialog-bg);
+            color: var(--page-fg);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+            text-align: center;
+            animation: pop-in 0.16s ease-out;
+        }
+
+        .dialog-icon {
+            --kind: var(--accent);
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: color-mix(in srgb, var(--kind) 16%, transparent);
+            color: var(--kind);
+        }
+
+        .dialog-icon[data-kind="success"] {
+            --kind: #22c55e;
+        }
+
+        .dialog-icon[data-kind="warning"] {
+            --kind: #f59e0b;
+        }
+
+        .dialog-icon[data-kind="error"] {
+            --kind: #ef4444;
+        }
+
+        .dialog-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dialog h2 {
+            margin-bottom: 8px;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .dialog-message {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .dialog-detail {
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--page-muted);
+            overflow-wrap: anywhere;
+        }
+
+        .dialog-fields {
+            margin-top: 18px;
+            text-align: left;
+        }
+
+        .field {
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .field span {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12.5px;
+            color: var(--page-muted);
+        }
+
+        .field input {
+            width: 100%;
+            height: 42px;
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--page-fg);
+            font-size: 18px;
+            letter-spacing: 6px;
+            user-select: text;
+        }
+
+        .field input:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 0;
+            border-color: transparent;
+        }
+
+        .dialog .form-error {
+            margin-top: 2px;
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .dialog-actions .btn {
+            min-width: 120px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .btn.danger {
+            border-color: transparent;
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .btn.danger:hover {
+            filter: brightness(1.08);
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+        }
+
+        @keyframes pop-in {
+            from { opacity: 0; transform: scale(0.96); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .dialog-backdrop,
+            .dialog {
+                animation: none;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="title">
-        <div class="icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24">
-                <defs>
-                    <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#0099FF"/>
-                        <stop offset="50%" style="stop-color:#0068FF"/>
-                        <stop offset="100%" style="stop-color:#A033FF"/>
-                    </linearGradient>
-                </defs>
-                <!-- Minimalistic Pixelated Logo -->
+<body data-theme="dark">
+    <!-- The app's pixel icon; reused by the lock screen and About -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <defs>
+            <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0099FF"/>
+                <stop offset="50%" stop-color="#0068FF"/>
+                <stop offset="100%" stop-color="#A033FF"/>
+            </linearGradient>
+            <symbol id="app-icon" viewBox="80 80 352 352">
                 <rect x="80" y="80" width="352" height="352" rx="80" fill="url(#messengerGradient)"/>
-                <!-- Chat bubble -->
-                <rect x="160" y="160" width="192" height="32" fill="white"/>
-                <rect x="128" y="192" width="256" height="96" fill="white"/>
-                <rect x="160" y="288" width="192" height="32" fill="white"/>
-                <rect x="192" y="320" width="32" height="32" fill="white"/>
-                <rect x="224" y="352" width="32" height="32" fill="white"/>
-                <!-- Lightning bolt -->
-                <rect x="232" y="208" width="16" height="16" fill="#0068FF"/>
-                <rect x="248" y="208" width="16" height="16" fill="#0068FF"/>
-                <rect x="248" y="224" width="16" height="16" fill="#0068FF"/>
-                <rect x="264" y="224" width="16" height="16" fill="#0068FF"/>
-                <rect x="216" y="224" width="16" height="16" fill="#0068FF"/>
-                <rect x="216" y="240" width="16" height="16" fill="#0068FF"/>
-                <rect x="200" y="240" width="16" height="16" fill="#0068FF"/>
-                <rect x="200" y="256" width="16" height="16" fill="#0068FF"/>
-            </svg>
+                <!-- At 22px every 16-unit block lands on a whole pixel -->
+                <g shape-rendering="crispEdges">
+                    <!-- Chat bubble -->
+                    <rect x="160" y="160" width="192" height="32" fill="#fff"/>
+                    <rect x="128" y="192" width="256" height="96" fill="#fff"/>
+                    <rect x="160" y="288" width="192" height="32" fill="#fff"/>
+                    <rect x="192" y="320" width="32" height="32" fill="#fff"/>
+                    <rect x="224" y="352" width="32" height="32" fill="#fff"/>
+                    <!-- Lightning bolt -->
+                    <rect x="232" y="208" width="32" height="16" fill="#0068FF"/>
+                    <rect x="248" y="224" width="32" height="16" fill="#0068FF"/>
+                    <rect x="216" y="224" width="16" height="32" fill="#0068FF"/>
+                    <rect x="200" y="240" width="16" height="32" fill="#0068FF"/>
+                </g>
+            </symbol>
+        </defs>
+    </svg>
+
+    <header class="titlebar">
+        <div class="brand">
+            <svg class="app-icon" aria-hidden="true"><use href="#app-icon"/></svg>
+            <span class="app-name">Messenger <span class="app-name-suffix">Desktop</span></span>
+            <span class="version" id="bar-version" hidden></span>
         </div>
-        <span>Messenger Desktop</span>
+
+        <div class="actions">
+            <div class="toolbar">
+                <button id="home-btn" class="icon-btn" title="Go to Messenger home" aria-label="Go to Messenger home">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+                        <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    </svg>
+                </button>
+                <button id="facebook-btn" class="icon-btn facebook-btn" title="Open Facebook in your browser" aria-label="Open Facebook in your browser">
+                    <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                        <path fill="#0866FF" d="M1024,512C1024,229.23,794.77,0,512,0S0,229.23,0,512c0,255.55,187.23,467.37,432,505.78V660H302V512H432V399.2C432,270.88,508.44,200,625.39,200c56,0,114.61,10,114.61,10V336H675.44c-63.6,0-83.44,39.47-83.44,79.96V512H734L711.3,660H592v357.78C836.77,979.37,1024,767.55,1024,512Z"/>
+                        <path fill="#fff" d="M711.3,660,734,512H592V415.96C592,375.47,611.84,336,675.44,336H740V210s-58.59-10-114.61-10C508.44,200,432,270.88,432,399.2V512H302V660H432v357.78a517.396,517.396,0,0,0,160,0V660Z"/>
+                    </svg>
+                </button>
+                <button id="dnd-toggle" class="icon-btn dnd-toggle" title="Do Not Disturb" aria-label="Do Not Disturb" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10.268 21a2 2 0 0 0 3.464 0"/>
+                        <path class="bell-on" d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>
+                        <g class="bell-off">
+                            <path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742"/>
+                            <path d="m2 2 20 20"/>
+                            <path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05"/>
+                        </g>
+                    </svg>
+                </button>
+                <button id="settings-btn" class="icon-btn" title="Settings (Ctrl+,)" aria-label="Settings">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="zoom">
+                <button id="zoom-out" class="icon-btn" title="Zoom out (Ctrl+-)" aria-label="Zoom out">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                </button>
+                <button id="zoom-reset" class="zoom-level" title="Reset zoom (Ctrl+0)" aria-label="Reset zoom">100%</button>
+                <button id="zoom-in" class="icon-btn" title="Zoom in (Ctrl++)" aria-label="Zoom in">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                </button>
+            </div>
+
+            <div class="window-controls">
+                <button id="minimize" title="Minimize" aria-label="Minimize">
+                    <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5.5h10"/></svg>
+                </button>
+                <button id="maximize" title="Maximize" aria-label="Maximize">
+                    <svg viewBox="0 0 10 10" aria-hidden="true">
+                        <rect class="glyph-maximize" x="0.5" y="0.5" width="9" height="9" rx="1"/>
+                        <g class="glyph-restore">
+                            <path d="M2.5 2.5v-1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1"/>
+                            <rect x="0.5" y="2.5" width="7" height="7" rx="1"/>
+                        </g>
+                    </svg>
+                </button>
+                <button id="close" class="close" title="Close" aria-label="Close">
+                    <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0.5 0.5l9 9M9.5 0.5l-9 9"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Offline: Messenger can't be reached -->
+    <main id="offline" class="screen centered offline" role="alert" hidden>
+        <div class="centered-card">
+            <div class="round-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 20h.01"/>
+                    <path d="M8.5 16.429a5 5 0 0 1 7 0"/>
+                    <path d="M5 12.859a10 10 0 0 1 5.17-2.69"/>
+                    <path d="M19 12.859a10 10 0 0 0-2.007-1.523"/>
+                    <path d="M2 8.82a15 15 0 0 1 4.177-2.643"/>
+                    <path d="M22 8.82a15 15 0 0 0-11.288-3.764"/>
+                    <path d="m2 2 20 20"/>
+                </svg>
+            </div>
+            <h1 id="offline-title">You’re offline</h1>
+            <p class="muted" id="offline-text">Check your Wi-Fi or network connection. Messenger will reload automatically when you’re back online.</p>
+            <button id="offline-retry" class="primary-btn retry-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span id="offline-retry-label">Retry</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Settings -->
+    <main id="settings" class="screen" hidden>
+        <div class="settings-scroll">
+            <div class="settings-inner">
+                <div class="settings-header">
+                    <button id="settings-back" class="icon-btn" title="Back to Messenger (Esc)" aria-label="Back to Messenger">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                    </button>
+                    <h1>Settings</h1>
+                </div>
+
+                <section class="card" aria-labelledby="appearance-heading">
+                    <h2 id="appearance-heading">Appearance</h2>
+                    <p class="help">Colors for the title bar and the app’s own screens. Messenger itself keeps its own look.</p>
+                    <div class="theme-grid" id="theme-grid" role="radiogroup" aria-label="Theme"></div>
+                </section>
+
+                <section class="card" aria-labelledby="notifications-heading">
+                    <h2 id="notifications-heading">Notifications</h2>
+                    <label class="row">
+                        <span>
+                            <span class="row-title">Do Not Disturb</span>
+                            <span class="help" style="display: block">Mute every notification. Shortcut: Ctrl+Shift+D</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="doNotDisturb">
+                    </label>
+                    <label class="row" id="keep-on-screen-row">
+                        <span>
+                            <span class="row-title">Show notifications for 8 seconds</span>
+                            <span class="help" style="display: block" id="keep-on-screen-help">Windows normally hides them after about 5 seconds.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="keepNotificationsOnScreen">
+                    </label>
+                    <label class="row">
+                        <span>
+                            <span class="row-title">Hide message previews</span>
+                            <span class="help" style="display: block">Show “New message” instead of what was written.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="hideMessagePreviews">
+                    </label>
+                    <label class="row">
+                        <span>
+                            <span class="row-title">Pause notifications during calls</span>
+                            <span class="help" style="display: block">No message pop-ups while a call window is open. Calls still ring.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="pauseNotificationsDuringCalls">
+                    </label>
+                </section>
+
+                <section class="card" aria-labelledby="lock-heading">
+                    <h2 id="lock-heading">App lock</h2>
+                    <div class="row">
+                        <span>
+                            <span class="row-title">Lock the app</span>
+                            <span class="help" style="display: block">Ask for a PIN before showing Messenger.</span>
+                        </span>
+                        <div id="lock-mode"></div>
+                    </div>
+                    <div class="row" id="lock-away-row">
+                        <span>
+                            <span class="row-title">Lock after</span>
+                            <span class="help" style="display: block">Time without using the window, counted from when you switch away or minimize it.</span>
+                        </span>
+                        <div id="lock-away"></div>
+                    </div>
+                    <div class="row" id="lock-pin-row">
+                        <span>
+                            <span class="row-title">PIN</span>
+                            <span class="help" style="display: block">The lock also turns on when your computer locks or sleeps (except “When the app starts”).</span>
+                        </span>
+                        <span class="row-actions">
+                            <button class="btn" id="change-pin">Change PIN</button>
+                            <button class="btn primary" id="lock-now">Lock now</button>
+                        </span>
+                    </div>
+                    <p class="help" style="padding: 4px 0 6px">The lock hides Messenger on this computer. It doesn’t encrypt your messages.</p>
+                </section>
+
+                <section class="card" aria-labelledby="window-heading">
+                    <h2 id="window-heading">Window &amp; startup</h2>
+                    <label class="row">
+                        <span>
+                            <span class="row-title">Minimize to tray when closing</span>
+                            <span class="help" style="display: block">Keep running in the tray when you close the window, so notifications still arrive.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="minimizeToTray">
+                    </label>
+                    <label class="row" id="start-with-system-row">
+                        <span>
+                            <span class="row-title">Start with system</span>
+                            <span class="help" style="display: block" id="start-with-system-help">Open automatically when you sign in.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="startWithSystem">
+                    </label>
+                </section>
+
+                <section class="card" aria-labelledby="about-heading">
+                    <h2 id="about-heading">About</h2>
+                    <div class="about">
+                        <svg class="app-icon" aria-hidden="true"><use href="#app-icon"/></svg>
+                        <div>
+                            <div class="about-name">Messenger Desktop <span class="version" id="about-version"></span></div>
+                            <div class="help" id="about-versions"></div>
+                        </div>
+                    </div>
+                    <div class="about-actions">
+                        <button class="btn" id="check-updates">Check for updates</button>
+                        <button class="btn" id="open-github">Project on GitHub</button>
+                    </div>
+                    <p class="help" style="padding-bottom: 6px">An unofficial app. Not affiliated with or endorsed by Meta.</p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lock screen -->
+    <main id="lock" class="screen centered lock" hidden>
+        <form class="centered-card" id="lock-form" autocomplete="off">
+            <svg class="app-icon" aria-hidden="true"><use href="#app-icon"/></svg>
+            <h1>Messenger Desktop is locked</h1>
+            <p class="muted">Enter your PIN to continue.</p>
+            <input id="lock-pin" class="pin-input" type="password" inputmode="numeric" maxlength="12" aria-label="PIN" spellcheck="false">
+            <p class="form-error" id="lock-error" role="alert"></p>
+            <button type="submit" class="primary-btn" id="unlock-btn">Unlock</button>
+            <button type="button" class="link-btn" id="forgot-pin">Forgot PIN?</button>
+        </form>
+    </main>
+
+    <!-- PIN dialog (set, change, confirm) -->
+    <div id="pin-dialog" class="dialog-backdrop" hidden>
+        <form class="dialog" id="pin-form" role="dialog" aria-modal="true" aria-labelledby="pin-title" autocomplete="off">
+            <div class="dialog-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h2 id="pin-title"></h2>
+            <p class="dialog-detail" id="pin-text"></p>
+            <div class="dialog-fields">
+            <label class="field" id="pin-current-field">
+                <span>Current PIN</span>
+                <input id="pin-current" type="password" inputmode="numeric" maxlength="12">
+            </label>
+            <label class="field" id="pin-new-field">
+                <span>New PIN (4–12 digits)</span>
+                <input id="pin-new" type="password" inputmode="numeric" maxlength="12">
+            </label>
+            <label class="field" id="pin-confirm-field">
+                <span>Type it again</span>
+                <input id="pin-confirm" type="password" inputmode="numeric" maxlength="12">
+            </label>
+            </div>
+            <p class="form-error" id="pin-error" role="alert"></p>
+            <div class="dialog-actions">
+                <button type="button" class="btn" id="pin-cancel">Cancel</button>
+                <button type="submit" class="btn primary" id="pin-submit">OK</button>
+            </div>
+        </form>
     </div>
 
-    <div class="right-section">
-        <button id="update-btn" class="about-btn" title="Check for Updates">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
-                <polyline points="21 3 21 9 15 9"/>
-            </svg>
-        </button>
-        <button id="about-btn" class="about-btn" title="About">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
-        </button>
-        <button id="home-btn" class="home-btn" title="Go to Messenger Home">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-        </button>
-        <button id="dnd-toggle" class="dnd-toggle" title="Do Not Disturb">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Bell -->
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                <!-- Strike-through, shown only while muted -->
-                <line class="dnd-slash" x1="3" y1="3" x2="21" y2="21"/>
-            </svg>
-        </button>
-        <button id="minimize-to-tray-toggle" class="tray-toggle" title="Minimize to tray when closing">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Tray icon -->
-                <rect x="3" y="18" width="18" height="3" rx="1"/>
-                <path d="M7 18V12C7 9.8 8.8 8 11 8H13C15.2 8 17 9.8 17 12V18"/>
-                <circle cx="12" cy="5" r="2"/>
-            </svg>
-        </button>
-        <button id="theme-toggle" class="theme-toggle" title="Change Theme">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-                <defs>
-                    <linearGradient id="paletteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#64748b"/>
-                        <stop offset="100%" style="stop-color:#94a3b8"/>
-                    </linearGradient>
-                </defs>
-                <!-- Artist's palette shape -->
-                <path d="M12,2 C17.5,2 22,6.5 22,12 C22,14.5 21,16.8 19.5,18.5 C18.5,19.5 17,20 15.5,20 C14.5,20 13.5,19.5 13,18.5 C12.5,17.5 12,17 11,17 C9.3,17 8,18.3 8,20 C8,21 7,22 6,22 C3.2,22 2,19.8 2,17 C2,9.8 6.5,2 12,2 Z"
-                      fill="url(#paletteGradient)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-                <!-- Paint color dots -->
-                <circle cx="8" cy="8" r="1.8" fill="#ef4444"/>
-                <circle cx="14" cy="7" r="1.8" fill="#f59e0b"/>
-                <circle cx="17" cy="11" r="1.8" fill="#10b981"/>
-                <circle cx="9" cy="13" r="1.8" fill="#3b82f6"/>
-                <circle cx="15" cy="14" r="1.8" fill="#a855f7"/>
-            </svg>
-        </button>
-        <div class="controls">
-            <button id="zoom-out" title="Zoom Out (Ctrl+-)">−</button>
-            <button id="zoom-reset" class="zoom-label" title="Reset Zoom (Ctrl+0)">100%</button>
-            <button id="zoom-in" title="Zoom In (Ctrl++)">+</button>
+    <!-- App dialog (update results, "Forgot PIN?", About) -->
+    <div id="app-dialog" class="dialog-backdrop" hidden>
+        <img id="app-dialog-snapshot" class="dialog-snapshot" alt="" hidden>
+        <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message">
+            <div class="dialog-icon" id="app-dialog-icon" aria-hidden="true"></div>
+            <h2 id="app-dialog-title"></h2>
+            <p class="dialog-message" id="app-dialog-message"></p>
+            <p class="dialog-detail" id="app-dialog-detail"></p>
+            <div class="dialog-actions" id="app-dialog-actions"></div>
         </div>
-        <div class="separator"></div>
-        <div class="window-controls">
-            <button id="minimize" title="Minimize">─</button>
-            <button id="maximize" title="Maximize">□</button>
-            <button id="close" class="close" title="Close">✕</button>
-        </div>
-    </div>
-
-    <!-- About Modal -->
-    <div class="about-overlay" id="about-overlay"></div>
-    <div class="about-modal" id="about-modal">
-        <button class="about-modal-close" id="about-close">×</button>
-        <h2>Messenger Desktop</h2>
-        <p><strong>Version:</strong> 2.1.0</p>
-        <p><strong>Description:</strong> Unofficial desktop client for Facebook Messenger with native OS integration, custom themes, and enhanced privacy features.</p>
-        <p><strong>GitHub:</strong> <a href="#" id="github-link">WinTer1165/Messenger-Desktop-Client-Unofficial</a></p>
-        <p style="margin-top: 20px; font-size: 12px; color: #888;">Built with Electron • Made with ❤️</p>
     </div>
 
     <script>
         console.log('[TitleBar] Initializing...');
-        console.log('[TitleBar] electronAPI available:', !!window.electronAPI);
 
-        // Theme Management
+        const api = window.electronAPI;
+        const $ = (id) => document.getElementById(id);
+
+        const state = {
+            settings: null,
+            info: null,
+            connection: { state: 'online', networkAvailable: true },
+            locked: new URLSearchParams(location.search).get('locked') === '1',
+            settingsOpen: false,
+        };
+
+        // ── Themes ──────────────────────────────────────────────
         // 'auto' follows the OS light/dark preference
-        const themes = ['auto', 'dark', 'light', 'lush-forest', 'contrast', 'desert', 'electric'];
-        let currentThemeIndex = 0;
+
+        const THEMES = [
+            { id: 'auto', name: 'Auto' },
+            { id: 'dark', name: 'Dark' },
+            { id: 'light', name: 'Light' },
+            { id: 'northern-lights', name: 'Northern Lights' },
+            { id: 'deep-ocean', name: 'Deep Ocean' },
+            { id: 'cosmic-nebula', name: 'Cosmic Nebula' },
+            { id: 'sunset-drive', name: 'Sunset Drive' },
+            { id: 'neon-city', name: 'Neon City' },
+            { id: 'sakura-bloom', name: 'Sakura Bloom' },
+            { id: 'arctic-frost', name: 'Arctic Frost' },
+            { id: 'lush-forest', name: 'Lush Forest' },
+            { id: 'desert', name: 'Desert' },
+            { id: 'electric', name: 'Electric' },
+            { id: 'contrast', name: 'High Contrast' },
+        ];
 
         const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // Resolve a theme setting to the concrete theme used for styling
         function resolveTheme(setting) {
             if (setting === 'auto') {
                 return systemDarkQuery.matches ? 'dark' : 'light';
@@ -619,256 +1532,710 @@
             return setting;
         }
 
-        // Apply a theme setting: style the titlebar with the resolved
-        // theme and tell the main process the setting itself
-        function applyTheme(setting, notifyMain) {
+        function applyTheme(setting) {
             document.body.setAttribute('data-theme', resolveTheme(setting));
-            document.getElementById('theme-toggle').title =
-                setting === 'auto' ? 'Theme: Auto (follows system)' : 'Theme: ' + setting;
+        }
 
-            if (notifyMain && window.electronAPI && window.electronAPI.changeTheme) {
-                window.electronAPI.changeTheme(setting);
+        // First paint uses the theme the main process passed in, so there
+        // is no flash of the default before the settings arrive
+        applyTheme(new URLSearchParams(location.search).get('theme') || 'dark');
+
+        systemDarkQuery.addEventListener('change', () => {
+            if (state.settings && state.settings.theme === 'auto') {
+                applyTheme('auto');
+            }
+        });
+
+        function previewPane(themeId) {
+            return `<span data-theme="${themeId}">` +
+                '<span class="preview-bar"></span>' +
+                '<span class="preview-page">' +
+                '<span class="preview-line"></span>' +
+                '<span class="preview-line accent"></span>' +
+                '</span></span>';
+        }
+
+        const themeGrid = $('theme-grid');
+        for (const theme of THEMES) {
+            const tile = document.createElement('button');
+            tile.className = 'theme-tile';
+            tile.setAttribute('role', 'radio');
+            tile.dataset.themeId = theme.id;
+            tile.title = theme.id === 'auto' ? 'Auto: follows your system’s light or dark mode' : theme.name;
+            tile.innerHTML =
+                '<span class="theme-preview">' +
+                (theme.id === 'auto' ? previewPane('light') + previewPane('dark') : previewPane(theme.id)) +
+                '</span>' +
+                `<span class="theme-name">${theme.name}</span>`;
+            tile.addEventListener('click', () => {
+                applyTheme(theme.id);
+                api.updateSetting('theme', theme.id);
+            });
+            themeGrid.appendChild(tile);
+        }
+
+        // ── Screens: lock > settings > offline ──────────────────
+
+        function renderScreens() {
+            const showLock = state.locked;
+            const showSettings = !showLock && state.settingsOpen;
+            const showOffline = !showLock && !showSettings && state.connection.state !== 'online';
+
+            $('lock').hidden = !showLock;
+            $('settings').hidden = !showSettings;
+            $('offline').hidden = !showOffline;
+            document.body.classList.toggle('is-locked', showLock);
+            $('settings-btn').classList.toggle('active', showSettings);
+        }
+
+        function openSettings() {
+            if (state.locked || state.settingsOpen) return;
+            state.settingsOpen = true;
+            api.setSettingsOpen(true);
+            renderScreens();
+            $('settings-back').focus();
+        }
+
+        function closeSettings() {
+            if (!state.settingsOpen) return;
+            closePinDialog();
+            state.settingsOpen = false;
+            api.setSettingsOpen(false);
+            renderScreens();
+        }
+
+        $('settings-btn').addEventListener('click', () => {
+            if (state.settingsOpen) {
+                closeSettings();
+            } else {
+                openSettings();
+            }
+        });
+        $('settings-back').addEventListener('click', closeSettings);
+        api.onOpenSettings(openSettings);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            if (currentDialog) {
+                answerAppDialog(currentDialog.cancelId ?? 0);
+            } else if (!$('pin-dialog').hidden) {
+                closePinDialog();
+            } else {
+                closeSettings();
+            }
+        });
+
+        // ── Title bar buttons ───────────────────────────────────
+
+        const forward = {
+            'zoom-in': 'zoomIn',
+            'zoom-out': 'zoomOut',
+            'zoom-reset': 'zoomReset',
+            'minimize': 'minimizeWindow',
+            'maximize': 'maximizeWindow',
+            'close': 'closeWindow',
+            'check-updates': 'checkForUpdates',
+            'offline-retry': 'retryConnection',
+            'lock-now': 'lockNow',
+        };
+
+        for (const [id, method] of Object.entries(forward)) {
+            $(id).addEventListener('click', () => api[method]());
+        }
+
+        $('home-btn').addEventListener('click', () => {
+            closeSettings();
+            api.goToHome();
+        });
+
+        $('facebook-btn').addEventListener('click', () => {
+            api.openExternal('https://www.facebook.com/');
+        });
+
+        $('open-github').addEventListener('click', () => {
+            api.openExternal('https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial');
+        });
+
+        $('dnd-toggle').addEventListener('click', () => {
+            if (state.settings) {
+                api.updateSetting('doNotDisturb', !state.settings.doNotDisturb);
+            }
+        });
+
+        api.onZoomLevelChange((level) => {
+            $('zoom-reset').textContent = `${Math.round(100 + level * 50)}%`;
+        });
+
+        // Maximize / restore glyph
+        function renderMaximized(maximized) {
+            const button = $('maximize');
+            button.classList.toggle('maximized', maximized);
+            button.title = maximized ? 'Restore' : 'Maximize';
+            button.setAttribute('aria-label', button.title);
+        }
+
+        api.getWindowMaximized().then(renderMaximized);
+        api.onWindowMaximizedChange(renderMaximized);
+
+        // ── Dropdowns ───────────────────────────────────────────
+        // In place of <select>: Windows draws a native select's list in
+        // its own light colours, which left the options unreadable in
+        // dark themes. The container gets `value` and fires 'change'
+        // like a select.
+
+        function createDropdown(container, options, label) {
+            container.classList.add('dropdown');
+            container.innerHTML =
+                `<button type="button" class="dropdown-button" aria-haspopup="listbox" aria-expanded="false" aria-label="${label}">` +
+                '<span class="dropdown-value"></span>' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+                '</button>' +
+                '<ul class="dropdown-menu" role="listbox" hidden></ul>';
+
+            const button = container.querySelector('.dropdown-button');
+            const menu = container.querySelector('.dropdown-menu');
+            const shown = container.querySelector('.dropdown-value');
+            let value = options[0].value;
+            let highlighted = 0;
+
+            options.forEach((option, index) => {
+                const item = document.createElement('li');
+                item.className = 'dropdown-option';
+                item.setAttribute('role', 'option');
+                item.dataset.value = option.value;
+                item.innerHTML = `<span>${option.label}</span>` +
+                    '<svg class="dropdown-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+                item.addEventListener('mousemove', () => highlight(index));
+                item.addEventListener('click', () => choose(option.value));
+                menu.appendChild(item);
+            });
+            const items = [...menu.children];
+
+            function render() {
+                const current = options.find((option) => option.value === value) || options[0];
+                shown.textContent = current.label;
+                for (const item of items) {
+                    item.setAttribute('aria-selected', String(item.dataset.value === value));
+                }
+            }
+
+            function highlight(index) {
+                highlighted = index;
+                items.forEach((item, i) => item.classList.toggle('highlighted', i === index));
+            }
+
+            function open() {
+                closeAllDropdowns();
+                menu.hidden = false;
+                container.classList.add('open');
+                button.setAttribute('aria-expanded', 'true');
+
+                // Open upwards when there's no room below
+                const scroller = container.closest('.settings-scroll');
+                const room = scroller.getBoundingClientRect().bottom - button.getBoundingClientRect().bottom;
+                menu.classList.toggle('up', room < menu.offsetHeight + 12);
+
+                highlight(Math.max(0, options.findIndex((option) => option.value === value)));
+            }
+
+            function close() {
+                menu.hidden = true;
+                container.classList.remove('open');
+                button.setAttribute('aria-expanded', 'false');
+            }
+
+            function choose(next) {
+                close();
+                button.focus();
+                if (next === value) return;
+                value = next;
+                render();
+                container.dispatchEvent(new Event('change'));
+            }
+
+            button.addEventListener('click', () => {
+                if (menu.hidden) {
+                    open();
+                } else {
+                    close();
+                }
+            });
+
+            button.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    if (menu.hidden) {
+                        open();
+                        return;
+                    }
+                    const step = event.key === 'ArrowDown' ? 1 : -1;
+                    highlight((highlighted + step + items.length) % items.length);
+                } else if ((event.key === 'Enter' || event.key === ' ') && !menu.hidden) {
+                    event.preventDefault();
+                    choose(options[highlighted].value);
+                } else if (event.key === 'Escape' && !menu.hidden) {
+                    // Only the menu closes, not the settings page
+                    event.preventDefault();
+                    event.stopPropagation();
+                    close();
+                } else if (event.key === 'Tab') {
+                    close();
+                }
+            });
+
+            container.closeDropdown = close;
+            Object.defineProperty(container, 'value', {
+                get: () => value,
+                set: (next) => {
+                    value = String(next);
+                    render();
+                },
+            });
+            render();
+        }
+
+        function closeAllDropdowns() {
+            for (const dropdown of document.querySelectorAll('.dropdown')) {
+                dropdown.closeDropdown();
             }
         }
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('titlebar-theme') || 'dark';
-        currentThemeIndex = themes.indexOf(savedTheme);
-        if (currentThemeIndex === -1) currentThemeIndex = 0;
-        applyTheme(themes[currentThemeIndex], true);
-
-        // Re-resolve when the OS theme changes while in auto mode
-        systemDarkQuery.addEventListener('change', () => {
-            if (themes[currentThemeIndex] === 'auto') {
-                console.log('[TitleBar] System theme changed, re-applying auto theme');
-                applyTheme('auto', true);
+        document.addEventListener('mousedown', (event) => {
+            if (!event.target.closest('.dropdown')) {
+                closeAllDropdowns();
             }
         });
 
-        // Theme toggle button cycles through the available themes
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            const newTheme = themes[currentThemeIndex];
-            localStorage.setItem('titlebar-theme', newTheme);
-            console.log('[TitleBar] Theme changed to:', newTheme);
-            applyTheme(newTheme, true);
-        });
+        createDropdown($('lock-mode'), [
+            { value: 'off', label: 'Off' },
+            { value: 'launch', label: 'When the app starts' },
+            { value: 'open', label: 'Every time I open the window' },
+            { value: 'away', label: 'After I’ve been away' },
+        ], 'Lock the app');
 
-        // These will be handled by the preload script
-        document.getElementById('zoom-in').addEventListener('click', () => {
-            console.log('[TitleBar] Zoom in clicked');
-            if (window.electronAPI) {
-                window.electronAPI.zoomIn();
+        createDropdown($('lock-away'), [
+            { value: '1', label: '1 minute' },
+            { value: '5', label: '5 minutes' },
+            { value: '15', label: '15 minutes' },
+            { value: '30', label: '30 minutes' },
+            { value: '60', label: '1 hour' },
+        ], 'Lock after');
+
+        // ── App dialogs ─────────────────────────────────────────
+        // Update results, "Forgot PIN?" and About, sent by the main
+        // process. Shown one at a time over a dimmed capture of
+        // Messenger; the main process hides Messenger once we report
+        // the dialog is drawn.
+
+        const DIALOG_ICONS = {
+            info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+            question: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+            success: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+            warning: '<svg viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+            error: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+            update: '<svg viewBox="0 0 24 24"><path d="M12 13v8"/><path d="m8 17 4 4 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"/></svg>',
+        };
+
+        const dialogQueue = [];
+        let currentDialog = null;
+
+        async function showNextAppDialog() {
+            currentDialog = dialogQueue.shift() || null;
+            const dialog = currentDialog;
+            if (!dialog) return;
+
+            closeAllDropdowns();
+
+            const icon = $('app-dialog-icon');
+            icon.dataset.kind = dialog.type;
+            icon.innerHTML = DIALOG_ICONS[dialog.type] || DIALOG_ICONS.info;
+            $('app-dialog-title').textContent = dialog.title;
+            $('app-dialog-message').textContent = dialog.message;
+            $('app-dialog-detail').textContent = dialog.detail || '';
+            $('app-dialog-detail').hidden = !dialog.detail;
+
+            const actions = $('app-dialog-actions');
+            actions.textContent = '';
+            dialog.buttons.forEach((label, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn' +
+                    (index === dialog.dangerId ? ' danger' : index === dialog.defaultId ? ' primary' : '');
+                button.textContent = label;
+                button.addEventListener('click', () => answerAppDialog(index));
+                actions.appendChild(button);
+            });
+
+            const snapshot = $('app-dialog-snapshot');
+            if (dialog.backdrop) {
+                snapshot.src = dialog.backdrop;
+                await snapshot.decode().catch(() => {});
+                snapshot.hidden = false;
             } else {
-                console.error('[TitleBar] electronAPI not available!');
+                snapshot.hidden = true;
+                snapshot.removeAttribute('src');
+            }
+
+            $('app-dialog').hidden = false;
+            const focusIndex = dialog.defaultId ?? 0;
+            (actions.children[focusIndex] || actions.firstElementChild).focus();
+
+            // Drawn: Messenger can hide behind the capture now
+            requestAnimationFrame(() => requestAnimationFrame(() => api.appDialogReady(dialog.id)));
+        }
+
+        function answerAppDialog(response) {
+            const dialog = currentDialog;
+            if (!dialog) return;
+
+            $('app-dialog').hidden = true;
+            $('app-dialog-snapshot').removeAttribute('src');
+            currentDialog = null;
+            api.respondToAppDialog(dialog.id, response);
+            showNextAppDialog();
+        }
+
+        $('app-dialog').addEventListener('mousedown', (event) => {
+            if (event.target === $('app-dialog') && currentDialog) {
+                answerAppDialog(currentDialog.cancelId ?? 0);
             }
         });
 
-        document.getElementById('zoom-out').addEventListener('click', () => {
-            console.log('[TitleBar] Zoom out clicked');
-            if (window.electronAPI) {
-                window.electronAPI.zoomOut();
-            } else {
-                console.error('[TitleBar] electronAPI not available!');
+        api.onAppDialog((dialog) => {
+            dialogQueue.push(dialog);
+            if (!currentDialog) {
+                showNextAppDialog();
             }
         });
 
-        document.getElementById('zoom-reset').addEventListener('click', () => {
-            console.log('[TitleBar] Zoom reset clicked');
-            if (window.electronAPI) {
-                window.electronAPI.zoomReset();
-            } else {
-                console.error('[TitleBar] electronAPI not available!');
-            }
-        });
+        // ── Settings ────────────────────────────────────────────
 
-        document.getElementById('minimize').addEventListener('click', () => {
-            console.log('[TitleBar] Minimize clicked');
-            if (window.electronAPI) {
-                window.electronAPI.minimizeWindow();
-            } else {
-                console.error('[TitleBar] electronAPI not available!');
-            }
-        });
-
-        document.getElementById('maximize').addEventListener('click', () => {
-            console.log('[TitleBar] Maximize clicked');
-            if (window.electronAPI) {
-                window.electronAPI.maximizeWindow();
-            } else {
-                console.error('[TitleBar] electronAPI not available!');
-            }
-        });
-
-        document.getElementById('close').addEventListener('click', () => {
-            console.log('[TitleBar] Close clicked');
-            if (window.electronAPI) {
-                window.electronAPI.closeWindow();
-            } else {
-                console.error('[TitleBar] electronAPI not available!');
-            }
-        });
-
-        // Update zoom level display
-        if (window.electronAPI && window.electronAPI.onZoomLevelChange) {
-            window.electronAPI.onZoomLevelChange((level) => {
-                const percentage = Math.round(100 + level * 50);
-                document.getElementById('zoom-reset').textContent = `${percentage}%`;
+        for (const input of document.querySelectorAll('[data-setting]')) {
+            input.addEventListener('change', () => {
+                api.updateSetting(input.dataset.setting, input.checked);
             });
         }
 
-        // About Modal
-        const aboutBtn = document.getElementById('about-btn');
-        const aboutModal = document.getElementById('about-modal');
-        const aboutOverlay = document.getElementById('about-overlay');
-        const aboutClose = document.getElementById('about-close');
-        const githubLink = document.getElementById('github-link');
-
-        function showAboutModal() {
-            aboutModal.classList.add('show');
-            aboutOverlay.classList.add('show');
-        }
-
-        function hideAboutModal() {
-            aboutModal.classList.remove('show');
-            aboutOverlay.classList.remove('show');
-        }
-
-        // About button directly opens GitHub
-        aboutBtn.addEventListener('click', () => {
-            const url = 'https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial';
-            console.log('[TitleBar] Opening GitHub:', url);
-            if (window.electronAPI && window.electronAPI.openExternal) {
-                window.electronAPI.openExternal(url);
-            } else {
-                // Fallback for development
-                window.open(url, '_blank');
-            }
+        $('lock-away').addEventListener('change', () => {
+            api.updateSetting('lockAwayMinutes', Number($('lock-away').value));
         });
 
-        // Check for Updates button
-        document.getElementById('update-btn').addEventListener('click', () => {
-            console.log('[TitleBar] Check for updates clicked');
-            if (window.electronAPI && window.electronAPI.checkForUpdates) {
-                window.electronAPI.checkForUpdates();
-            } else {
-                console.error('[TitleBar] checkForUpdates not available!');
-            }
-        });
+        function renderSettings() {
+            const settings = state.settings;
+            if (!settings) return;
 
-        // Home button - Navigate to Messenger home
-        const homeBtn = document.getElementById('home-btn');
-        homeBtn.addEventListener('click', () => {
-            console.log('[TitleBar] Home button clicked');
-            if (window.electronAPI && window.electronAPI.goToHome) {
-                window.electronAPI.goToHome();
-            } else {
-                console.error('[TitleBar] goToHome not available!');
-            }
-        });
+            applyTheme(settings.theme);
 
-        aboutClose.addEventListener('click', hideAboutModal);
-        aboutOverlay.addEventListener('click', hideAboutModal);
-
-        // Minimize to Tray Toggle
-        const trayToggleBtn = document.getElementById('minimize-to-tray-toggle');
-        let minimizeToTray = localStorage.getItem('minimize-to-tray') === 'true';
-
-        // Set initial state
-        if (minimizeToTray) {
-            trayToggleBtn.classList.add('active');
-            trayToggleBtn.title = 'Minimize to tray: ON (click to close app on X)';
-        } else {
-            trayToggleBtn.title = 'Minimize to tray: OFF (click to minimize on X)';
-        }
-
-        // Send initial setting to main process
-        if (window.electronAPI && window.electronAPI.setMinimizeToTray) {
-            window.electronAPI.setMinimizeToTray(minimizeToTray);
-        }
-
-        trayToggleBtn.addEventListener('click', () => {
-            minimizeToTray = !minimizeToTray;
-            localStorage.setItem('minimize-to-tray', minimizeToTray);
-
-            if (minimizeToTray) {
-                trayToggleBtn.classList.add('active');
-                trayToggleBtn.title = 'Minimize to tray: ON (click to close app on X)';
-                console.log('[TitleBar] Minimize to tray: ENABLED');
-            } else {
-                trayToggleBtn.classList.remove('active');
-                trayToggleBtn.title = 'Minimize to tray: OFF (click to minimize on X)';
-                console.log('[TitleBar] Minimize to tray: DISABLED');
+            for (const tile of themeGrid.children) {
+                tile.setAttribute('aria-checked', String(tile.dataset.themeId === settings.theme));
             }
 
-            // Send to main process
-            if (window.electronAPI && window.electronAPI.setMinimizeToTray) {
-                window.electronAPI.setMinimizeToTray(minimizeToTray);
+            for (const input of document.querySelectorAll('[data-setting]')) {
+                input.checked = settings[input.dataset.setting] === true;
             }
-        });
 
-        // Do Not Disturb Toggle
-        // The main process owns this setting (the tray menu and the
-        // Ctrl+Shift+D shortcut change it too), so state is read from
-        // there rather than localStorage.
-        const dndBtn = document.getElementById('dnd-toggle');
-        let doNotDisturb = false;
-
-        function renderDndState() {
-            dndBtn.classList.toggle('active', doNotDisturb);
-            dndBtn.title = doNotDisturb
+            // Bell in the title bar
+            const dnd = $('dnd-toggle');
+            dnd.classList.toggle('on', settings.doNotDisturb);
+            dnd.setAttribute('aria-pressed', String(settings.doNotDisturb));
+            dnd.title = settings.doNotDisturb
                 ? 'Do Not Disturb: ON - notifications muted (Ctrl+Shift+D)'
                 : 'Do Not Disturb: OFF - notifications on (Ctrl+Shift+D)';
+
+            // App lock
+            const lock = settings.appLock;
+            const lockOn = lock.mode !== 'off' && lock.hasPin;
+            $('lock-mode').value = lockOn ? lock.mode : 'off';
+            $('lock-away').value = String(lock.awayMinutes);
+            $('lock-away-row').hidden = !lockOn || lock.mode !== 'away';
+            $('lock-pin-row').hidden = !lockOn;
         }
 
-        renderDndState();
+        function renderAppInfo() {
+            const info = state.info;
+            if (!info) return;
 
-        // Load the persisted state
-        if (window.electronAPI && window.electronAPI.getDoNotDisturb) {
-            window.electronAPI.getDoNotDisturb()
-                .then((enabled) => {
-                    doNotDisturb = !!enabled;
-                    console.log('[TitleBar] Do Not Disturb initial state:', doNotDisturb);
-                    renderDndState();
-                })
-                .catch((error) => {
-                    console.error('[TitleBar] Failed to read Do Not Disturb state:', error);
-                });
+            const short = 'v' + info.displayVersion;
+            $('bar-version').textContent = short;
+            $('bar-version').title = 'Version ' + info.version;
+            $('bar-version').hidden = false;
+            $('about-version').textContent = short;
+            $('about-versions').textContent =
+                `Version ${info.version} · Electron ${info.electron} · Chromium ${info.chrome.split('.')[0]}`;
+
+            // Settings that do nothing on this platform
+            $('start-with-system-row').hidden = info.platform === 'linux';
+            $('start-with-system-help').textContent = info.platform === 'darwin'
+                ? 'Open automatically when you log in to your Mac.'
+                : 'Open automatically when you sign in to Windows.';
+            $('keep-on-screen-row').hidden = info.platform === 'darwin';
+            if (info.platform === 'linux') {
+                $('keep-on-screen-help').textContent = 'Instead of your desktop’s default timing.';
+            }
         }
 
-        // Follow changes made from the tray menu or the shortcut
-        if (window.electronAPI && window.electronAPI.onDoNotDisturbChange) {
-            window.electronAPI.onDoNotDisturbChange((enabled) => {
-                doNotDisturb = !!enabled;
-                renderDndState();
+        api.onSettingsChange((settings) => {
+            state.settings = settings;
+            renderSettings();
+        });
+
+        // ── PIN dialog ──────────────────────────────────────────
+
+        const pinFields = {
+            current: $('pin-current'),
+            new: $('pin-new'),
+            confirm: $('pin-confirm'),
+        };
+        let pinSubmitHandler = null;
+
+        // Digits only
+        for (const input of [...Object.values(pinFields), $('lock-pin')]) {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/\D/g, '');
             });
         }
 
-        dndBtn.addEventListener('click', () => {
-            doNotDisturb = !doNotDisturb;
-            renderDndState();
-            console.log('[TitleBar] Do Not Disturb:', doNotDisturb ? 'ENABLED' : 'DISABLED');
+        function lockErrorText(result) {
+            if (result.retryAfterMs) {
+                return `Too many tries. Try again in ${Math.ceil(result.retryAfterMs / 1000)} seconds.`;
+            }
+            switch (result.error) {
+                case 'wrong-pin': return 'That PIN isn’t right.';
+                case 'invalid-pin': return 'Use 4 to 12 digits.';
+                case 'no-pin': return 'Set a PIN first.';
+                case 'locked': return 'Unlock the app first.';
+                default: return 'Something went wrong. Please try again.';
+            }
+        }
 
-            if (window.electronAPI && window.electronAPI.setDoNotDisturb) {
-                window.electronAPI.setDoNotDisturb(doNotDisturb);
+        /**
+         * Show the PIN dialog. `fields` picks the inputs (current / new /
+         * confirm); `onSubmit(values)` returns a LockResult, and the dialog
+         * stays open with the error until it succeeds or is cancelled.
+         */
+        function openPinDialog({ title, text, fields, submitLabel, onSubmit }) {
+            $('pin-title').textContent = title;
+            $('pin-text').textContent = text;
+            $('pin-submit').textContent = submitLabel;
+            $('pin-error').textContent = '';
+
+            for (const [name, input] of Object.entries(pinFields)) {
+                input.value = '';
+                input.closest('.field').hidden = !fields.includes(name);
+            }
+
+            pinSubmitHandler = onSubmit;
+            $('pin-dialog').hidden = false;
+            pinFields[fields[0]].focus();
+        }
+
+        function closePinDialog() {
+            $('pin-dialog').hidden = true;
+            pinSubmitHandler = null;
+            for (const input of Object.values(pinFields)) {
+                input.value = '';
+            }
+        }
+
+        $('pin-cancel').addEventListener('click', closePinDialog);
+        $('pin-dialog').addEventListener('mousedown', (event) => {
+            if (event.target === $('pin-dialog')) closePinDialog();
+        });
+
+        $('pin-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!pinSubmitHandler) return;
+
+            const values = {
+                current: pinFields.current.value,
+                new: pinFields.new.value,
+                confirm: pinFields.confirm.value,
+            };
+
+            const needsNew = !pinFields.new.closest('.field').hidden;
+            if (needsNew && !/^\d{4,12}$/.test(values.new)) {
+                $('pin-error').textContent = 'Use 4 to 12 digits.';
+                return;
+            }
+            if (needsNew && values.new !== values.confirm) {
+                $('pin-error').textContent = 'The two PINs don’t match.';
+                return;
+            }
+
+            $('pin-submit').disabled = true;
+            const result = await pinSubmitHandler(values);
+            $('pin-submit').disabled = false;
+
+            if (result.ok) {
+                closePinDialog();
             } else {
-                console.error('[TitleBar] setDoNotDisturb not available!');
+                $('pin-error').textContent = lockErrorText(result);
+                pinFields.current.value = '';
             }
         });
 
-        // Handle GitHub link click in modal (if modal is shown)
-        githubLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            const url = 'https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial';
-            if (window.electronAPI && window.electronAPI.openExternal) {
-                window.electronAPI.openExternal(url);
+        // Choosing when to lock. The select snaps back until the change
+        // is confirmed with a PIN.
+        $('lock-mode').addEventListener('change', () => {
+            const mode = $('lock-mode').value;
+            const lock = state.settings.appLock;
+            const lockOn = lock.mode !== 'off' && lock.hasPin;
+            renderSettings();
+
+            if (mode === (lockOn ? lock.mode : 'off')) return;
+
+            if (!lock.hasPin) {
+                openPinDialog({
+                    title: 'Set a PIN',
+                    text: 'You’ll enter this PIN to open Messenger Desktop.',
+                    fields: ['new', 'confirm'],
+                    submitLabel: 'Turn on lock',
+                    onSubmit: async (values) => {
+                        const set = await api.changePin('', values.new);
+                        return set.ok ? api.setLockMode(mode, values.new) : set;
+                    },
+                });
+            } else if (mode === 'off') {
+                openPinDialog({
+                    title: 'Turn off app lock',
+                    text: 'Enter your PIN to turn the lock off. The PIN will be removed.',
+                    fields: ['current'],
+                    submitLabel: 'Turn off',
+                    onSubmit: (values) => api.setLockMode('off', values.current),
+                });
             } else {
-                // Fallback for development
-                window.open(url, '_blank');
+                openPinDialog({
+                    title: 'Change when the app locks',
+                    text: 'Enter your PIN to confirm.',
+                    fields: ['current'],
+                    submitLabel: 'Confirm',
+                    onSubmit: (values) => api.setLockMode(mode, values.current),
+                });
             }
         });
 
-        console.log('[TitleBar] Initialization complete');
+        $('change-pin').addEventListener('click', () => {
+            openPinDialog({
+                title: 'Change PIN',
+                text: 'Enter your current PIN, then the new one.',
+                fields: ['current', 'new', 'confirm'],
+                submitLabel: 'Change PIN',
+                onSubmit: (values) => api.changePin(values.current, values.new),
+            });
+        });
+
+        // ── Lock screen ─────────────────────────────────────────
+
+        let retryTimer = null;
+
+        function setLockWaiting(untilMs) {
+            clearInterval(retryTimer);
+            const tick = () => {
+                const left = Math.ceil((untilMs - Date.now()) / 1000);
+                const waiting = left > 0;
+                $('unlock-btn').disabled = waiting;
+                $('lock-pin').disabled = waiting;
+                $('lock-error').textContent = waiting ? `Too many tries. Try again in ${left} seconds.` : '';
+                if (!waiting) {
+                    clearInterval(retryTimer);
+                    $('lock-pin').focus();
+                }
+            };
+            tick();
+            retryTimer = setInterval(tick, 1000);
+        }
+
+        function renderLock() {
+            renderScreens();
+            if (state.locked) {
+                closePinDialog();
+                $('lock-pin').value = '';
+                $('lock-pin').focus();
+            } else {
+                $('lock-error').textContent = '';
+            }
+        }
+
+        $('lock-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const pin = $('lock-pin').value;
+            if (pin === '') return;
+
+            $('unlock-btn').disabled = true;
+            const result = await api.unlock(pin);
+            $('unlock-btn').disabled = false;
+            $('lock-pin').value = '';
+
+            if (result.ok) return; // lock-state-changed hides the screen
+
+            if (result.retryAfterMs) {
+                setLockWaiting(Date.now() + result.retryAfterMs);
+            } else {
+                $('lock-error').textContent = lockErrorText(result);
+                $('lock-pin').focus();
+            }
+        });
+
+        $('forgot-pin').addEventListener('click', () => {
+            api.forgotPin();
+        });
+
+        api.onLockStateChange((locked) => {
+            state.locked = locked;
+            if (locked) {
+                state.settingsOpen = false;
+            }
+            renderLock();
+        });
+
+        // ── Offline screen ──────────────────────────────────────
+        // The main process hides Messenger when it can't be reached and
+        // reloads it by itself once the connection is back.
+
+        function renderConnection(status) {
+            state.connection = status;
+            renderScreens();
+            if (status.state === 'online') return;
+
+            // Connected to a network that can't reach Messenger yet is
+            // typical right after waking up
+            if (status.networkAvailable) {
+                $('offline-title').textContent = 'Can’t reach Messenger';
+                $('offline-text').textContent = 'Your connection may still be starting up. Messenger will reload automatically as soon as it can connect.';
+            } else {
+                $('offline-title').textContent = 'You’re offline';
+                $('offline-text').textContent = 'Check your Wi-Fi or network connection. Messenger will reload automatically when you’re back online.';
+            }
+
+            const connecting = status.state === 'connecting';
+            $('offline-retry').disabled = connecting;
+            $('offline-retry').classList.toggle('busy', connecting);
+            $('offline-retry-label').textContent = connecting ? 'Connecting…' : 'Retry';
+        }
+
+        api.onConnectionStatusChange(renderConnection);
+
+        // ── Start ───────────────────────────────────────────────
+
+        renderLock();
+
+        Promise.all([
+            api.getAppInfo(),
+            api.getSettings(),
+            api.getLockState(),
+            api.getConnectionStatus(),
+        ]).then(([info, settings, locked, connection]) => {
+            state.info = info;
+            state.settings = settings;
+            state.locked = locked;
+            renderAppInfo();
+            renderSettings();
+            renderLock();
+            renderConnection(connection);
+            console.log('[TitleBar] Initialization complete');
+        }).catch((error) => {
+            console.error('[TitleBar] Failed to load state:', error);
+        });
     </script>
 </body>
 </html>

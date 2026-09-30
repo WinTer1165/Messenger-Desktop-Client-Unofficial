@@ -41,6 +41,8 @@ import {
 import * as path from 'path';
 import { TRAY_UPDATE_DEBOUNCE_MS, TrayState } from '../shared/types';
 import * as dnd from './do-not-disturb';
+import * as settings from './settings';
+import * as appLock from './app-lock';
 import { checkForUpdatesInteractive } from './updater';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -55,8 +57,12 @@ const currentState: TrayState = {
   lastUpdate: 0,
 };
 
-// Base tray icon (cached)
+// Base tray icon, and the same with an unread dot (cached)
 let baseIcon: NativeImage | null = null;
+let unreadIcon: NativeImage | null = null;
+
+// Opens the settings page (set by main)
+let openSettingsHandler: (() => void) | null = null;
 
 // ═══════════════════════════════════════════════════════════════════
 // ICON GENERATION
@@ -152,6 +158,65 @@ function createGeneratedIcon(): NativeImage {
     height: size,
     scaleFactor: 1.0,
   });
+}
+
+/**
+ * Blend a colour over a pixel of a premultiplied BGRA bitmap.
+ * `alpha` is the colour's coverage, 0..1.
+ */
+function blendPixel(
+  canvas: Buffer,
+  offset: number,
+  r: number,
+  g: number,
+  b: number,
+  alpha: number
+): void {
+  const keep = 1 - alpha;
+  canvas[offset] = Math.round(b * alpha + canvas[offset] * keep);
+  canvas[offset + 1] = Math.round(g * alpha + canvas[offset + 1] * keep);
+  canvas[offset + 2] = Math.round(r * alpha + canvas[offset + 2] * keep);
+  canvas[offset + 3] = Math.round(255 * alpha + canvas[offset + 3] * keep);
+}
+
+/**
+ * The tray icon with a red dot in its bottom-right corner, shown while
+ * anything is unread - with the window hidden to the tray, the tooltip
+ * was the only hint. A thin white ring keeps the dot readable on light
+ * and dark taskbars alike.
+ */
+function createUnreadIcon(): NativeImage {
+  if (unreadIcon) return unreadIcon;
+
+  const base = createBaseIcon();
+  const { width, height } = base.getSize();
+  const canvas = Buffer.from(base.toBitmap());
+
+  const radius = width * 0.3;
+  const ring = Math.max(1, width * 0.07);
+  const centerX = width - radius;
+  const centerY = height - radius;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const distance = Math.sqrt(
+        Math.pow(x + 0.5 - centerX, 2) + Math.pow(y + 0.5 - centerY, 2)
+      );
+      const ringCoverage = Math.max(0, Math.min(1, radius - distance + 0.5));
+      const dotCoverage = Math.max(0, Math.min(1, radius - ring - distance + 0.5));
+      const offset = (y * width + x) * 4;
+
+      if (ringCoverage > 0) {
+        blendPixel(canvas, offset, 255, 255, 255, ringCoverage);
+      }
+      if (dotCoverage > 0) {
+        blendPixel(canvas, offset, 255, 59, 48, dotCoverage);
+      }
+    }
+  }
+
+  unreadIcon = nativeImage.createFromBuffer(canvas, { width, height });
+  return unreadIcon;
 }
 
 /**
@@ -254,6 +319,10 @@ function createContextMenu(): Menu {
       label: 'Show Messenger',
       click: () => showWindow(),
     },
+    {
+      label: 'Settings…',
+      click: () => openSettingsHandler?.(),
+    },
     { type: 'separator' },
     {
       label: 'Do Not Disturb',
@@ -262,14 +331,9 @@ function createContextMenu(): Menu {
       click: (menuItem) => dnd.setEnabled(menuItem.checked),
     },
     {
-      label: 'Start with System',
-      type: 'checkbox',
-      checked: app.getLoginItemSettings().openAtLogin,
-      click: (menuItem) => {
-        app.setLoginItemSettings({
-          openAtLogin: menuItem.checked,
-        });
-      },
+      label: 'Lock Now',
+      enabled: settings.getAppLockMode() !== 'off' && appLock.hasPin() && !appLock.isLocked(),
+      click: () => appLock.lock('tray menu'),
     },
     { type: 'separator' },
     {
@@ -287,9 +351,10 @@ function createContextMenu(): Menu {
 }
 
 /**
- * Rebuild the tray context menu so its checkbox states match settings.
+ * Rebuild the tray context menu so its items match the current state.
+ * Exported for state kept outside the settings (the app being locked).
  */
-function refreshContextMenu(): void {
+export function refreshContextMenu(): void {
   if (!tray || tray.isDestroyed()) return;
 
   tray.setContextMenu(createContextMenu());
@@ -335,8 +400,9 @@ function toggleWindow(): void {
  * 
  * @param window - The main BrowserWindow instance
  */
-export function initializeTray(window: BrowserWindow): void {
+export function initializeTray(window: BrowserWindow, openSettings: () => void): void {
   mainWindow = window;
+  openSettingsHandler = openSettings;
 
   // Create tray icon
   const icon = createBaseIcon();
@@ -346,9 +412,9 @@ export function initializeTray(window: BrowserWindow): void {
   tray.setToolTip('Messenger');
   tray.setContextMenu(createContextMenu());
 
-  // Rebuild the menu when Do Not Disturb is toggled elsewhere (title bar
-  // button, keyboard shortcut) so the checkbox never goes stale
-  dnd.onChange(refreshContextMenu);
+  // Rebuild the menu when settings change elsewhere (settings page,
+  // title bar, keyboard shortcut) so it never goes stale
+  settings.onChange(refreshContextMenu);
 
   // Click behavior (platform-specific)
   if (process.platform === 'darwin') {
@@ -405,9 +471,10 @@ function performUnreadUpdate(count: number): void {
 
   console.log(`[Tray] Unread count: ${previousCount} -> ${count}`);
 
-  // Update tray tooltip
-  if (tray) {
+  // Update tray tooltip, and a red dot on the icon while anything is unread
+  if (tray && !tray.isDestroyed()) {
     tray.setToolTip(count > 0 ? `Messenger (${count} unread)` : 'Messenger');
+    tray.setImage(count > 0 ? createUnreadIcon() : createBaseIcon());
   }
 
   // Platform-specific updates
@@ -480,6 +547,8 @@ export function destroyTray(): void {
 
   mainWindow = null;
   baseIcon = null;
+  unreadIcon = null;
+  openSettingsHandler = null;
 
   console.log('[Tray] Destroyed');
 }

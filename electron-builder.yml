@@ -75,6 +75,20 @@ linux:
   icon: assets/icons
   category: Network
   maintainer: aminulislamlabib@gmail.com
+  # "maximum" builds the AppImage's SquashFS with xz, which the AppImage
+  # catalog (appimage.github.io) test runtime can't mount - it only
+  # supports zlib and zstd. Windows and macOS keep "maximum".
+  compression: normal
+  # AppStream metadata for Linux software catalogs (the AppImage catalog,
+  # software centers). The AppImage's root is the app folder, so these
+  # land in its usr/share. appstreamcli also wants the desktop file under
+  # usr/share/applications, but electron-builder only writes one at the
+  # AppImage's root - keep this copy in step with that one.
+  extraFiles:
+    - from: linux/io.github.winter1165.MessengerDesktopUnofficial.appdata.xml
+      to: usr/share/metainfo/io.github.winter1165.MessengerDesktopUnofficial.appdata.xml
+    - from: linux/messenger-desktop-unofficial.desktop
+      to: usr/share/applications/messenger-desktop-unofficial.desktop
 
 # Auto-update configuration (optional)
 publish:

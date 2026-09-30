@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "npm run build && electron .",
-    "build": "tsc && cp -f src/renderer/*.html dist/renderer/",
+    "build": "tsc && node scripts/copy-renderer.js",
     "build:watch": "tsc --watch",
     "start": "electron .",
     "lint": "eslint src --ext .ts",

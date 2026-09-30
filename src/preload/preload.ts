@@ -3,13 +3,32 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import {
-  IPC_CHANNELS,
-  IPC_MAIN_CHANNELS,
+import type {
+  IpcChannel,
+  IpcMainChannel,
   MessengerBridgeAPI,
   UnreadCountPayload,
   ErrorReportPayload,
 } from '../shared/types';
+
+// ═══════════════════════════════════════════════════════════════════
+// CHANNELS
+// ═══════════════════════════════════════════════════════════════════
+
+// A sandboxed preload can only require('electron'). Importing values
+// from ../shared/types compiled to a require() that threw at load time
+// and silently disabled this whole script, so the channel names are
+// repeated here - the `satisfies` checks keep them in step with
+// shared/types. Type-only imports are erased and are fine.
+const IPC_CHANNELS = {
+  UNREAD_COUNT_UPDATE: 'messenger:unread-count',
+  ERROR_REPORT: 'error:report',
+  APP_READY: 'app:ready',
+} as const satisfies Record<string, IpcChannel>;
+
+const IPC_MAIN_CHANNELS = {
+  WINDOW_FOCUS_CHANGED: 'window:focus-changed',
+} as const satisfies Record<string, IpcMainChannel>;
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE
@@ -323,6 +342,42 @@ const messengerBridgeAPI: MessengerBridgeAPI = {
   },
 
   /**
+   * Show a notification natively - used by the notification patch in
+   * place of the web Notification API. Fire-and-forget.
+   * Validated and rate-limited in the main process.
+   */
+  showNotification: (request: unknown): void => {
+    if (typeof request !== 'object' || request === null) {
+      console.warn('[Preload] Invalid notification from web content');
+      return;
+    }
+
+    // Copy only the known fields; the main process validates them
+    const data = request as Record<string, unknown>;
+    safeSend('notification-show', {
+      id: data.id,
+      title: data.title,
+      body: data.body,
+      icon: data.icon,
+      tag: data.tag,
+      silent: data.silent,
+    });
+  },
+
+  /**
+   * Close a notification shown with showNotification. Fire-and-forget.
+   * Validated and rate-limited in the main process.
+   */
+  closeNotification: (id: number): void => {
+    if (!Number.isInteger(id) || id < 1 || id > 1_000_000_000) {
+      console.warn('[Preload] Invalid notification id from web content:', id);
+      return;
+    }
+
+    safeSend('notification-close', id);
+  },
+
+  /**
    * Get current platform.
    * Read-only, sanitized to prevent fingerprinting.
    */
@@ -350,21 +405,8 @@ function initialize(): void {
     contextBridge.exposeInMainWorld('messengerBridge', messengerBridgeAPI);
     console.log('[Preload] API exposed as window.messengerBridge');
 
-    // Expose electron API for title bar controls
-    contextBridge.exposeInMainWorld('electronAPI', {
-      minimizeWindow: () => safeSend('window-minimize'),
-      maximizeWindow: () => safeSend('window-maximize'),
-      closeWindow: () => safeSend('window-close'),
-      zoomIn: () => safeSend('zoom-in'),
-      zoomOut: () => safeSend('zoom-out'),
-      zoomReset: () => safeSend('zoom-reset'),
-      onZoomLevelChange: (callback: (level: number) => void) => {
-        ipcRenderer.on('zoom-level-changed', (_event, level: number) => {
-          callback(level);
-        });
-      },
-    });
-    console.log('[Preload] electronAPI exposed for title bar');
+    // The title bar's window/zoom API comes from titlebar-preload.
+    // messenger.com is untrusted, so it gets no copy of it here.
   } catch (error) {
     console.error('[Preload] Failed to expose API:', error);
     return;

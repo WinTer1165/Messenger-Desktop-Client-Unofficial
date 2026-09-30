@@ -79,20 +79,29 @@ import {
   attachWindowStateListeners,
   restoreWindowState,
 } from './window-manager';
-import { initializeTray, destroyTray } from './tray';
+import { initializeTray, destroyTray, refreshContextMenu } from './tray';
 import {
   registerIpcHandlers,
   unregisterIpcHandlers,
   notifyFocusChange,
+  sendToRenderer,
   setZoomFunctions,
   setThemeChangeCallback,
   setGoToHomeCallback,
+  setForgotPinCallback,
   getMinimizeToTray,
 } from './ipc-handlers';
+import * as connectivity from './connectivity';
+import * as notifications from './notifications';
+import * as appLock from './app-lock';
+import { attachOverlays, setOverlay } from './overlays';
+import { initializeAppDialogs, showAppDialog } from './app-dialog';
+import { startStorageMaintenance, stopStorageMaintenance } from './storage';
 import {
   createApplicationMenu,
   registerShortcuts,
   setMessengerView,
+  setOpenSettingsHandler,
   zoomIn,
   zoomOut,
   zoomReset,
@@ -119,6 +128,21 @@ function resolveTheme(setting: ThemeSetting): string {
 // Concrete theme currently in effect (never 'auto').
 // Resolved from the saved setting during initializeApp().
 let currentTheme: string = 'dark';
+
+/**
+ * Windows files notifications and taskbar buttons under an App User
+ * Model ID. Must match `appId` in electron-builder.yml, which the
+ * installer stamps on the Start Menu shortcut: then toasts show the
+ * app's name and icon instead of a generated "electron.app.*" ID, and
+ * the running window groups with a pinned taskbar shortcut.
+ */
+const APP_USER_MODEL_ID = 'com.messenger-desktop-unofficial';
+
+// Unpackaged runs have no shortcut carrying the ID, so they keep
+// Electron's default
+if (process.platform === 'win32' && app.isPackaged) {
+  app.setAppUserModelId(APP_USER_MODEL_ID);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // PATH RESOLUTION
@@ -219,29 +243,22 @@ function configureSession(): Electron.Session {
     return true;
   });
 
-  // Block unwanted content (ads, tracking)
+  // Block unwanted content (ads, tracking). Chromium matches the URL
+  // filter itself, so only requests being blocked ever reach this
+  // callback - listening on every URL made each of Messenger's requests
+  // wait on a round trip through the main process.
+  const blockedUrls = [
+    '*://*.doubleclick.net/*',
+    '*://*.googlesyndication.com/*',
+    '*://*.facebook.com/tr/*', // Facebook pixel
+    '*://*.fbsbx.com/*',       // Some FB tracking
+  ];
+
   messengerSession.webRequest.onBeforeRequest(
-    { urls: ['*://*/*'] },
+    { urls: blockedUrls },
     (details, callback) => {
-      const url = details.url;
-
-      // Block known tracking/ad domains (extend as needed)
-      const blockedPatterns = [
-        /\.doubleclick\.net/,
-        /\.googlesyndication\.com/,
-        /facebook\.com\/tr\//,  // Facebook pixel
-        /\.fbsbx\.com/,         // Some FB tracking
-      ];
-
-      for (const pattern of blockedPatterns) {
-        if (pattern.test(url)) {
-          console.log(`[Session] Blocked: ${url}`);
-          callback({ cancel: true });
-          return;
-        }
-      }
-
-      callback({ cancel: false });
+      console.log(`[Session] Blocked: ${details.url}`);
+      callback({ cancel: true });
     }
   );
 
@@ -349,12 +366,23 @@ function handleDisplayMediaRequest(
  * - Log errors and fail gracefully
  * 
  * What this CSS does:
- * - Removes some padding to maximize content area
- * - Adjusts for our custom window chrome (if using frameless)
+ * - Hides the page-level scrollbar at the window edge
  * - Hides promotional banners
  */
 const CUSTOM_CSS = `
 /* Custom styles for Messenger Desktop Wrapper - Minimal changes only */
+
+/* Hide the page-level scrollbar at the window edge (messenger.com sets
+   overflow-y: scroll on body, which puts one on the viewport). Only the
+   root is targeted - scrollbar-width is not inherited - so Messenger's
+   own scroll areas keep theirs, and the page still scrolls by wheel. */
+html {
+  scrollbar-width: none !important;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+}
 
 /* Hide "Get the Messenger app" banners */
 [role="banner"] a[href*="messenger.com/desktop"],
@@ -367,6 +395,166 @@ const CUSTOM_CSS = `
   display: none !important;
 }
 `;
+
+/**
+ * The logged-out page puts the login form bottom-left under a huge
+ * headline, so in a normal-sized window the form ends up cut off at the
+ * bottom. While it's showing, the form's column is centered in the
+ * window instead, on a plain white page.
+ *
+ * Everything is scoped to html.mdw-login, which LOGIN_PAGE_SCRIPT only
+ * sets when the page looks as expected - otherwise Facebook's own layout
+ * stays untouched.
+ */
+const LOGIN_PAGE_CSS = `
+html.mdw-login,
+html.mdw-login body {
+  overflow: hidden !important;
+}
+html.mdw-login body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: #fff;
+}
+html.mdw-login .mdw-login-column {
+  position: fixed !important;
+  z-index: 2147483001 !important;
+  inset: 0 !important;
+  margin: auto !important;
+  width: min(400px, calc(100vw - 48px)) !important;
+  height: fit-content !important;
+  max-height: calc(100vh - 40px) !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  padding: 0 !important;
+}
+html.mdw-login .mdw-login-column h1 {
+  margin: 0 0 12px !important;
+  font-size: 34px !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+}
+html.mdw-login .mdw-login-column p {
+  margin: 0 0 20px !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  text-align: center !important;
+}
+html.mdw-login #login_form input[type="text"],
+html.mdw-login #login_form input[type="password"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+html.mdw-login #login_form div:has(> #loginbutton) {
+  justify-content: center !important;
+}
+/* The checkbox is placed absolutely inside its row, so the row is
+   shrunk to fit and centered rather than re-laid out */
+html.mdw-login #login_form div:has(> label input[type="checkbox"]) {
+  width: fit-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+/* Short windows: a smaller headline and no blurb, so the whole form fits */
+@media (max-height: 600px) {
+  html.mdw-login .mdw-login-column h1 {
+    margin-bottom: 16px !important;
+    font-size: 26px !important;
+  }
+  html.mdw-login .mdw-login-column p {
+    display: none !important;
+  }
+}
+`;
+
+/**
+ * Marks the login page for LOGIN_PAGE_CSS - only the plain landing page.
+ *
+ * After Log In the page normally moves on to Messenger by itself, so the
+ * layout stays put while that happens (switching back straight away made
+ * the page jump). But Facebook can also ask for its next step on this
+ * same page ("Continue as…", a two-factor code, "check your other
+ * device"), and the white backdrop would hide it - the login looked like
+ * it had done nothing. So if the page is still here a few seconds after
+ * Log In, Facebook's own layout comes back for good.
+ *
+ * It also steps aside while something else has to be seen (a cookie
+ * consent dialog, an error outside the form's column), and when the
+ * page doesn't look as expected at all.
+ */
+const LOGIN_PAGE_SCRIPT = `
+  (function() {
+    if (window.__mdwLoginLayout) return;
+    window.__mdwLoginLayout = true;
+
+    // The landing page only - never the pages the login leads to
+    if (!['/', '/login', '/login/'].includes(location.pathname)) return;
+
+    const form = document.getElementById('login_form');
+    if (!form) return;
+
+    // The column holding the headline, the blurb and the form
+    let column = form.parentElement;
+    while (column && column !== document.body && !column.querySelector('h1')) {
+      column = column.parentElement;
+    }
+    if (!column || column === document.body || column.querySelectorAll('h1').length !== 1) return;
+    column.classList.add('mdw-login-column');
+
+    // Still on this page this long after Log In: Facebook wants something here
+    const GIVE_WAY_AFTER_MS = 6000;
+
+    let gaveWay = false;
+    let attemptTimer = null;
+    const observer = new MutationObserver(update);
+
+    function update() {
+      const somethingElseShowing = [...document.querySelectorAll('[role="dialog"], [role="alert"], #error_box')]
+        .some((el) => !column.contains(el) && el.getClientRects().length > 0);
+      const useLayout = !gaveWay && form.isConnected && !somethingElseShowing;
+
+      document.documentElement.classList.toggle('mdw-login', useLayout);
+      if (gaveWay) {
+        observer.disconnect();
+      }
+    }
+
+    // Capture phase, so this runs before Facebook's own handlers
+    const onLogInAttempt = () => {
+      if (attemptTimer) return;
+      attemptTimer = setTimeout(() => {
+        gaveWay = true;
+        update();
+      }, GIVE_WAY_AFTER_MS);
+    };
+    form.addEventListener('submit', onLogInAttempt, true);
+    form.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') onLogInAttempt();
+    }, true);
+    const logInButton = document.getElementById('loginbutton');
+    if (logInButton) {
+      logInButton.addEventListener('click', onLogInAttempt, true);
+    }
+
+    update();
+    observer.observe(document.body, { childList: true, subtree: true });
+  })();
+`;
+
+/**
+ * Center the login form (see LOGIN_PAGE_CSS). Does nothing on any other
+ * page.
+ */
+async function injectLoginLayout(view: WebContentsView): Promise<void> {
+  try {
+    await view.webContents.insertCSS(LOGIN_PAGE_CSS);
+    await view.webContents.executeJavaScript(LOGIN_PAGE_SCRIPT);
+  } catch (error) {
+    console.error('[LoginLayout] Failed to inject:', error);
+  }
+}
 
 /**
  * Generate theme-specific CSS for messenger content.
@@ -405,6 +593,11 @@ async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
         let observer = null;
         let lastScrollTime = Date.now();
         const SCROLL_DEBOUNCE = 100; // ms
+
+        // Searching for the container reads layout on many elements, so
+        // while none is found, search at most this often
+        const SEARCH_INTERVAL = 1000; // ms
+        let lastSearchTime = 0;
 
         // Function to find the message container
         function findMessageContainer() {
@@ -456,6 +649,11 @@ async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
         // the bottom, so reading old messages is never interrupted.
         function scrollToBottom(smooth = true, force = false) {
           if (!scrollContainer) {
+            const now = Date.now();
+            if (now - lastSearchTime < SEARCH_INTERVAL) {
+              return;
+            }
+            lastSearchTime = now;
             scrollContainer = findMessageContainer();
           }
 
@@ -474,7 +672,6 @@ async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
               top: scrollContainer.scrollHeight,
               behavior: smooth ? 'smooth' : 'auto'
             });
-            console.log('[AutoScroll] Scrolled to bottom');
           }
         }
 
@@ -492,14 +689,22 @@ async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
             return;
           }
 
+          // Messenger mutates this subtree constantly (hover toolbars,
+          // typing indicators), so batch the checks to one per frame.
+          // Frames don't run while the window is hidden, which pauses
+          // the work in the background too.
+          let checkQueued = false;
           observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-              // Check if nodes were added (new messages)
-              if (mutation.addedNodes.length > 0) {
-                scrollToBottom(true);
-                break;
-              }
-            }
+            if (checkQueued) return;
+
+            // Only added nodes (new messages) matter
+            if (!mutations.some((mutation) => mutation.addedNodes.length > 0)) return;
+
+            checkQueued = true;
+            requestAnimationFrame(() => {
+              checkQueued = false;
+              scrollToBottom(true);
+            });
           });
 
           observer.observe(mainElement, {
@@ -539,48 +744,16 @@ async function injectAutoScrollJS(view: WebContentsView): Promise<void> {
 }
 
 /**
- * Inject a wrapper around window.Notification so that clicking a
- * desktop notification brings the app window to the front (Messenger's
- * own click handling still runs - we only add focus behavior).
+ * Inject the notification patch (see notifications.ts), which relays
+ * Messenger's notifications to be shown natively. Messenger's own click
+ * handling still runs - events are relayed back to the page.
  *
  * Runs in the page's main world, where the contextBridge API
  * (window.messengerBridge) is available.
  */
-async function injectNotificationClickHandler(view: WebContentsView): Promise<void> {
-  const script = `
-    (function() {
-      if (window.__mdwNotificationPatched) return;
-      window.__mdwNotificationPatched = true;
-
-      const NativeNotification = window.Notification;
-      if (!NativeNotification) return;
-
-      function PatchedNotification(title, options) {
-        const notification = new NativeNotification(title, options);
-        notification.addEventListener('click', function() {
-          try {
-            if (window.messengerBridge && window.messengerBridge.focusWindow) {
-              window.messengerBridge.focusWindow();
-            }
-          } catch (e) { /* ignore */ }
-        });
-        return notification;
-      }
-
-      PatchedNotification.requestPermission =
-        NativeNotification.requestPermission.bind(NativeNotification);
-      Object.defineProperty(PatchedNotification, 'permission', {
-        get: function() { return NativeNotification.permission; },
-      });
-      PatchedNotification.prototype = NativeNotification.prototype;
-
-      window.Notification = PatchedNotification;
-      console.log('[NotificationPatch] Click-to-focus enabled');
-    })();
-  `;
-
+async function injectNotificationPatch(view: WebContentsView): Promise<void> {
   try {
-    await view.webContents.executeJavaScript(script);
+    await view.webContents.executeJavaScript(notifications.getPageScript());
   } catch (error) {
     console.error('[NotificationPatch] Failed to inject:', error);
   }
@@ -660,9 +833,9 @@ function setupContextMenu(view: WebContentsView): void {
  * Accepts a theme setting (possibly 'auto'), persists it, and applies
  * the resolved concrete theme.
  */
-function handleThemeChange(theme: string): void {
-  settings.setTheme(theme as ThemeSetting);
-  currentTheme = resolveTheme(theme as ThemeSetting);
+function handleThemeChange(theme: ThemeSetting): void {
+  settings.setTheme(theme);
+  currentTheme = resolveTheme(theme);
   console.log(`[Theme] Setting: ${theme}, resolved: ${currentTheme}`);
 
   // Re-inject CSS into messenger view
@@ -844,8 +1017,10 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
   view.webContents.on('will-navigate', (event, url) => applyNavigationPolicy(event, url));
   view.webContents.on('will-redirect', (event, url) => applyNavigationPolicy(event, url));
 
-  // Detect successful login and navigate to Messenger
+  // Detect successful login and navigate to Messenger. A committed page
+  // also means the network works, which ends the offline screen.
   view.webContents.on('did-navigate', (_event, url) => {
+    connectivity.handleNavigated();
     void handleMessengerNavigation(view, url);
   });
 
@@ -885,6 +1060,9 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
   view.webContents.on('did-create-window', (childWindow, details) => {
     console.log('[BrowserView] Child window created:', details.url);
 
+    // Count it as a call (notifications can pause during calls)
+    notifications.trackCallWindow(childWindow);
+
     // Apply theme colors to call window
     const themeColors: Record<string, string> = {
       'dark': '#1a1d29',
@@ -892,7 +1070,14 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
       'lush-forest': '#064e3b',
       'contrast': '#000000',
       'desert': '#7c2d12',
-      'electric': '#4c1d95'
+      'electric': '#4c1d95',
+      'northern-lights': '#07141a',
+      'sakura-bloom': '#fff5fa',
+      'deep-ocean': '#04111f',
+      'cosmic-nebula': '#10061d',
+      'sunset-drive': '#150f2e',
+      'arctic-frost': '#f4faff',
+      'neon-city': '#07070d',
     };
     const bgColor = themeColors[currentTheme] || themeColors['dark'];
     childWindow.setBackgroundColor(bgColor);
@@ -970,12 +1155,19 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
     });
   });
 
+  // Styles and the notification patch go in as soon as the DOM exists,
+  // so the page never flashes the edge scrollbar or promo banners while
+  // it loads, and no early notification slips past the patch
+  view.webContents.on('dom-ready', () => {
+    void injectCustomCSS(view, currentTheme);
+    void injectNotificationPatch(view);
+    void injectLoginLayout(view);
+  });
+
   // Handle page load events
   view.webContents.on('did-finish-load', () => {
     console.log('[MessengerView] Page loaded');
-    void injectCustomCSS(view, currentTheme);
     void injectAutoScrollJS(view);
-    void injectNotificationClickHandler(view);
   });
 
   // Handle page load errors
@@ -988,9 +1180,17 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
 
       // ERR_ABORTED is what our own preventDefault() produces; the view
       // still holds its previous page, so there is nothing to recover
-      if (isMainFrame && errorCode !== ERR_ABORTED) {
-        restoreIfStranded(view);
+      if (!isMainFrame || errorCode === ERR_ABORTED) {
+        return;
       }
+
+      // No network (or not yet, after waking): show the offline screen,
+      // which reloads Messenger once the connection is back
+      if (isInAppUrl(validatedURL) && connectivity.handleLoadFailure(errorCode)) {
+        return;
+      }
+
+      restoreIfStranded(view);
     }
   );
 
@@ -1104,7 +1304,14 @@ function createMainWindow(): BrowserWindow {
   const titleBarPath = path.join(__dirname, '..', 'renderer', 'titlebar.html');
 
   console.log('[Window] Loading title bar from:', titleBarPath);
-  window.loadFile(titleBarPath).catch((error: unknown) => {
+  // The theme and lock state ride along so the first frame is already
+  // right - no flash of the default theme, no gap before the lock screen
+  window.loadFile(titleBarPath, {
+    query: {
+      theme: currentTheme,
+      locked: appLock.isLockSetUp() ? '1' : '0',
+    },
+  }).catch((error: unknown) => {
     console.error('[Window] Failed to load title bar:', error);
     console.error('[Window] Attempted path:', titleBarPath);
   });
@@ -1131,14 +1338,20 @@ function createMainWindow(): BrowserWindow {
     }
   }, 100);
 
-  // Handle window focus for notifications
+  // Handle window focus for notifications. Cards on screen have done
+  // their job once the user is looking at the app.
   window.on('focus', () => {
     notifyFocusChange(true);
+    notifications.closeAllNotifications();
   });
 
   window.on('blur', () => {
     notifyFocusChange(false);
   });
+
+  // Keep the title bar's maximize/restore glyph in step
+  window.on('maximize', () => sendToRenderer('window-maximized-changed', true));
+  window.on('unmaximize', () => sendToRenderer('window-maximized-changed', false));
 
   // Handle close to tray (configurable by user)
   window.on('close', (event) => {
@@ -1166,9 +1379,122 @@ function createMainWindow(): BrowserWindow {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * Open the settings page (tray menu, Ctrl/Cmd+,): bring the window up
+ * and let the title bar document show it.
+ */
+function openSettings(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+  mainWindow.show();
+  mainWindow.focus();
+  sendToRenderer('open-settings');
+}
+
+/**
+ * Push the current settings to the title bar document. Module-level so
+ * re-initialising (macOS) doesn't register it twice.
+ */
+function broadcastSettings(): void {
+  sendToRenderer('settings-changed', settings.getSnapshot());
+}
+
+/**
+ * The app lock engaged or released: cover or uncover Messenger.
+ */
+function handleLockChange(locked: boolean): void {
+  setOverlay('lock', locked);
+  if (locked) {
+    // The settings page must not stay reachable behind the lock, and
+    // cards already on screen may show names and text
+    setOverlay('settings', false);
+    notifications.closeAllNotifications();
+  }
+
+  sendToRenderer('lock-state-changed', locked);
+  refreshContextMenu();
+}
+
+/**
+ * Sign out of Messenger on this computer: every login, remembered
+ * account and piece of chat data in the Messenger session goes.
+ *
+ * Messenger is unloaded first, so none of the old session stays on
+ * screen and nothing is open that could write it back while it is being
+ * cleared - the page keeps chats in local databases, and a still-loaded
+ * page is what used to bring them straight back. Ends on the login page.
+ *
+ * The session stays valid on Facebook's side until it expires; it can
+ * be ended there under "Where you're logged in".
+ */
+async function signOutOfMessenger(view: WebContentsView): Promise<void> {
+  const ses = view.webContents.session;
+  console.log('[SignOut] Signing out of Messenger');
+
+  await view.webContents.loadURL('about:blank').catch(() => {
+    // Leaving the page is all that matters here
+  });
+
+  await ses.clearStorageData();
+  await Promise.all([ses.clearCache(), ses.clearAuthCache(), ses.clearCodeCaches({})]);
+
+  // No login cookie may survive, whatever clearStorageData missed
+  for (const cookie of await ses.cookies.get({})) {
+    const host = (cookie.domain ?? '').replace(/^\./, '');
+    await ses.cookies
+      .remove(`https://${host}${cookie.path ?? '/'}`, cookie.name)
+      .catch(() => {
+        // Already gone
+      });
+  }
+  await ses.cookies.flushStore();
+  settings.setHasLoggedIn(false);
+
+  const leftover = (await ses.cookies.get({})).length;
+  console.log(`[SignOut] Session cleared (${leftover} cookies left)`);
+
+  // Straight to the login page - without a network, the offline screen
+  await view.webContents.loadURL(MESSENGER_URL).catch((error: unknown) => {
+    console.warn('[SignOut] Login page did not load:', error);
+  });
+}
+
+/**
+ * "Forgot PIN?" on the lock screen: without the PIN, the only way in is
+ * to sign out. Asks first; the lock screen stays up until the login
+ * page is showing.
+ *
+ * @returns whether the user went ahead
+ */
+async function handleForgotPin(): Promise<boolean> {
+  if (!messengerView || !appLock.isLocked()) return false;
+
+  const response = await showAppDialog({
+    type: 'warning',
+    title: 'Forgot your PIN?',
+    message: 'Sign out to remove the lock.',
+    detail:
+      'Without the PIN, the only way back in is to sign out of Messenger on this computer. ' +
+      'This removes your login, saved accounts and the chat data stored here. ' +
+      'You can sign in again right after.',
+    buttons: ['Cancel', 'Sign out'],
+    defaultId: 0,
+    cancelId: 0,
+    dangerId: 1,
+  });
+  if (response !== 1) return false;
+
+  await signOutOfMessenger(messengerView);
+  appLock.resetAfterSignOut();
+  return true;
+}
+
+/**
  * Initialize the application.
  */
-async function initializeApp(): Promise<void> {
+function initializeApp(): void {
   console.log('[App] Initializing...');
   console.log(`[App] Electron: ${process.versions.electron}`);
   console.log(`[App] Chrome: ${process.versions.chrome}`);
@@ -1195,11 +1521,23 @@ async function initializeApp(): Promise<void> {
   registerIpcHandlers(mainWindow);
 
   // Initialize tray
-  initializeTray(mainWindow);
+  initializeTray(mainWindow, openSettings);
+
+  // Messenger's notifications are shown natively (see notifications.ts)
+  notifications.initializeNotifications(mainWindow);
 
   // Create and attach the messenger view
   messengerView = createMessengerView(messengerSession);
   attachMessengerView(mainWindow, messengerView);
+
+  // The offline screen, settings page, lock screen and app dialogs take
+  // Messenger's place by hiding the view (see overlays.ts)
+  attachOverlays(mainWindow, messengerView);
+  initializeAppDialogs(mainWindow, messengerView);
+
+  // App lock - locks right away if one is set up, before anything of
+  // Messenger is visible
+  appLock.initializeAppLock(mainWindow, handleLockChange);
 
   // Create application menu
   createApplicationMenu(mainWindow);
@@ -1220,14 +1558,37 @@ async function initializeApp(): Promise<void> {
   // Set up go to home callback
   setGoToHomeCallback(handleGoToHome);
 
+  // "Forgot PIN?" on the lock screen signs out
+  setForgotPinCallback(handleForgotPin);
+
+  // Ctrl/Cmd+, opens the settings page
+  setOpenSettingsHandler(openSettings);
+
+  // Keep the settings page (and title bar) in step with every change
+  settings.onChange(broadcastSettings);
+
   // Start the auto-updater (no-op in development / on unsupported platforms)
-  initializeAutoUpdater(() => mainWindow);
+  initializeAutoUpdater();
+
+  // Offline screen: hide the chat view when Messenger can't be reached
+  // and let the title bar show the offline screen
+  connectivity.initializeConnectivity(messengerView, (status) => {
+    setOverlay('offline', status.state !== 'online');
+    sendToRenderer('connection-status-changed', status);
+  });
+
+  // Keep the V8 code cache from growing without bound
+  startStorageMaintenance(messengerSession);
 
   // Load Messenger. Login detection lives in createMessengerView's
   // did-navigate handler, so first launch and returning users share
-  // the same path.
+  // the same path. Not awaited: with no network yet (Wi-Fi down, just
+  // woke up) the load fails, and the offline screen takes it from
+  // there - a failed load must never abort startup.
   console.log(`[App] Loading ${MESSENGER_URL}`);
-  await messengerView.webContents.loadURL(MESSENGER_URL);
+  messengerView.webContents.loadURL(MESSENGER_URL).catch((error: unknown) => {
+    console.warn('[App] Initial load did not complete:', error);
+  });
 
   // Show main window
   mainWindow.show();
@@ -1246,6 +1607,12 @@ function cleanupApp(): void {
 
   // Destroy tray
   destroyTray();
+
+  // Stop background timers
+  connectivity.stopConnectivity();
+  stopStorageMaintenance();
+  appLock.stopAppLock();
+  notifications.stopNotifications();
 
   // Clear references
   messengerView = null;
@@ -1293,7 +1660,7 @@ if (!gotTheLock) {
   // Activate (macOS dock click)
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      void initializeApp();
+      initializeApp();
     } else if (mainWindow) {
       mainWindow.show();
     }
