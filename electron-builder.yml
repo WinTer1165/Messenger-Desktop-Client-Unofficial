@@ -90,6 +90,12 @@ linux:
     - from: linux/messenger-desktop-unofficial.desktop
       to: usr/share/applications/messenger-desktop-unofficial.desktop
 
+# The .deb target inherits the linux options, and linux.compression
+# ("normal", for the AppImage) is not a .deb compression - fpm only
+# takes gz, bzip2 or xz - so it is set explicitly here.
+deb:
+  compression: xz
+
 # Auto-update configuration (optional)
 publish:
   provider: github
