@@ -8,11 +8,12 @@ explains how to report one and what to expect.
 ## Supported Versions
 
 Security fixes are released for the latest version only. Older versions are not
-patched — please update before reporting.
+patched, so please update before reporting.
 
 | Version | Supported |
 | ------- | --------- |
-| 2.1.x   | ✅ Yes |
+| 3.0.x   | ✅ Yes |
+| 2.1.x   | ❌ No |
 | 2.0.x   | ❌ No |
 | < 2.0   | ❌ No |
 
@@ -28,7 +29,7 @@ Public reports expose users who haven't updated yet.
 
 Report privately by email:
 
-**aminulislamlabib@gmail.com** — with `SECURITY` in the subject line.
+**aminulislamlabib@gmail.com**, with `SECURITY` in the subject line.
 
 If private vulnerability reporting is enabled on this repository, you can also
 use GitHub's **Security → Report a vulnerability** flow, which opens a private
@@ -38,12 +39,12 @@ advisory visible only to the maintainers.
 
 The more of this you can provide, the faster it can be triaged:
 
-- **The type of issue** — remote code execution, session/cookie exposure,
+- **The type of issue**: remote code execution, session/cookie exposure,
   sandbox escape, navigation bypass, IPC abuse, dependency vulnerability, etc.
 - **Affected version(s)** and the platform you reproduced on
 - **Full steps to reproduce**, including any file, URL, or payload involved
 - **A proof of concept**, if you have one
-- **The impact** — what an attacker gains, and what access they need to start
+- **The impact**: what an attacker gains, and what access they need to start
 - Any suggested fix, if you have one in mind
 
 ### What to expect
@@ -61,7 +62,7 @@ is determined not to be a vulnerability.
 ### Disclosure
 
 Please give the maintainers a reasonable window to ship a fix before disclosing
-publicly — 90 days is the usual expectation, or sooner once a patched release is
+publicly. 90 days is the usual expectation, or sooner once a patched release is
 out. Reporters are credited in the release notes and the security advisory
 unless they'd rather stay anonymous.
 
@@ -85,7 +86,7 @@ unless they'd rather stay anonymous.
 - **Vulnerabilities in Electron or Chromium upstream.** Report those to the
   [Electron security team](https://github.com/electron/electron/security/policy).
   This project will pick up the fix in its next Electron bump.
-- **Missing code signing / notarization.** Known and documented — see below.
+- **Missing code signing / notarization.** Known and documented, see below.
 - Issues that require an already-compromised machine, physical access, or a
   malicious local admin.
 - Social engineering of users or maintainers.
@@ -105,25 +106,27 @@ These are deliberate trade-offs, not undisclosed vulnerabilities:
   right-click → Open workaround.
 - **The Facebook session cookie is stored locally** by Electron's session store,
   the same way a browser stores it. Anyone with access to your user account on
-  the machine can read it — as with any browser profile.
+  the machine can read it, as with any browser profile.
 
 ## Security Design
 
 For context when assessing a report, the app is built with these controls:
 
-- **Context isolation enabled** — page scripts cannot reach the preload realm
-- **Chromium sandbox enabled** — OS-level renderer process isolation
-- **Node integration disabled** — web content has no access to Node APIs
+- **Context isolation enabled**: page scripts cannot reach the preload realm
+- **Chromium sandbox enabled**: OS-level renderer process isolation
+- **Node integration disabled**: web content has no access to Node APIs
 - **Web security and mixed-content protection left on**
 - **Messenger's own Content-Security-Policy is preserved**, not stripped
-- **Navigation allowlist** — `will-navigate` and the window-open handler restrict
+- **Navigation allowlist**: `will-navigate` and the window-open handler restrict
   in-app navigation to Messenger/Facebook origins; other links open in the
   system browser
-- **Permission allowlist** — only the permissions Messenger needs are granted;
+- **Permission allowlist**: only the permissions Messenger needs are granted;
   everything else is denied and logged
-- **Validated IPC** — payloads crossing the process boundary are checked, and the
+- **Validated IPC**: payloads crossing the process boundary are checked, and the
   context bridge exposes a small, specific API rather than a generic escape hatch
-- **No telemetry** — the app talks to Facebook and to GitHub for updates, nothing else
+- **No telemetry**: the app talks to Facebook and to GitHub for updates, nothing else
+- **Optional app lock**: the PIN is stored only as a salted scrypt hash, and wrong
+  guesses slow down after a few tries. It hides Messenger; it does not encrypt data
 
 Contributors: the same rules are spelled out in
 [CONTRIBUTING.md](CONTRIBUTING.md#security-rules-for-contributors).
@@ -137,8 +140,8 @@ A few things worth knowing:
   or the [project website](https://winter1165.github.io/Webpage-for-Messenger-Desktop-Client-Unofficial/).
   Builds from anywhere else are not ours.
 - **Keep the app updated.** It checks for updates automatically; you can also
-  check manually from the tray menu.
-- **Your password is never handled by this app** — the login page is Facebook's
+  check manually from Settings or the tray menu.
+- **Your password is never handled by this app**: the login page is Facebook's
   own, loaded directly from Facebook.
 - **To sign out everywhere**, use Facebook's own
   [security settings](https://www.facebook.com/settings?tab=security) to revoke
