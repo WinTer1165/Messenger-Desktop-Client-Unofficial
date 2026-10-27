@@ -494,6 +494,16 @@
             stroke-width: 1;
         }
 
+        /* macOS draws its own window buttons at the left of the bar */
+        body.is-mac .titlebar {
+            padding-left: 80px;
+            padding-right: 8px;
+        }
+
+        body.is-mac .window-controls {
+            display: none;
+        }
+
         #maximize .glyph-restore,
         #maximize.maximized .glyph-maximize {
             display: none;
@@ -1539,6 +1549,12 @@
         // First paint uses the theme the main process passed in, so there
         // is no flash of the default before the settings arrive
         applyTheme(new URLSearchParams(location.search).get('theme') || 'dark');
+
+        // The native macOS window buttons replace our own
+        document.body.classList.toggle(
+            'is-mac',
+            new URLSearchParams(location.search).get('platform') === 'darwin'
+        );
 
         systemDarkQuery.addEventListener('change', () => {
             if (state.settings && state.settings.theme === 'auto') {

@@ -1282,7 +1282,10 @@ function createMainWindow(): BrowserWindow {
     frame: false,
     titleBarStyle: 'hidden',
     titleBarOverlay: false,
-    
+
+    // macOS keeps its native window buttons; centre them in the 40px bar
+    trafficLightPosition: { x: 14, y: 12 },
+
     // Show when ready
     show: false,
     backgroundColor: '#ffffff',
@@ -1305,12 +1308,14 @@ function createMainWindow(): BrowserWindow {
   const titleBarPath = path.join(__dirname, '..', 'renderer', 'titlebar.html');
 
   console.log('[Window] Loading title bar from:', titleBarPath);
-  // The theme and lock state ride along so the first frame is already
-  // right - no flash of the default theme, no gap before the lock screen
+  // The theme, lock state and platform ride along so the first frame is
+  // already right - no flash of the default theme, no gap before the lock
+  // screen, no Windows caption buttons beside the macOS ones
   window.loadFile(titleBarPath, {
     query: {
       theme: currentTheme,
       locked: appLock.isLockSetUp() ? '1' : '0',
+      platform: process.platform,
     },
   }).catch((error: unknown) => {
     console.error('[Window] Failed to load title bar:', error);
