@@ -247,11 +247,12 @@ function configureSession(): Electron.Session {
   // filter itself, so only requests being blocked ever reach this
   // callback - listening on every URL made each of Messenger's requests
   // wait on a round trip through the main process.
+  // fbsbx.com must stay reachable: it is Facebook's sandbox domain for
+  // attachments and for the login checkpoint's reCAPTCHA iframe.
   const blockedUrls = [
     '*://*.doubleclick.net/*',
     '*://*.googlesyndication.com/*',
     '*://*.facebook.com/tr/*', // Facebook pixel
-    '*://*.fbsbx.com/*',       // Some FB tracking
   ];
 
   messengerSession.webRequest.onBeforeRequest(
