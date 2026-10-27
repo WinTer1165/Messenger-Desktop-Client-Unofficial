@@ -90,6 +90,8 @@ jobs:
             release/Messenger-Desktop-Unofficial-*-Portable-*.zip
           retention-days: 30
 
+      # The blockmaps and update feed come along so a manual run can
+      # replace a release's macOS files without leaving stale checksums
       - name: Upload macOS Artifacts
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -98,6 +100,8 @@ jobs:
           path: |
             release/*.dmg
             release/*.zip
+            release/*.dmg.blockmap
+            release/latest-mac.yml
           retention-days: 30
 
       - name: Upload Linux Artifacts
