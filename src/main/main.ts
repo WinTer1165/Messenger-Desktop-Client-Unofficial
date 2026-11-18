@@ -62,7 +62,7 @@ import * as path from 'path';
 import {
   MESSENGER_URL,
   SESSION_PARTITION,
-  ThemeSetting,
+  ThemeId,
 } from '../shared/types';
 import * as settings from './settings';
 import * as dnd from './do-not-disturb';
@@ -87,6 +87,8 @@ import {
   sendToRenderer,
   setZoomFunctions,
   setThemeChangeCallback,
+  setThemeRefreshCallback,
+  endThemePreview,
   setGoToHomeCallback,
   setForgotPinCallback,
   getMinimizeToTray,
@@ -98,6 +100,7 @@ import { attachOverlays, setOverlay } from './overlays';
 import { initializeAppDialogs, showAppDialog } from './app-dialog';
 import { startStorageMaintenance, stopStorageMaintenance } from './storage';
 import { applyMessengerTheme } from './messenger-theme';
+import { findCustomTheme, getPreviewTheme } from './custom-themes';
 import {
   createApplicationMenu,
   registerShortcuts,
@@ -119,7 +122,7 @@ let messengerView: WebContentsView | null = null;
  * Resolve a theme setting to a concrete theme.
  * 'auto' follows the OS light/dark preference.
  */
-function resolveTheme(setting: ThemeSetting): string {
+function resolveTheme(setting: ThemeId): string {
   if (setting === 'auto') {
     return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
   }
@@ -129,6 +132,14 @@ function resolveTheme(setting: ThemeSetting): string {
 // Concrete theme currently in effect (never 'auto').
 // Resolved from the saved setting during initializeApp().
 let currentTheme: string = 'dark';
+
+/**
+ * The theme Messenger and the call windows should show: the custom theme
+ * being previewed in the settings page, if any, else the one in effect.
+ */
+function effectiveTheme(): string {
+  return getPreviewTheme()?.id ?? currentTheme;
+}
 
 /**
  * Windows files notifications and taskbar buttons under an App User
@@ -823,12 +834,21 @@ function setupContextMenu(view: WebContentsView): void {
  * Accepts a theme setting (possibly 'auto'), persists it, and applies
  * the resolved concrete theme.
  */
-function handleThemeChange(theme: ThemeSetting): void {
+function handleThemeChange(theme: ThemeId): void {
   settings.setTheme(theme);
   currentTheme = resolveTheme(theme);
   console.log(`[Theme] Setting: ${theme}, resolved: ${currentTheme}`);
 
   applyThemeToMessenger();
+}
+
+/**
+ * Load-time query for the title bar when a custom theme is in effect:
+ * its validated tokens as JSON.
+ */
+function customThemeQuery(): Record<string, string> {
+  const custom = findCustomTheme(currentTheme);
+  return custom ? { ctheme: JSON.stringify(custom) } : {};
 }
 
 /** Call windows open right now, which carry the theme too. */
@@ -840,11 +860,12 @@ const callWindows = new Set<BrowserWindow>();
  * changed.
  */
 function applyThemeToMessenger(): void {
+  console.log(`[Theme] Applying ${effectiveTheme()}${getPreviewTheme() ? ' (preview)' : ''} to Messenger`);
   if (messengerView) {
-    void applyMessengerTheme(messengerView.webContents, currentTheme);
+    void applyMessengerTheme(messengerView.webContents, effectiveTheme());
   }
   for (const callWindow of callWindows) {
-    void applyMessengerTheme(callWindow.webContents, currentTheme);
+    void applyMessengerTheme(callWindow.webContents, effectiveTheme());
   }
 }
 
@@ -1081,7 +1102,10 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
       'arctic-frost': '#f4faff',
       'neon-city': '#07070d',
     };
-    const bgColor = themeColors[currentTheme] || themeColors['dark'];
+    const theme = effectiveTheme();
+    const bgColor = Object.hasOwn(themeColors, theme)
+      ? themeColors[theme]
+      : (findCustomTheme(theme)?.bg ?? themeColors['dark']);
     childWindow.setBackgroundColor(bgColor);
 
     // Set custom icon for call window
@@ -1153,7 +1177,7 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
     callWindows.add(childWindow);
     childWindow.on('closed', () => callWindows.delete(childWindow));
     childWindow.webContents.on('dom-ready', () => {
-      void applyMessengerTheme(childWindow.webContents, currentTheme, true);
+      void applyMessengerTheme(childWindow.webContents, effectiveTheme(), true);
     });
   });
 
@@ -1162,7 +1186,7 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
   // it loads, and no early notification slips past the patch
   view.webContents.on('dom-ready', () => {
     void injectCustomCSS(view);
-    void applyMessengerTheme(view.webContents, currentTheme, true);
+    void applyMessengerTheme(view.webContents, effectiveTheme(), true);
     void injectNotificationPatch(view);
     void injectLoginLayout(view);
   });
@@ -1316,6 +1340,9 @@ function createMainWindow(): BrowserWindow {
   window.loadFile(titleBarPath, {
     query: {
       theme: currentTheme,
+      // A custom theme's tokens, so its first frame is right too; the
+      // document validates them again before use
+      ...customThemeQuery(),
       locked: appLock.isLockSetUp() ? '1' : '0',
       platform: process.platform,
     },
@@ -1415,6 +1442,8 @@ function broadcastSettings(): void {
 function handleLockChange(locked: boolean): void {
   setOverlay('lock', locked);
   if (locked) {
+    // A theme being tried out is not saved: back to the real one
+    endThemePreview();
     // The settings page must not stay reachable behind the lock, and
     // cards already on screen may show names and text
     setOverlay('settings', false);
@@ -1562,6 +1591,9 @@ function initializeApp(): void {
 
   // Set up theme change callback
   setThemeChangeCallback(handleThemeChange);
+
+  // Custom themes: re-apply after a save, or a preview starting or ending
+  setThemeRefreshCallback(applyThemeToMessenger);
 
   // Set up go to home callback
   setGoToHomeCallback(handleGoToHome);

@@ -129,6 +129,44 @@ export const VALID_THEMES: readonly ThemeSetting[] = [
   'neon-city',
 ] as const;
 
+/** Id of a user-made theme: `custom-` and 8 lowercase hex characters. */
+export type CustomThemeId = `custom-${string}`;
+
+/** What the `theme` setting holds: a built-in theme or a user-made one. */
+export type ThemeId = ThemeSetting | CustomThemeId;
+
+/**
+ * A user-made theme: the tokens the title bar document and Messenger's
+ * theming are built from. Colours are lower-case #rrggbb. Generated in
+ * the title bar document; validated in the main process before it is
+ * stored or turned into CSS (see main/custom-themes.ts).
+ */
+export interface CustomTheme {
+  id: CustomThemeId;
+  /** 1-30 characters, no control characters */
+  name: string;
+  /** Light theme (picks the light scheme and Messenger's light mode) */
+  light: boolean;
+  /** Page background */
+  bg: string;
+  /** Primary text */
+  fg: string;
+  /** Secondary text */
+  muted: string;
+  /** Accent: links, highlights */
+  accent: string;
+  /** Fill for things written on in white (own message bubbles, primary buttons) */
+  solid: string;
+  /** Title bar gradient start and end */
+  barFrom: string;
+  barTo: string;
+  /** Title bar text */
+  barFg: string;
+}
+
+/** Most custom themes that can be saved */
+export const MAX_CUSTOM_THEMES = 20;
+
 /**
  * When the app lock asks for the PIN.
  * off    - never
@@ -152,7 +190,9 @@ export const LOCK_AWAY_MINUTES: readonly number[] = [1, 5, 15, 30, 60] as const;
  * title bar document reads it and asks for changes.
  */
 export interface AppSettings {
-  theme: ThemeSetting;
+  theme: ThemeId;
+  /** User-made themes, in the order they were saved */
+  customThemes: CustomTheme[];
   doNotDisturb: boolean;
   /** Keep message notifications up for 8 seconds */
   keepNotificationsOnScreen: boolean;

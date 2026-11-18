@@ -26,6 +26,7 @@
 
 import { WebContents } from 'electron';
 import * as settings from './settings';
+import { findCustomTheme } from './custom-themes';
 
 interface Palette {
   /** Whether this is a light theme (picks Messenger's mode) */
@@ -66,6 +67,26 @@ const PALETTES: Record<string, Palette> = {
   'arctic-frost': { light: true, bg: '#f4faff', fg: '#082f49', muted: '#3f6c8a', accent: '#0284c7' },
   'neon-city': { light: false, bg: '#07070d', fg: '#e0f7ff', muted: '#f0abfc', accent: '#f472b6', solid: '#db2777' },
 };
+
+/**
+ * The palette for a theme id: a built-in theme, or a custom theme (the
+ * one being previewed, or a saved one - see custom-themes.ts, which only
+ * hands out validated themes, so every colour here is a plain #rrggbb).
+ */
+function resolvePalette(theme: string): Palette | null {
+  if (Object.hasOwn(PALETTES, theme)) return PALETTES[theme];
+
+  const custom = findCustomTheme(theme);
+  if (!custom) return null;
+  return {
+    light: custom.light,
+    bg: custom.bg,
+    fg: custom.fg,
+    muted: custom.muted,
+    accent: custom.accent,
+    solid: custom.solid,
+  };
+}
 
 /** `amount`% of the text colour mixed into the surface: a lifted tone. */
 function lift(palette: Palette, amount: number): string {
@@ -165,8 +186,8 @@ function getProperties(palette: Palette): Record<string, string> {
  * Everything hangs off html.mdw-themed, which THEME_SCRIPT sets.
  */
 export function getMessengerThemeCSS(theme: string): string {
-  if (!Object.hasOwn(PALETTES, theme)) return '';
-  const palette = PALETTES[theme];
+  const palette = resolvePalette(theme);
+  if (!palette) return '';
 
   const declarations = Object.entries(getProperties(palette))
     .map(([name, value]) => `  --${name}: ${value} !important;`)
@@ -259,8 +280,9 @@ export async function applyMessengerTheme(
 ): Promise<void> {
   if (contents.isDestroyed()) return;
 
-  const css = settings.getThemeMessenger() ? getMessengerThemeCSS(theme) : '';
-  const mode = css === '' ? 'null' : PALETTES[theme].light ? "'light'" : "'dark'";
+  const palette = settings.getThemeMessenger() ? resolvePalette(theme) : null;
+  const css = palette ? getMessengerThemeCSS(theme) : '';
+  const mode = palette ? (palette.light ? "'light'" : "'dark'") : 'null';
 
   try {
     const previous = insertedCss.get(contents);

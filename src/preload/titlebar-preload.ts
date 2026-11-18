@@ -13,6 +13,7 @@ import type {
   AppLockMode,
   AppSettings,
   ConnectionStatus,
+  CustomTheme,
   LockResult,
 } from '../shared/types';
 
@@ -64,6 +65,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setSettingsOpen: (open: boolean) => ipcRenderer.send('settings-page', open),
   // Tray menu "Settings…" and Ctrl+,
   onOpenSettings: (callback: () => void) => listen('open-settings', callback),
+
+  // Custom themes. The main process validates every theme it is sent.
+  saveCustomTheme: (theme: CustomTheme): Promise<boolean> =>
+    ipcRenderer.invoke('custom-theme-save', theme) as Promise<boolean>,
+  deleteCustomTheme: (id: string) => ipcRenderer.send('custom-theme-delete', id),
+  // null ends the preview
+  previewCustomTheme: (theme: CustomTheme | null) =>
+    ipcRenderer.send('custom-theme-preview', theme),
 
   // App lock
   getLockState: (): Promise<boolean> =>

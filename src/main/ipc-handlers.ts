@@ -43,13 +43,18 @@ import {
   LockResult,
   LOCK_AWAY_MINUTES,
   NotificationRequest,
-  ThemeSetting,
+  ThemeId,
   toDisplayVersion,
   VALID_LOCK_MODES,
-  VALID_THEMES,
 } from '../shared/types';
 import { updateUnreadCount, stopFlashing } from './tray';
 import * as settings from './settings';
+import {
+  deleteCustomTheme,
+  getPreviewTheme,
+  saveCustomTheme,
+  setPreviewTheme,
+} from './custom-themes';
 import * as dnd from './do-not-disturb';
 import * as connectivity from './connectivity';
 import * as appLock from './app-lock';
@@ -64,7 +69,11 @@ let zoomOutFunc: (() => void) | null = null;
 let zoomResetFunc: (() => void) | null = null;
 
 // Theme change callback
-let themeChangeCallback: ((theme: ThemeSetting) => void) | null = null;
+let themeChangeCallback: ((theme: ThemeId) => void) | null = null;
+
+// Re-applies the theme in effect after a custom theme was saved, or a
+// preview started or ended
+let themeRefreshCallback: (() => void) | null = null;
 
 // Go to home callback
 let goToHomeCallback: (() => void) | null = null;
@@ -88,8 +97,16 @@ export function setZoomFunctions(
 /**
  * Set theme change callback from main module
  */
-export function setThemeChangeCallback(callback: (theme: ThemeSetting) => void): void {
+export function setThemeChangeCallback(callback: (theme: ThemeId) => void): void {
   themeChangeCallback = callback;
+}
+
+/**
+ * Set the callback that re-applies the theme in effect to Messenger and
+ * the call windows (custom theme saved, preview started or ended)
+ */
+export function setThemeRefreshCallback(callback: () => void): void {
+  themeRefreshCallback = callback;
 }
 
 /**
@@ -481,11 +498,14 @@ function handleUpdateSetting(event: IpcMainEvent, key: unknown, value: unknown):
   if (!isFromShell(event) || appLock.isLocked()) return;
 
   if (key === 'theme') {
-    if (typeof value !== 'string' || !VALID_THEMES.includes(value as ThemeSetting)) {
+    // A built-in theme, or the id of a custom theme that exists
+    if (typeof value !== 'string' || !settings.isKnownTheme(value)) {
       console.warn('[IPC] Invalid theme value:', value);
       return;
     }
-    themeChangeCallback?.(value as ThemeSetting);
+    // Choosing a theme ends any preview, so the choice is what shows
+    setPreviewTheme(null);
+    themeChangeCallback?.(value);
     return;
   }
 
@@ -514,6 +534,53 @@ function handleUpdateSetting(event: IpcMainEvent, key: unknown, value: unknown):
 function handleSettingsPage(event: IpcMainEvent, open: unknown): void {
   if (!isFromShell(event) || typeof open !== 'boolean') return;
   setOverlay('settings', open && !appLock.isLocked());
+
+  // A theme being tried out in the editor does not outlive the page
+  if (!open) endThemePreview();
+}
+
+// ─── Custom themes ────────────────────────────────────────────────
+
+/** Drop the theme being previewed, if any, and put the real one back. */
+export function endThemePreview(): void {
+  if (getPreviewTheme() === null) return;
+  setPreviewTheme(null);
+  themeRefreshCallback?.();
+}
+
+/**
+ * Save (create or replace) a custom theme. Resolves to whether it was
+ * accepted: the payload is validated in custom-themes.ts, and nothing
+ * is stored otherwise.
+ */
+function handleCustomThemeSave(event: IpcMainInvokeEvent, theme: unknown): boolean {
+  if (!isFromShell(event) || appLock.isLocked() || isRateLimited('custom-theme-save')) {
+    return false;
+  }
+
+  const saved = saveCustomTheme(theme);
+  if (saved) themeRefreshCallback?.();
+  return saved;
+}
+
+/** Delete a custom theme by id; deleting the one in use falls back to dark. */
+function handleCustomThemeDelete(event: IpcMainEvent, id: unknown): void {
+  if (!isFromShell(event) || appLock.isLocked()) return;
+
+  const { removed, wasActive } = deleteCustomTheme(id);
+  if (!removed) return;
+  if (wasActive) {
+    themeChangeCallback?.('dark');
+  } else {
+    themeRefreshCallback?.();
+  }
+}
+
+/** Preview a custom theme without saving it, or end the preview with null. */
+function handleCustomThemePreview(event: IpcMainEvent, theme: unknown): void {
+  if (!isFromShell(event) || appLock.isLocked()) return;
+
+  if (setPreviewTheme(theme)) themeRefreshCallback?.();
 }
 
 /** Versions shown in the title bar and the About section. */
@@ -716,6 +783,17 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     createHandler('settings-page', handleSettingsPage)
   );
 
+  // Custom themes (save, delete, preview)
+  ipcMain.handle('custom-theme-save', handleCustomThemeSave);
+  ipcMain.on(
+    'custom-theme-delete',
+    createHandler('custom-theme-delete', handleCustomThemeDelete)
+  );
+  ipcMain.on(
+    'custom-theme-preview',
+    createHandler('custom-theme-preview', handleCustomThemePreview)
+  );
+
   // App lock
   ipcMain.handle('get-lock-state', () => appLock.isLocked());
   ipcMain.handle('app-lock-unlock', handleUnlock);
@@ -767,6 +845,9 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeHandler('get-settings');
   ipcMain.removeAllListeners('update-setting');
   ipcMain.removeAllListeners('settings-page');
+  ipcMain.removeHandler('custom-theme-save');
+  ipcMain.removeAllListeners('custom-theme-delete');
+  ipcMain.removeAllListeners('custom-theme-preview');
   ipcMain.removeHandler('get-lock-state');
   ipcMain.removeHandler('app-lock-unlock');
   ipcMain.removeHandler('app-lock-change-pin');
@@ -781,6 +862,7 @@ export function unregisterIpcHandlers(): void {
   zoomOutFunc = null;
   zoomResetFunc = null;
   themeChangeCallback = null;
+  themeRefreshCallback = null;
   goToHomeCallback = null;
   forgotPinCallback = null;
   rateLimiter.clear();
