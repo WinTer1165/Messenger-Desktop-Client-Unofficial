@@ -189,7 +189,7 @@ It also locks when your computer locks or sleeps (except with "When the app star
 
 ### Themes
 
-Pick one in **Settings → Appearance**. Themes color the title bar, the app's own screens and call windows. Messenger itself keeps its own look.
+Pick one in **Settings → Appearance**. Themes color the whole window: the title bar, the app's own screens, call windows and Messenger itself (chat list, conversation, menus). To keep Messenger's stock light or dark look, turn off **Apply the theme to Messenger**; the theme then colors only the title bar and the app's screens.
 
 | | | | |
 |---|---|---|---|

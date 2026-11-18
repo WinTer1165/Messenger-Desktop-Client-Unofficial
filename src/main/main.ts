@@ -97,6 +97,7 @@ import * as appLock from './app-lock';
 import { attachOverlays, setOverlay } from './overlays';
 import { initializeAppDialogs, showAppDialog } from './app-dialog';
 import { startStorageMaintenance, stopStorageMaintenance } from './storage';
+import { applyMessengerTheme } from './messenger-theme';
 import {
   createApplicationMenu,
   registerShortcuts,
@@ -558,24 +559,12 @@ async function injectLoginLayout(view: WebContentsView): Promise<void> {
 }
 
 /**
- * Generate theme-specific CSS for messenger content.
- * MINIMAL - Only for call windows, does not modify main Messenger UI
- */
-function getThemeCSS(theme: string): string {
-  // Return empty CSS - keep original Messenger UI unchanged
-  return `
-/* Theme: ${theme} - No modifications to preserve original Messenger UI */
-`;
-}
-
-/**
  * Inject custom CSS into the messenger view.
  */
-async function injectCustomCSS(view: WebContentsView, theme: string = 'dark'): Promise<void> {
+async function injectCustomCSS(view: WebContentsView): Promise<void> {
   try {
     await view.webContents.insertCSS(CUSTOM_CSS);
-    await view.webContents.insertCSS(getThemeCSS(theme));
-    console.log('[CSS] Custom styles injected with theme:', theme);
+    console.log('[CSS] Custom styles injected');
   } catch (error) {
     console.error('[CSS] Failed to inject styles:', error);
   }
@@ -839,11 +828,23 @@ function handleThemeChange(theme: ThemeSetting): void {
   currentTheme = resolveTheme(theme);
   console.log(`[Theme] Setting: ${theme}, resolved: ${currentTheme}`);
 
-  // Re-inject CSS into messenger view
-  if (messengerView && !messengerView.webContents.isDestroyed()) {
-    messengerView.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error: unknown) => {
-      console.error('[Theme] Failed to inject theme CSS:', error);
-    });
+  applyThemeToMessenger();
+}
+
+/** Call windows open right now, which carry the theme too. */
+const callWindows = new Set<BrowserWindow>();
+
+/**
+ * Re-theme Messenger and any open call windows (see messenger-theme.ts)
+ * after the theme, or the setting that carries it into Messenger,
+ * changed.
+ */
+function applyThemeToMessenger(): void {
+  if (messengerView) {
+    void applyMessengerTheme(messengerView.webContents, currentTheme);
+  }
+  for (const callWindow of callWindows) {
+    void applyMessengerTheme(callWindow.webContents, currentTheme);
   }
 }
 
@@ -1147,12 +1148,12 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
       applyChildNavigationPolicy(event, url)
     );
 
-    // Inject theme CSS and auto-scroll into call window
-    childWindow.webContents.on('did-finish-load', () => {
-      console.log('[ChildWindow] Page loaded, injecting theme CSS and auto-scroll');
-      childWindow.webContents.insertCSS(getThemeCSS(currentTheme)).catch((error: unknown) => {
-        console.error('[ChildWindow] Failed to inject theme CSS:', error);
-      });
+    // The call window carries the theme too, and follows theme changes
+    // for as long as it is open
+    callWindows.add(childWindow);
+    childWindow.on('closed', () => callWindows.delete(childWindow));
+    childWindow.webContents.on('dom-ready', () => {
+      void applyMessengerTheme(childWindow.webContents, currentTheme, true);
     });
   });
 
@@ -1160,7 +1161,8 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
   // so the page never flashes the edge scrollbar or promo banners while
   // it loads, and no early notification slips past the patch
   view.webContents.on('dom-ready', () => {
-    void injectCustomCSS(view, currentTheme);
+    void injectCustomCSS(view);
+    void applyMessengerTheme(view.webContents, currentTheme, true);
     void injectNotificationPatch(view);
     void injectLoginLayout(view);
   });
@@ -1572,6 +1574,13 @@ function initializeApp(): void {
 
   // Keep the settings page (and title bar) in step with every change
   settings.onChange(broadcastSettings);
+
+  // "Apply the theme to Messenger" switched on or off
+  settings.onChange((key) => {
+    if (key === 'themeMessenger') {
+      applyThemeToMessenger();
+    }
+  });
 
   // Start the auto-updater (no-op in development / on unsupported platforms)
   initializeAutoUpdater();

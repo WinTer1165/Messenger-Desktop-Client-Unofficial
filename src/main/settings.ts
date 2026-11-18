@@ -22,6 +22,7 @@ interface SettingsSchema {
   keepNotificationsOnScreen: boolean;
   hideMessagePreviews: boolean;
   pauseNotificationsDuringCalls: boolean;
+  themeMessenger: boolean;
   theme: ThemeSetting;
   appLockMode: AppLockMode;
   appLockAwayMinutes: number;
@@ -44,6 +45,7 @@ const store = new ElectronStore<SettingsSchema>({
     keepNotificationsOnScreen: true,
     hideMessagePreviews: false,
     pauseNotificationsDuringCalls: true,
+    themeMessenger: true,
     theme: 'dark',
     appLockMode: 'off',
     appLockAwayMinutes: 5,
@@ -126,6 +128,14 @@ export function setPauseNotificationsDuringCalls(value: boolean): void {
   set('pauseNotificationsDuringCalls', value);
 }
 
+export function getThemeMessenger(): boolean {
+  return store.get('themeMessenger');
+}
+
+export function setThemeMessenger(value: boolean): void {
+  set('themeMessenger', value);
+}
+
 export function getTheme(): ThemeSetting {
   const theme = store.get('theme');
   return VALID_THEMES.includes(theme) ? theme : 'dark';
@@ -181,6 +191,7 @@ export function getSnapshot(): AppSettings {
     pauseNotificationsDuringCalls: getPauseNotificationsDuringCalls(),
     minimizeToTray: getMinimizeToTray(),
     startWithSystem: getStartWithSystem(),
+    themeMessenger: getThemeMessenger(),
     appLock: {
       mode: getAppLockMode(),
       awayMinutes: getAppLockAwayMinutes(),
