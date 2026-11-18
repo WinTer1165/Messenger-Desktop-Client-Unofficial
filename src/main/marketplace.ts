@@ -10,6 +10,11 @@
  *
  * The view is created on first use, in the same session partition as
  * Messenger (one Facebook login), and is dropped again on sign-out.
+ *
+ * It is Marketplace only, not Facebook in a window: the view stays on
+ * Marketplace and the pages needed to sign in, the rest of Facebook
+ * opens in the browser like any other link, and Facebook's top bar
+ * (feed, video, groups...) is hidden.
  */
 
 import { BrowserWindow, Session, WebContentsView } from 'electron';
@@ -34,6 +39,72 @@ let options: MarketplaceOptions | null = null;
 let view: WebContentsView | null = null;
 let removeBoundsListeners: (() => void) | null = null;
 let showing = false;
+
+/**
+ * Facebook paths the view may show besides Marketplace itself: signing
+ * in and the checks Facebook can put in the way of it.
+ */
+const ALLOWED_PATH_PREFIXES = [
+  '/marketplace',
+  '/commerce',
+  '/login',
+  '/checkpoint',
+  '/two_step_verification',
+  '/two_factor',
+  '/recover',
+  '/auth',
+  '/privacy',
+  '/cookie',
+  '/consent',
+  '/dialog',
+];
+
+/** Facebook's front page: where it sends people after signing in. */
+const HOME_PATHS = new Set(['/', '/home.php']);
+
+/**
+ * How often, at most, landing on Facebook's front page is answered with
+ * Marketplace before giving up - if Facebook keeps sending the view
+ * there (no Marketplace for this account or region), don't loop.
+ */
+const MAX_HOME_BOUNCES = 3;
+const HOME_BOUNCE_WINDOW_MS = 30_000;
+
+/**
+ * Hides Facebook's top bar, which leads everywhere but Marketplace.
+ * It is left alone while it holds the sign-in form (logged out).
+ * --header-height is what Facebook's layout reserves for the bar.
+ * (:has() can't be nested, hence the two-part selector for the root.)
+ */
+const MARKETPLACE_CSS = `
+[role="banner"]:not(:has(input[type="password"])) {
+  display: none !important;
+}
+:root:has([role="banner"]):not(:has([role="banner"] input[type="password"])) {
+  --header-height: 0px !important;
+}
+`;
+
+type Destination = 'marketplace' | 'home' | 'elsewhere';
+
+/** Where on Facebook a URL points (callers have checked it is in-app). */
+function classify(rawUrl: string): Destination {
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    // Media, attachments and other subdomains are not pages to restrict
+    if (host !== 'facebook.com' && host !== 'www.facebook.com') return 'marketplace';
+
+    const path = parsed.pathname.toLowerCase();
+    if (HOME_PATHS.has(path)) return 'home';
+    const allowed = ALLOWED_PATH_PREFIXES.some(
+      (prefix) => path === prefix || path.startsWith(prefix + '/') || path.startsWith(prefix + '.')
+    );
+    return allowed ? 'marketplace' : 'elsewhere';
+  } catch {
+    return 'elsewhere';
+  }
+}
 
 /** Whether a URL is Messenger's own site (not a link shim - callers unwrap first). */
 function isMessengerUrl(rawUrl: string): boolean {
@@ -101,13 +172,49 @@ function createView(): WebContentsView | null {
     hideMarketplace();
   };
 
-  const applyNavigationPolicy = (event: Electron.Event, url: string): void => {
+  const loadMarketplace = (): void => {
+    contents.loadURL(MARKETPLACE_URL).catch((error: unknown) => {
+      console.warn('[Marketplace] Load did not complete:', error);
+    });
+  };
+
+  // Facebook's front page is answered with Marketplace, a few times at most
+  let homeBounces: number[] = [];
+  const mayBounceHome = (): boolean => {
+    const now = Date.now();
+    homeBounces = homeBounces.filter((time) => now - time < HOME_BOUNCE_WINDOW_MS);
+    if (homeBounces.length >= MAX_HOME_BOUNCES) return false;
+    homeBounces.push(now);
+    return true;
+  };
+
+  const applyNavigationPolicy = (
+    event: Electron.Event,
+    url: string,
+    isMainFrame: boolean
+  ): void => {
     const target = unwrapRedirectUrl(url);
 
     if (isMessengerUrl(target)) {
       event.preventDefault();
       backToMessenger();
       return;
+    }
+
+    // Only the page itself is kept to Marketplace, not frames inside it
+    if (isMainFrame && isInAppUrl(target)) {
+      const destination = classify(target);
+      if (destination === 'home' && mayBounceHome()) {
+        event.preventDefault();
+        loadMarketplace();
+        return;
+      }
+      if (destination === 'elsewhere') {
+        console.log('[Marketplace] Rest of Facebook goes to the browser:', target);
+        event.preventDefault();
+        openInBrowser(target);
+        return;
+      }
     }
 
     if (isInAppUrl(target)) {
@@ -125,8 +232,37 @@ function createView(): WebContentsView | null {
     openInBrowser(target);
   };
 
-  contents.on('will-navigate', (event, url) => applyNavigationPolicy(event, url));
-  contents.on('will-redirect', (event, url) => applyNavigationPolicy(event, url));
+  contents.on('will-navigate', (event, url) => applyNavigationPolicy(event, url, true));
+  contents.on('will-redirect', (event, url, _isInPlace, isMainFrame) =>
+    applyNavigationPolicy(event, url, isMainFrame)
+  );
+
+  // Facebook is a single-page app: most of its links change the page
+  // without a navigation that could be stopped. When one of those leaves
+  // Marketplace, the destination opens in the browser and the view steps
+  // back to where it was.
+  contents.on('did-navigate-in-page', (_event, url, isMainFrame) => {
+    if (!isMainFrame || !isInAppUrl(url) || isMessengerUrl(url)) return;
+
+    const destination = classify(url);
+    if (destination === 'marketplace') return;
+
+    if (destination === 'elsewhere') {
+      console.log('[Marketplace] Rest of Facebook goes to the browser:', url);
+      openInBrowser(url);
+    }
+    if (contents.navigationHistory.canGoBack()) {
+      contents.navigationHistory.goBack();
+    } else {
+      loadMarketplace();
+    }
+  });
+
+  contents.on('dom-ready', () => {
+    contents.insertCSS(MARKETPLACE_CSS).catch((error: unknown) => {
+      console.error('[Marketplace] Failed to inject styles:', error);
+    });
+  });
 
   // Safety net: a navigation that slipped past the checks above
   contents.on('did-navigate', (_event, url) => {
@@ -141,7 +277,7 @@ function createView(): WebContentsView | null {
     const target = unwrapRedirectUrl(url);
     if (isMessengerUrl(target)) {
       backToMessenger();
-    } else if (isInAppUrl(target)) {
+    } else if (isInAppUrl(target) && classify(target) === 'marketplace') {
       contents.loadURL(target).catch((error: unknown) => {
         console.error('[Marketplace] Failed to load link:', error);
       });
@@ -181,9 +317,7 @@ function createView(): WebContentsView | null {
   created.setVisible(false);
 
   options.onViewCreated(created);
-  contents.loadURL(MARKETPLACE_URL).catch((error: unknown) => {
-    console.warn('[Marketplace] Load did not complete:', error);
-  });
+  loadMarketplace();
 
   return created;
 }
