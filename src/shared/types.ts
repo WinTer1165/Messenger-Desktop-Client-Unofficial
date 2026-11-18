@@ -162,6 +162,8 @@ export interface AppSettings {
   pauseNotificationsDuringCalls: boolean;
   minimizeToTray: boolean;
   startWithSystem: boolean;
+  /** Carry the theme into Messenger's own page */
+  themeMessenger: boolean;
   appLock: {
     mode: AppLockMode;
     awayMinutes: number;
@@ -176,7 +178,8 @@ export type BooleanSettingKey =
   | 'hideMessagePreviews'
   | 'pauseNotificationsDuringCalls'
   | 'minimizeToTray'
-  | 'startWithSystem';
+  | 'startWithSystem'
+  | 'themeMessenger';
 
 /** Outcome of an app lock request (unlock, PIN change, mode change). */
 export interface LockResult {
