@@ -472,7 +472,6 @@ const BOOLEAN_SETTINGS: Record<BooleanSettingKey, (value: boolean) => void> = {
   minimizeToTray: (value) => settings.setMinimizeToTray(value),
   startWithSystem: (value) => settings.setStartWithSystem(value),
   hideChatList: (value) => settings.setHideChatList(value),
-  hideChatInfo: (value) => settings.setHideChatInfo(value),
 };
 
 /**

@@ -174,14 +174,6 @@ export function registerShortcuts(contents: WebContents): void {
         }
         break;
 
-      case 'i':
-        // Ctrl/Cmd+Shift+I: collapse or restore conversation information
-        if (input.shift) {
-          event.preventDefault();
-          settings.setHideChatInfo(!settings.getHideChatInfo());
-        }
-        break;
-
       case ',':
         event.preventDefault();
         openSettingsHandler?.();

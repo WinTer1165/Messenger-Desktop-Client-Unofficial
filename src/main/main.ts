@@ -1575,9 +1575,9 @@ function initializeApp(): void {
   // Keep the settings page (and title bar) in step with every change
   settings.onChange(broadcastSettings);
 
-  // Collapse or restore Messenger's side panels (see panels.ts)
+  // Collapse or restore Messenger's chat list (see panels.ts)
   settings.onChange((key) => {
-    if ((key === 'hideChatList' || key === 'hideChatInfo') && messengerView) {
+    if (key === 'hideChatList' && messengerView) {
       void applyPanelState(messengerView.webContents);
     }
   });

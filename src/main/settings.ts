@@ -23,7 +23,6 @@ interface SettingsSchema {
   hideMessagePreviews: boolean;
   pauseNotificationsDuringCalls: boolean;
   hideChatList: boolean;
-  hideChatInfo: boolean;
   theme: ThemeSetting;
   appLockMode: AppLockMode;
   appLockAwayMinutes: number;
@@ -47,7 +46,6 @@ const store = new ElectronStore<SettingsSchema>({
     hideMessagePreviews: false,
     pauseNotificationsDuringCalls: true,
     hideChatList: false,
-    hideChatInfo: false,
     theme: 'dark',
     appLockMode: 'off',
     appLockAwayMinutes: 5,
@@ -138,14 +136,6 @@ export function setHideChatList(value: boolean): void {
   set('hideChatList', value);
 }
 
-export function getHideChatInfo(): boolean {
-  return store.get('hideChatInfo');
-}
-
-export function setHideChatInfo(value: boolean): void {
-  set('hideChatInfo', value);
-}
-
 export function getTheme(): ThemeSetting {
   const theme = store.get('theme');
   return VALID_THEMES.includes(theme) ? theme : 'dark';
@@ -202,7 +192,6 @@ export function getSnapshot(): AppSettings {
     minimizeToTray: getMinimizeToTray(),
     startWithSystem: getStartWithSystem(),
     hideChatList: getHideChatList(),
-    hideChatInfo: getHideChatInfo(),
     appLock: {
       mode: getAppLockMode(),
       awayMinutes: getAppLockAwayMinutes(),

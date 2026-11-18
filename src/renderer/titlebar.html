@@ -403,7 +403,7 @@
             display: inline;
         }
 
-        /* A collapsed panel's button is dimmed */
+        /* The chat list's button is dimmed while the list is collapsed */
         .panel-toggle[aria-pressed="false"] {
             color: var(--fg-muted);
         }
@@ -1266,12 +1266,6 @@
                         <path d="M9 3v18"/>
                     </svg>
                 </button>
-                <button id="info-toggle" class="icon-btn panel-toggle" title="Conversation information" aria-label="Show conversation information" aria-pressed="true">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <rect width="18" height="18" x="3" y="3" rx="2"/>
-                        <path d="M15 3v18"/>
-                    </svg>
-                </button>
                 <button id="dnd-toggle" class="icon-btn dnd-toggle" title="Do Not Disturb" aria-label="Do Not Disturb" aria-pressed="false">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M10.268 21a2 2 0 0 0 3.464 0"/>
@@ -1689,14 +1683,12 @@
             api.openExternal('https://github.com/WinTer1165/Messenger-Desktop-Client-Unofficial');
         });
 
-        // Collapse or restore Messenger's side panels
-        for (const [id, setting] of [['chats-toggle', 'hideChatList'], ['info-toggle', 'hideChatInfo']]) {
-            $(id).addEventListener('click', () => {
-                if (state.settings) {
-                    api.updateSetting(setting, !state.settings[setting]);
-                }
-            });
-        }
+        // Collapse or restore Messenger's chat list
+        $('chats-toggle').addEventListener('click', () => {
+            if (state.settings) {
+                api.updateSetting('hideChatList', !state.settings.hideChatList);
+            }
+        });
 
         $('dnd-toggle').addEventListener('click', () => {
             if (state.settings) {
@@ -1984,14 +1976,10 @@
                 ? 'Do Not Disturb: ON - notifications muted (Ctrl+Shift+D)'
                 : 'Do Not Disturb: OFF - notifications on (Ctrl+Shift+D)';
 
-            // Panel buttons in the title bar: pressed while the panel shows
+            // Chat list button in the title bar: pressed while the list shows
             const chats = $('chats-toggle');
             chats.setAttribute('aria-pressed', String(!settings.hideChatList));
             chats.title = (settings.hideChatList ? 'Show' : 'Hide') + ' chat list (Ctrl+Shift+L)';
-
-            const info = $('info-toggle');
-            info.setAttribute('aria-pressed', String(!settings.hideChatInfo));
-            info.title = (settings.hideChatInfo ? 'Show' : 'Hide') + ' conversation information (Ctrl+Shift+I)';
 
             // App lock
             const lock = settings.appLock;
