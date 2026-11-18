@@ -95,12 +95,19 @@ import * as connectivity from './connectivity';
 import * as notifications from './notifications';
 import * as appLock from './app-lock';
 import { attachOverlays, setOverlay } from './overlays';
+import {
+  closeMarketplace,
+  hideMarketplace,
+  initializeMarketplace,
+  isMarketplaceShowing,
+} from './marketplace';
 import { initializeAppDialogs, showAppDialog } from './app-dialog';
 import { startStorageMaintenance, stopStorageMaintenance } from './storage';
 import {
   createApplicationMenu,
   registerShortcuts,
   setMessengerView,
+  applyCurrentZoom,
   setOpenSettingsHandler,
   zoomIn,
   zoomOut,
@@ -851,6 +858,12 @@ function handleThemeChange(theme: ThemeSetting): void {
  * Handle go to home request - navigate to messenger.com
  */
 function handleGoToHome(): void {
+  // From Marketplace, Home just uncovers Messenger as it was left
+  if (isMarketplaceShowing()) {
+    hideMarketplace();
+    return;
+  }
+
   console.log('[Navigation] Navigating to Messenger home');
 
   if (messengerView && !messengerView.webContents.isDestroyed()) {
@@ -1439,6 +1452,9 @@ async function signOutOfMessenger(view: WebContentsView): Promise<void> {
   const ses = view.webContents.session;
   console.log('[SignOut] Signing out of Messenger');
 
+  // Marketplace shares the session being cleared
+  closeMarketplace();
+
   await view.webContents.loadURL('about:blank').catch(() => {
     // Leaving the page is all that matters here
   });
@@ -1540,6 +1556,18 @@ function initializeApp(): void {
   // Messenger's place by hiding the view (see overlays.ts)
   attachOverlays(mainWindow, messengerView);
   initializeAppDialogs(mainWindow, messengerView);
+
+  // Marketplace gets its own view, created on first use
+  initializeMarketplace({
+    window: mainWindow,
+    session: messengerSession,
+    onViewCreated: (view) => {
+      registerShortcuts(view.webContents);
+      setupContextMenu(view);
+      applyCurrentZoom(view);
+    },
+    onStateChange: (showing) => sendToRenderer('marketplace-state', showing),
+  });
 
   // App lock - locks right away if one is set up, before anything of
   // Messenger is visible

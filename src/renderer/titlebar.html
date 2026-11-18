@@ -1249,6 +1249,14 @@
                         <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                     </svg>
                 </button>
+                <button id="marketplace-btn" class="icon-btn" title="Facebook Marketplace" aria-label="Facebook Marketplace" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 9.5 4.5 4h15L21 9.5"/>
+                        <path d="M3 9.5a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
+                        <path d="M5 12.5V20h14v-7.5"/>
+                        <path d="M10 20v-4.5h4V20"/>
+                    </svg>
+                </button>
                 <button id="facebook-btn" class="icon-btn facebook-btn" title="Open Facebook in your browser" aria-label="Open Facebook in your browser">
                     <svg viewBox="0 0 1024 1024" aria-hidden="true">
                         <path fill="#0866FF" d="M1024,512C1024,229.23,794.77,0,512,0S0,229.23,0,512c0,255.55,187.23,467.37,432,505.78V660H302V512H432V399.2C432,270.88,508.44,200,625.39,200c56,0,114.61,10,114.61,10V336H675.44c-63.6,0-83.44,39.47-83.44,79.96V512H734L711.3,660H592v357.78C836.77,979.37,1024,767.55,1024,512Z"/>
@@ -1662,6 +1670,17 @@
         $('home-btn').addEventListener('click', () => {
             closeSettings();
             api.goToHome();
+        });
+
+        $('marketplace-btn').addEventListener('click', () => {
+            closeSettings();
+            api.toggleMarketplace();
+        });
+
+        api.onMarketplaceState((showing) => {
+            const button = $('marketplace-btn');
+            button.classList.toggle('active', showing);
+            button.setAttribute('aria-pressed', String(showing));
         });
 
         $('facebook-btn').addEventListener('click', () => {
