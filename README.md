@@ -189,7 +189,7 @@ It also locks when your computer locks or sleeps (except with "When the app star
 
 ### Themes
 
-Pick one in **Settings → Appearance**. Themes color the title bar, the app's own screens and call windows. Messenger itself keeps its own look.
+Pick one in **Settings → Appearance**. Themes color the whole window: the title bar, the app's own screens, call windows and Messenger itself (chat list, conversation, menus). To keep Messenger's stock light or dark look, turn off **Apply the theme to Messenger**; the theme then colors only the title bar and the app's screens.
 
 | | | | |
 |---|---|---|---|
@@ -197,6 +197,8 @@ Pick one in **Settings → Appearance**. Themes color the title bar, the app's o
 | Deep Ocean | Cosmic Nebula | Sunset Drive | Neon City |
 | Sakura Bloom | Arctic Frost | Lush Forest | Desert |
 | Electric | High Contrast | | |
+
+**Make your own.** Under the theme grid, **Create a theme** turns one color into four ready-made looks (Dark, Light, Vivid and Soft). Click one to try it across the whole window, Messenger included; nothing is saved until you press **Save**, and **Cancel** or Esc puts your previous theme back. Saved themes appear after the built-in ones with small edit and delete buttons (up to 20). **Fine-tune** adjusts background, text, secondary text, accent and title bar, and warns if the text becomes hard to read. **Export** gives a short code (`mdt1:…`) you can send to someone; **Import** opens a pasted code in the editor.
 
 ### Keyboard shortcuts
 

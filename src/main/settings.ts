@@ -13,7 +13,16 @@
 
 import { app } from 'electron';
 import ElectronStore from 'electron-store';
-import { AppLockMode, AppSettings, ThemeSetting, VALID_THEMES } from '../shared/types';
+import {
+  AppLockMode,
+  AppSettings,
+  CustomTheme,
+  MAX_CUSTOM_THEMES,
+  ThemeId,
+  ThemeSetting,
+  VALID_THEMES,
+} from '../shared/types';
+import { validateCustomTheme } from './custom-theme-validator';
 
 interface SettingsSchema {
   hasLoggedIn: boolean;
@@ -22,7 +31,9 @@ interface SettingsSchema {
   keepNotificationsOnScreen: boolean;
   hideMessagePreviews: boolean;
   pauseNotificationsDuringCalls: boolean;
-  theme: ThemeSetting;
+  themeMessenger: boolean;
+  theme: ThemeId;
+  customThemes: CustomTheme[];
   appLockMode: AppLockMode;
   appLockAwayMinutes: number;
   /** scrypt hash of the lock PIN (hex), empty when no PIN is set */
@@ -44,7 +55,9 @@ const store = new ElectronStore<SettingsSchema>({
     keepNotificationsOnScreen: true,
     hideMessagePreviews: false,
     pauseNotificationsDuringCalls: true,
+    themeMessenger: true,
     theme: 'dark',
+    customThemes: [],
     appLockMode: 'off',
     appLockAwayMinutes: 5,
     appLockPinHash: '',
@@ -126,12 +139,49 @@ export function setPauseNotificationsDuringCalls(value: boolean): void {
   set('pauseNotificationsDuringCalls', value);
 }
 
-export function getTheme(): ThemeSetting {
-  const theme = store.get('theme');
-  return VALID_THEMES.includes(theme) ? theme : 'dark';
+export function getThemeMessenger(): boolean {
+  return store.get('themeMessenger');
 }
 
-export function setTheme(value: ThemeSetting): void {
+export function setThemeMessenger(value: boolean): void {
+  set('themeMessenger', value);
+}
+
+/**
+ * The saved custom themes. What is on disk is validated again here: the
+ * settings file is editable, and nothing unvalidated may reach CSS.
+ */
+export function getCustomThemes(): CustomTheme[] {
+  const stored: unknown = store.get('customThemes');
+  if (!Array.isArray(stored)) return [];
+
+  const themes: CustomTheme[] = [];
+  for (const entry of stored as unknown[]) {
+    const theme = validateCustomTheme(entry);
+    if (theme && !themes.some((other) => other.id === theme.id)) themes.push(theme);
+  }
+  return themes.slice(0, MAX_CUSTOM_THEMES);
+}
+
+export function setCustomThemes(themes: CustomTheme[]): void {
+  set('customThemes', themes);
+}
+
+export function isBuiltInTheme(theme: string): theme is ThemeSetting {
+  return (VALID_THEMES as readonly string[]).includes(theme);
+}
+
+/** Whether `theme` is a built-in theme or the id of a saved custom theme. */
+export function isKnownTheme(theme: string): theme is ThemeId {
+  return isBuiltInTheme(theme) || getCustomThemes().some((custom) => custom.id === theme);
+}
+
+export function getTheme(): ThemeId {
+  const theme: string = store.get('theme');
+  return isKnownTheme(theme) ? theme : 'dark';
+}
+
+export function setTheme(value: ThemeId): void {
   set('theme', value);
 }
 
@@ -175,12 +225,14 @@ export function setStartWithSystem(value: boolean): void {
 export function getSnapshot(): AppSettings {
   return {
     theme: getTheme(),
+    customThemes: getCustomThemes(),
     doNotDisturb: getDoNotDisturb(),
     keepNotificationsOnScreen: getKeepNotificationsOnScreen(),
     hideMessagePreviews: getHideMessagePreviews(),
     pauseNotificationsDuringCalls: getPauseNotificationsDuringCalls(),
     minimizeToTray: getMinimizeToTray(),
     startWithSystem: getStartWithSystem(),
+    themeMessenger: getThemeMessenger(),
     appLock: {
       mode: getAppLockMode(),
       awayMinutes: getAppLockAwayMinutes(),

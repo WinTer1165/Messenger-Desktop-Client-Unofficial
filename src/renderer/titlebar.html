@@ -43,9 +43,12 @@
             --dialog-bg: color-mix(in srgb, var(--page-bg), #ffffff 5%);
         }
 
+        /* Light themes. data-scheme="light" is how a light custom theme joins
+           the group; its colours come inline (see the Custom themes script) */
         [data-theme="light"],
         [data-theme="sakura-bloom"],
-        [data-theme="arctic-frost"] {
+        [data-theme="arctic-frost"],
+        [data-scheme="light"] {
             color-scheme: light;
             --dnd-on-bg: rgba(220, 38, 38, 0.12);
             --dnd-on-fg: #dc2626;
@@ -994,6 +997,219 @@
             color: var(--page-fg);
         }
 
+        /* ── Custom themes: tiles and editor ───────────────────── */
+
+        .theme-slot {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .theme-slot > .theme-tile {
+            flex: 1;
+        }
+
+        .ct-tile-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.12s ease;
+        }
+
+        .theme-slot:hover .ct-tile-actions,
+        .theme-slot:focus-within .ct-tile-actions,
+        .ct-tile-actions:has(.armed) {
+            opacity: 1;
+        }
+
+        .ct-mini-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 5px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            background: var(--menu-bg);
+            color: var(--page-fg);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .ct-mini-btn:hover {
+            border-color: var(--page-muted);
+        }
+
+        .ct-mini-btn.armed {
+            border-color: transparent;
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .ct-mini-btn svg {
+            width: 13px;
+            height: 13px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .ct-create {
+            margin: 6px 0 4px;
+        }
+
+        .ct-editor {
+            margin: 10px 0 6px;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+        }
+
+        .ct-editor h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ct-label {
+            display: block;
+            margin: 12px 0 6px;
+            font-size: 12.5px;
+            color: var(--page-muted);
+        }
+
+        .ct-colour-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ct-editor input[type="color"] {
+            flex: none;
+            width: 40px;
+            height: 34px;
+            padding: 2px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            cursor: pointer;
+        }
+
+        .ct-editor input[type="text"] {
+            height: 34px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--page-fg);
+            font-size: 13px;
+            user-select: text;
+        }
+
+        .ct-editor input[type="text"]:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 0;
+            border-color: transparent;
+        }
+
+        .ct-editor input[aria-invalid="true"] {
+            outline: 2px solid var(--danger);
+            border-color: transparent;
+        }
+
+        .ct-hex {
+            width: 110px;
+            font-family: Consolas, 'Cascadia Mono', monospace;
+        }
+
+        .ct-name {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .ct-variations {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+            gap: 10px;
+        }
+
+        .ct-details {
+            margin-top: 12px;
+        }
+
+        .ct-details summary {
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--page-fg);
+        }
+
+        .ct-tune {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .ct-tune label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--page-fg);
+        }
+
+        .ct-warning {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            border-left: 3px solid #f59e0b;
+            font-size: 12.5px;
+            line-height: 1.45;
+            color: var(--page-fg);
+        }
+
+        .ct-share {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ct-share input[type="text"] {
+            flex: 1;
+            min-width: 180px;
+            font-family: Consolas, 'Cascadia Mono', monospace;
+            font-size: 12px;
+        }
+
+        .ct-status {
+            min-height: 18px;
+            margin-top: 4px;
+            font-size: 12.5px;
+            color: var(--page-muted);
+        }
+
+        .ct-status.error {
+            color: var(--danger);
+        }
+
+        .ct-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
         /* About */
         .about {
             display: flex;
@@ -1342,8 +1558,58 @@
 
                 <section class="card" aria-labelledby="appearance-heading">
                     <h2 id="appearance-heading">Appearance</h2>
-                    <p class="help">Colors for the title bar and the app’s own screens. Messenger itself keeps its own look.</p>
+                    <p class="help">Colors for the title bar, the app’s own screens and Messenger itself.</p>
                     <div class="theme-grid" id="theme-grid" role="radiogroup" aria-label="Theme"></div>
+
+                    <!-- Custom theme editor: see the "Custom themes" script -->
+                    <button id="ct-create" class="btn ct-create" type="button">Create a theme</button>
+                    <div id="ct-editor" class="ct-editor" role="group" aria-labelledby="ct-title" hidden>
+                        <h3 id="ct-title">Create a theme</h3>
+
+                        <label class="ct-label" for="ct-hex">Pick one color</label>
+                        <div class="ct-colour-row">
+                            <input type="color" id="ct-colour" value="#0866ff" aria-label="Color">
+                            <input type="text" id="ct-hex" class="ct-hex" value="#0866ff" maxlength="7"
+                                   spellcheck="false" autocomplete="off" aria-label="Color as hex code">
+                        </div>
+
+                        <span class="ct-label" id="ct-variations-label">Then choose a look. Nothing is saved until you press Save.</span>
+                        <div class="ct-variations" id="ct-variations" role="radiogroup" aria-labelledby="ct-variations-label"></div>
+
+                        <label class="ct-label" for="ct-name">Name</label>
+                        <input type="text" id="ct-name" class="ct-name" maxlength="30" value="My theme"
+                               spellcheck="false" autocomplete="off">
+
+                        <details class="ct-details" id="ct-details">
+                            <summary>Fine-tune</summary>
+                            <div class="ct-tune" id="ct-tune"></div>
+                            <p class="ct-warning" id="ct-warning" role="status" hidden></p>
+                        </details>
+
+                        <span class="ct-label">Share</span>
+                        <div class="ct-share">
+                            <button type="button" class="btn" id="ct-export">Export</button>
+                            <input type="text" id="ct-code" readonly spellcheck="false" aria-label="Theme code" hidden>
+                        </div>
+                        <div class="ct-share" style="margin-top: 8px">
+                            <input type="text" id="ct-import" placeholder="Paste a theme code (mdt1:…)"
+                                   spellcheck="false" autocomplete="off" aria-label="Theme code to import">
+                            <button type="button" class="btn" id="ct-import-btn">Import</button>
+                        </div>
+                        <p class="ct-status" id="ct-status" role="status"></p>
+
+                        <div class="ct-actions">
+                            <button type="button" class="btn" id="ct-cancel">Cancel</button>
+                            <button type="button" class="btn primary" id="ct-save" disabled>Save</button>
+                        </div>
+                    </div>
+                    <label class="row">
+                        <span>
+                            <span class="row-title">Apply the theme to Messenger</span>
+                            <span class="help" style="display: block">Off: Messenger keeps its own light or dark look, and the theme colors only the title bar and the app’s screens.</span>
+                        </span>
+                        <input type="checkbox" class="switch" data-setting="themeMessenger">
+                    </label>
                 </section>
 
                 <section class="card" aria-labelledby="notifications-heading">
@@ -1511,6 +1777,9 @@
             connection: { state: 'online', networkAvailable: true },
             locked: new URLSearchParams(location.search).get('locked') === '1',
             settingsOpen: false,
+            // A custom theme just saved and being selected: shown until
+            // the settings catch up, so the old theme does not flash back
+            pendingCustom: null,
         };
 
         // ── Themes ──────────────────────────────────────────────
@@ -1533,6 +1802,403 @@
             { id: 'contrast', name: 'High Contrast' },
         ];
 
+        // ══ Custom themes: colour maths, tokens, sharing ═════════════
+        // Everything for user-made themes that is not UI. Pure functions
+        // except where noted. A custom theme is a CustomTheme (see
+        // shared/types.ts): { id, name, light, bg, fg, muted, accent,
+        // solid, barFrom, barTo, barFg }, colours as #rrggbb. The main
+        // process validates every theme again before storing or using it.
+
+        const MAX_CUSTOM_THEMES = 20;
+        const CUSTOM_ID_RE = /^custom-[0-9a-f]{8}$/;
+        const HEX_RE = /^#[0-9a-f]{6}$/;
+        const THEME_COLOUR_KEYS = ['bg', 'fg', 'muted', 'accent', 'solid', 'barFrom', 'barTo', 'barFg'];
+        const SHARE_PREFIX = 'mdt1:';
+        const WHITE = '#ffffff';
+        const BLACK = '#000000';
+
+        const isCustomId = (id) => typeof id === 'string' && CUSTOM_ID_RE.test(id);
+        const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
+
+        // sRGB <-> OKLab / OKLCH (Björn Ottosson's matrices), no dependencies
+
+        function hexToRgb(hex) {
+            return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        }
+
+        function rgbToHex(rgb) {
+            return '#' + rgb
+                .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function toLinear(channel8) {
+            const c = channel8 / 255;
+            return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        }
+
+        function fromLinear(linear) {
+            return linear <= 0.0031308 ? 12.92 * linear : 1.055 * Math.pow(linear, 1 / 2.4) - 0.055;
+        }
+
+        function linearToOklab(rgb) {
+            const [r, g, b] = rgb;
+            const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+            const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+            const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+            return [
+                0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+                1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+                0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s,
+            ];
+        }
+
+        function oklabToLinear(lab) {
+            const [L, a, b] = lab;
+            const l = Math.pow(L + 0.3963377774 * a + 0.2158037573 * b, 3);
+            const m = Math.pow(L - 0.1055613458 * a - 0.0638541728 * b, 3);
+            const s = Math.pow(L - 0.0894841775 * a - 1.2914855480 * b, 3);
+            return [
+                4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+                -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+                -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+            ];
+        }
+
+        /** { L: 0..1, C: chroma, h: hue in degrees } of a #rrggbb colour */
+        function hexToOklch(hex) {
+            const [L, a, b] = linearToOklab(hexToRgb(hex).map(toLinear));
+            return { L, C: Math.hypot(a, b), h: (Math.atan2(b, a) * 180 / Math.PI + 360) % 360 };
+        }
+
+        function oklchToLinear(L, C, h) {
+            const radians = h * Math.PI / 180;
+            return oklabToLinear([L, C * Math.cos(radians), C * Math.sin(radians)]);
+        }
+
+        function inGamut(linear) {
+            return linear.every((v) => v >= -0.0005 && v <= 1.0005);
+        }
+
+        /**
+         * An OKLCH colour as #rrggbb. A colour outside the sRGB gamut
+         * keeps its lightness and hue and loses chroma until it fits.
+         */
+        function oklchToHex(L, C, h) {
+            const lightness = clamp(L, 0, 1);
+            let linear = oklchToLinear(lightness, C, h);
+            if (!inGamut(linear)) {
+                let low = 0;
+                let high = C;
+                for (let i = 0; i < 24; i++) {
+                    const mid = (low + high) / 2;
+                    if (inGamut(oklchToLinear(lightness, mid, h))) low = mid; else high = mid;
+                }
+                linear = oklchToLinear(lightness, low, h);
+            }
+            return rgbToHex(linear.map((v) => fromLinear(clamp(v, 0, 1)) * 255));
+        }
+
+        // WCAG 2.x relative luminance and contrast ratio
+
+        function luminance(hex) {
+            const [r, g, b] = hexToRgb(hex).map(toLinear);
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        }
+
+        function contrast(first, second) {
+            const a = luminance(first);
+            const b = luminance(second);
+            return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        }
+
+        /** Lighter than this, black text reads better than white */
+        const isLightColour = (hex) => luminance(hex) > 0.179;
+
+        /**
+         * The colour of hue `h` and chroma `C` nearest to lightness `L`
+         * that reaches contrast `min` against every colour in `against`,
+         * searching in direction `dir` (+1 lighter, -1 darker). Checked on
+         * the real, rounded colour. Falls back to white or black.
+         */
+        function fitLightness(L, C, h, against, min, dir) {
+            for (let step = 0; step <= 220; step++) {
+                const hex = oklchToHex(L + dir * step * 0.005, C, h);
+                if (against.every((other) => contrast(hex, other) >= min)) return hex;
+            }
+            return dir > 0 ? WHITE : BLACK;
+        }
+
+        /** White-ish or black-ish text, whichever reads better on all of `backgrounds` (>= 4.5). */
+        function readableOn(backgrounds, h) {
+            const candidates = [
+                fitLightness(0.97, 0.01, h, backgrounds, 4.5, 1),
+                fitLightness(0.2, 0.02, h, backgrounds, 4.5, -1),
+                WHITE,
+                BLACK,
+            ];
+            const worst = (text) => Math.min(...backgrounds.map((bg) => contrast(text, bg)));
+            const passing = candidates.filter((text) => worst(text) >= 4.5);
+            if (passing.length > 0) return passing[0];
+            return candidates.reduce((best, text) => (worst(text) > worst(best) ? text : best));
+        }
+
+        /** The fill for things written on in white: the accent, darkened until white text reads (4.5). */
+        function deriveSolid(accent) {
+            if (contrast(WHITE, accent) >= 4.5) return accent;
+            const { L, C, h } = hexToOklch(accent);
+            return fitLightness(L, C, h, [WHITE], 4.5, -1);
+        }
+
+        /** A title bar gradient and readable text from one colour. */
+        function deriveBar(hex) {
+            const { L, C, h } = hexToOklch(hex);
+            const barTo = oklchToHex(L + (L > 0.5 ? -0.07 : 0.07), C, h + 18);
+            return { barFrom: hex, barTo, barFg: readableOn([hex, barTo], h) };
+        }
+
+        /**
+         * Four ready-made themes from one colour: Dark, Light, Vivid and
+         * Soft. By construction (lightness is moved until the real,
+         * rounded colours pass): text >= 7:1 on the background (Soft
+         * >= 4.5:1), secondary text >= 4.5:1, white on `solid` >= 4.5:1,
+         * accent >= 3:1 on the background, title bar text >= 4.5:1 on both
+         * ends of the bar. The ids are placeholders; the editor assigns
+         * the real one.
+         */
+        function generateVariations(hex) {
+            const source = hexToOklch(hex);
+            const h = source.h;
+            const C = source.C;
+
+            function build(name, p) {
+                const dir = p.light ? -1 : 1;
+                const bg = oklchToHex(p.bgL, p.bgC, h);
+                const fg = fitLightness(p.fgL, p.fgC, h, [bg], p.fgMin, dir);
+                const muted = fitLightness(p.mutedL, p.mutedC, h, [bg], 4.5, dir);
+
+                let accent;
+                if (p.light) {
+                    // A darker shade of the colour
+                    accent = fitLightness(Math.min(source.L, 0.55), C, h, [bg], 4.5, -1);
+                } else if (p.accentSoft) {
+                    accent = fitLightness(clamp(source.L, 0.68, 0.78), C * 0.7, h, [bg], 3, 1);
+                } else if (contrast(hex, bg) >= 3) {
+                    accent = hex;
+                } else {
+                    accent = fitLightness(source.L, C, h, [bg], 4.5, 1);
+                }
+
+                const [barFrom, barTo] = p.bar();
+                return {
+                    id: 'custom-00000000',
+                    name,
+                    light: p.light,
+                    bg,
+                    fg,
+                    muted,
+                    accent,
+                    solid: deriveSolid(accent),
+                    barFrom,
+                    barTo,
+                    barFg: readableOn([barFrom, barTo], h),
+                };
+            }
+
+            const darkBar = (bgL, c1, c2, shift) => () => [
+                oklchToHex(bgL + 0.03, Math.min(C * c1, 0.08), h),
+                oklchToHex(bgL + 0.12, Math.min(C * c2, 0.12), h + shift),
+            ];
+
+            return [
+                build('Dark', {
+                    light: false, bgL: 0.2, bgC: Math.min(C * 0.35, 0.05),
+                    fgL: 0.96, fgC: 0.01, fgMin: 7, mutedL: 0.76, mutedC: Math.min(C * 0.25, 0.04),
+                    bar: darkBar(0.2, 0.5, 0.7, 25),
+                }),
+                build('Light', {
+                    light: true, bgL: 0.97, bgC: Math.min(C * 0.15, 0.03),
+                    fgL: 0.22, fgC: Math.min(C * 0.3, 0.04), fgMin: 7,
+                    mutedL: 0.45, mutedC: Math.min(C * 0.3, 0.05),
+                    bar: () => [
+                        oklchToHex(0.96, Math.min(C * 0.2, 0.04), h),
+                        oklchToHex(0.88, Math.min(C * 0.35, 0.07), h + 25),
+                    ],
+                }),
+                build('Vivid', {
+                    light: false, bgL: 0.17, bgC: Math.min(C * 0.5, 0.07),
+                    fgL: 0.96, fgC: 0.01, fgMin: 7, mutedL: 0.76, mutedC: Math.min(C * 0.3, 0.05),
+                    bar: () => {
+                        // The colour fading into a neighbouring hue, kept dark enough for white text
+                        let L = clamp(source.L, 0.32, 0.55);
+                        let from = oklchToHex(L, C, h);
+                        let to = oklchToHex(L, C, h + 50);
+                        while (L > 0.1 && (contrast(WHITE, from) < 4.5 || contrast(WHITE, to) < 4.5)) {
+                            L -= 0.01;
+                            from = oklchToHex(L, C, h);
+                            to = oklchToHex(L, C, h + 50);
+                        }
+                        return [from, to];
+                    },
+                }),
+                build('Soft', {
+                    light: false, bgL: 0.28, bgC: Math.min(C * 0.25, 0.035),
+                    fgL: 0.84, fgC: 0.01, fgMin: 4.5, mutedL: 0.68, mutedC: Math.min(C * 0.2, 0.03),
+                    accentSoft: true,
+                    bar: darkBar(0.26, 0.3, 0.4, 20),
+                }),
+            ];
+        }
+
+        // Tokens -> the CSS custom properties the built-in themes set in
+        // [data-theme="..."] blocks. Set on an element's own style, so the
+        // theme grid's previews and the page use the same code. Only
+        // colours that are plain #rrggbb are ever used.
+
+        const THEME_VAR_NAMES = [
+            '--bar-bg', '--fg', '--fg-muted', '--hover', '--press', '--divider',
+            '--page-bg', '--page-fg', '--page-muted', '--page-icon-bg', '--accent', '--accent-fg',
+        ];
+
+        function themeVars(t) {
+            const mix = (colour, percent) => `color-mix(in srgb, ${colour} ${percent}%, transparent)`;
+            return {
+                '--bar-bg': `linear-gradient(135deg, ${t.barFrom} 0%, ${t.barTo} 100%)`,
+                '--fg': t.barFg,
+                '--fg-muted': mix(t.barFg, 68),
+                '--hover': mix(t.barFg, 12),
+                '--press': mix(t.barFg, 20),
+                '--divider': mix(t.barFg, 24),
+                '--page-bg': t.bg,
+                '--page-fg': t.fg,
+                '--page-muted': t.muted,
+                '--page-icon-bg': mix(t.fg, 8),
+                '--accent': t.accent,
+                '--accent-fg': contrast(WHITE, t.accent) >= contrast(BLACK, t.accent) ? WHITE : BLACK,
+            };
+        }
+
+        function isThemeShaped(t) {
+            return typeof t === 'object' && t !== null &&
+                typeof t.light === 'boolean' &&
+                THEME_COLOUR_KEYS.every((key) => typeof t[key] === 'string' && HEX_RE.test(t[key]));
+        }
+
+        /** Colour `element` with a custom theme (previews use the same). */
+        function styleThemeElement(element, t) {
+            if (!isThemeShaped(t)) return;
+            element.setAttribute('data-theme', 'custom');
+            if (t.light) element.setAttribute('data-scheme', 'light');
+            else element.removeAttribute('data-scheme');
+            for (const [name, value] of Object.entries(themeVars(t))) {
+                element.style.setProperty(name, value);
+            }
+        }
+
+        function clearThemeElement(element) {
+            element.removeAttribute('data-scheme');
+            for (const name of THEME_VAR_NAMES) element.style.removeProperty(name);
+        }
+
+        // Names: no control or invisible characters, 1-30 characters
+
+        function cleanName(text) {
+            const ranges = [[0, 31], [127, 159], [0x200b, 0x200f], [0x2028, 0x202e], [0x2066, 0x2069], [0xfeff, 0xfeff]];
+            let result = '';
+            for (const char of String(text)) {
+                const code = char.codePointAt(0);
+                if (!ranges.some(([from, to]) => code >= from && code <= to)) result += char;
+            }
+            return result.trim().slice(0, 30).trim();
+        }
+
+        function newThemeId(taken) {
+            for (;;) {
+                const bytes = crypto.getRandomValues(new Uint8Array(4));
+                const id = 'custom-' + Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+                if (!taken.includes(id)) return id;
+            }
+        }
+
+        /**
+         * A theme from an untrusted object (the load-time query, an import
+         * code): exact keys, #rrggbb colours (lower-cased), a clean name.
+         * Returns null if anything is off. Without `withId` the object
+         * must have no id, and the theme gets a fresh one.
+         */
+        function sanitizeTheme(raw, withId, takenIds) {
+            if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
+            const expected = ['name', 'light', ...THEME_COLOUR_KEYS, ...(withId ? ['id'] : [])];
+            const keys = Object.keys(raw);
+            if (keys.length !== expected.length || !keys.every((key) => expected.includes(key))) return null;
+            if (typeof raw.light !== 'boolean' || typeof raw.name !== 'string') return null;
+            if (withId && !isCustomId(raw.id)) return null;
+
+            const theme = {
+                id: withId ? raw.id : newThemeId(takenIds),
+                name: cleanName(raw.name) || 'Imported theme',
+                light: raw.light,
+            };
+            for (const key of THEME_COLOUR_KEYS) {
+                const colour = raw[key];
+                if (typeof colour !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(colour)) return null;
+                theme[key] = colour.toLowerCase();
+            }
+            return theme;
+        }
+
+        // Share codes: "mdt1:" + base64url of the tokens as compact JSON (no id)
+
+        function themeToCode(t) {
+            const compact = JSON.stringify({
+                name: t.name, light: t.light, bg: t.bg, fg: t.fg, muted: t.muted, accent: t.accent,
+                solid: t.solid, barFrom: t.barFrom, barTo: t.barTo, barFg: t.barFg,
+            });
+            let binary = '';
+            for (const byte of new TextEncoder().encode(compact)) binary += String.fromCharCode(byte);
+            return SHARE_PREFIX + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        /** The theme (with a fresh id) in a share code, or null if it is not a valid code. */
+        function codeToTheme(code, takenIds) {
+            const text = String(code).trim();
+            if (!text.startsWith(SHARE_PREFIX) || text.length > 1200) return null;
+            const body = text.slice(SHARE_PREFIX.length);
+            if (!/^[A-Za-z0-9_-]+$/.test(body)) return null;
+            try {
+                const base64 = body.replace(/-/g, '+').replace(/_/g, '/');
+                const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
+                const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+                const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+                return sanitizeTheme(JSON.parse(json), false, takenIds);
+            } catch {
+                return null;
+            }
+        }
+
+        // The theme the main process passed in the load-time query, so a
+        // custom theme is right on the first frame (validated like any other input)
+        const bootCustomTheme = (() => {
+            const params = new URLSearchParams(location.search);
+            if (!isCustomId(params.get('theme'))) return null;
+            try {
+                const theme = sanitizeTheme(JSON.parse(params.get('ctheme') || ''), true, []);
+                return theme && theme.id === params.get('theme') ? theme : null;
+            } catch {
+                return null;
+            }
+        })();
+
+        /** A saved custom theme by id (or the one just saved, or the boot theme). */
+        function findCustomTheme(id) {
+            const saved = state.settings ? state.settings.customThemes : [];
+            return saved.find((theme) => theme.id === id) ||
+                (state.pendingCustom && state.pendingCustom.id === id ? state.pendingCustom : null) ||
+                (bootCustomTheme && bootCustomTheme.id === id ? bootCustomTheme : null);
+        }
+
+        // ══ End of custom themes: colour maths, tokens, sharing ══════
+
         const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
         function resolveTheme(setting) {
@@ -1543,7 +2209,19 @@
         }
 
         function applyTheme(setting) {
-            document.body.setAttribute('data-theme', resolveTheme(setting));
+            const id = resolveTheme(setting);
+            if (isCustomId(id)) {
+                const custom = findCustomTheme(id);
+                if (custom) {
+                    styleThemeElement(document.body, custom);
+                    return;
+                }
+                clearThemeElement(document.body);
+                document.body.setAttribute('data-theme', 'dark');
+                return;
+            }
+            clearThemeElement(document.body);
+            document.body.setAttribute('data-theme', id);
         }
 
         // First paint uses the theme the main process passed in, so there
@@ -1584,11 +2262,446 @@
                 '</span>' +
                 `<span class="theme-name">${theme.name}</span>`;
             tile.addEventListener('click', () => {
+                if (editor.open) cancelEditor();
                 applyTheme(theme.id);
                 api.updateSetting('theme', theme.id);
             });
             themeGrid.appendChild(tile);
         }
+
+        // ══ Custom themes: tiles and editor ══════════════════════════
+        // The tiles after the built-in ones, and the "Create a theme"
+        // editor. Names are only ever put in with textContent or setAttribute.
+
+        const ICON_EDIT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+        const ICON_DELETE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/></svg>';
+
+        /** A theme preview like the built-in tiles', coloured by `tokens`. */
+        function buildPreview(tokens) {
+            const pane = document.createElement('span');
+            styleThemeElement(pane, tokens);
+            const bar = document.createElement('span');
+            bar.className = 'preview-bar';
+            const page = document.createElement('span');
+            page.className = 'preview-page';
+            const line = document.createElement('span');
+            line.className = 'preview-line';
+            const accentLine = document.createElement('span');
+            accentLine.className = 'preview-line accent';
+            page.append(line, accentLine);
+            pane.append(bar, page);
+
+            const wrapper = document.createElement('span');
+            wrapper.className = 'theme-preview';
+            wrapper.appendChild(pane);
+            return wrapper;
+        }
+
+        function buildTile(tokens, label) {
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'theme-tile';
+            tile.setAttribute('role', 'radio');
+            tile.setAttribute('aria-checked', 'false');
+            tile.title = label;
+            const name = document.createElement('span');
+            name.className = 'theme-name';
+            name.textContent = label;
+            tile.append(buildPreview(tokens), name);
+            return tile;
+        }
+
+        function miniButton(icon, label, onClick) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'ct-mini-btn';
+            button.innerHTML = icon;
+            button.title = label;
+            button.setAttribute('aria-label', label);
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+                onClick(button);
+            });
+            return button;
+        }
+
+        function buildCustomSlot(theme) {
+            const slot = document.createElement('div');
+            slot.className = 'theme-slot';
+
+            const tile = buildTile(theme, theme.name);
+            tile.dataset.themeId = theme.id;
+            tile.addEventListener('click', () => {
+                if (editor.open) cancelEditor();
+                applyTheme(theme.id);
+                api.updateSetting('theme', theme.id);
+            });
+
+            const actions = document.createElement('div');
+            actions.className = 'ct-tile-actions';
+            actions.appendChild(miniButton(ICON_EDIT, 'Edit ' + theme.name, () => openEditor(theme)));
+
+            // Two clicks to delete: the first arms the button
+            let disarm = null;
+            actions.appendChild(miniButton(ICON_DELETE, 'Delete ' + theme.name, (button) => {
+                if (!button.classList.contains('armed')) {
+                    button.classList.add('armed');
+                    button.textContent = 'Delete?';
+                    disarm = setTimeout(() => {
+                        button.classList.remove('armed');
+                        button.innerHTML = ICON_DELETE;
+                    }, 3000);
+                    return;
+                }
+                clearTimeout(disarm);
+                if (editor.open && editor.id === theme.id) cancelEditor();
+                if (state.settings && state.settings.theme === theme.id) {
+                    // Falls back to dark
+                    applyTheme('dark');
+                }
+                api.deleteCustomTheme(theme.id);
+            }));
+
+            slot.append(tile, actions);
+            return slot;
+        }
+
+        /** Rebuild the custom tiles from the settings. */
+        function renderCustomTiles() {
+            for (const slot of themeGrid.querySelectorAll('.theme-slot')) slot.remove();
+            const themes = state.settings ? state.settings.customThemes : [];
+            for (const theme of themes) themeGrid.appendChild(buildCustomSlot(theme));
+
+            const full = themes.length >= MAX_CUSTOM_THEMES;
+            $('ct-create').disabled = full;
+            $('ct-create').title = full ? 'You can save up to ' + MAX_CUSTOM_THEMES + ' themes. Delete one to make room.' : '';
+        }
+
+        const editor = {
+            open: false,
+            id: null,
+            // The theme being edited or tried out: null until a look is chosen
+            tokens: null,
+            // Index of the chosen variation, -1 if none or fine-tuned since
+            variation: -1,
+            variations: [],
+        };
+
+        const TUNE_FIELDS = [
+            { key: 'bg', label: 'Background' },
+            { key: 'fg', label: 'Text' },
+            { key: 'muted', label: 'Secondary text' },
+            { key: 'accent', label: 'Accent' },
+            { key: 'bar', label: 'Title bar' },
+        ];
+        const tunePickers = {};
+
+        function setStatus(text, isError) {
+            $('ct-status').textContent = text;
+            $('ct-status').classList.toggle('error', Boolean(isError));
+        }
+
+        // Previews reach the main process (and so Messenger) at most every
+        // 150 ms, the newest one winning; ending a preview is immediate.
+        let previewTimer = null;
+        let previewPending = null;
+        let previewSentAt = 0;
+
+        function sendPreview(tokens) {
+            previewPending = tokens;
+            if (previewTimer !== null) return;
+            const wait = Math.max(0, 150 - (Date.now() - previewSentAt));
+            previewTimer = setTimeout(() => {
+                previewTimer = null;
+                previewSentAt = Date.now();
+                api.previewCustomTheme(previewPending);
+            }, wait);
+        }
+
+        function endPreview() {
+            clearTimeout(previewTimer);
+            previewTimer = null;
+            previewPending = null;
+            api.previewCustomTheme(null);
+        }
+
+        function describeContrast(t) {
+            const notes = [];
+            if (contrast(t.fg, t.bg) < 4.5) {
+                notes.push('Text may be hard to read on this background.');
+            }
+            if (contrast(t.muted, t.bg) < 3) {
+                notes.push('Secondary text is very faint on this background.');
+            }
+            if (contrast(t.accent, t.bg) < 3) {
+                notes.push('The accent is hard to see against the background.');
+            }
+            return notes.join(' ');
+        }
+
+        function syncTunePickers() {
+            const t = editor.tokens;
+            if (!t) return;
+            for (const field of TUNE_FIELDS) {
+                tunePickers[field.key].value = field.key === 'bar' ? t.barFrom : t[field.key];
+            }
+            const warning = describeContrast(t);
+            $('ct-warning').textContent = warning;
+            $('ct-warning').hidden = warning === '';
+        }
+
+        function renderVariationSelection() {
+            const tiles = $('ct-variations').children;
+            for (let i = 0; i < tiles.length; i++) {
+                tiles[i].setAttribute('aria-checked', String(i === editor.variation));
+            }
+        }
+
+        /** Show `tokens` everywhere (this document now, Messenger through the main process). */
+        function setEditorTokens(tokens) {
+            editor.tokens = tokens;
+            styleThemeElement(document.body, tokens);
+            sendPreview(tokens);
+            syncTunePickers();
+            renderVariationSelection();
+            $('ct-save').disabled = false;
+        }
+
+        function seedColour() {
+            return $('ct-hex').value;
+        }
+
+        function takenIds() {
+            return state.settings ? state.settings.customThemes.map((theme) => theme.id) : [];
+        }
+
+        function renderVariations() {
+            editor.variations = generateVariations(seedColour());
+            const holder = $('ct-variations');
+            holder.replaceChildren();
+            editor.variations.forEach((variation, index) => {
+                const tile = buildTile(variation, variation.name);
+                tile.addEventListener('click', () => selectVariation(index));
+                holder.appendChild(tile);
+            });
+            renderVariationSelection();
+        }
+
+        function selectVariation(index) {
+            editor.variation = index;
+            const chosen = editor.variations[index];
+            setEditorTokens({ ...chosen, id: editor.id, name: $('ct-name').value });
+        }
+
+        function normaliseHex(text) {
+            const trimmed = text.trim().toLowerCase();
+            const match = /^#?([0-9a-f]{6}|[0-9a-f]{3})$/.exec(trimmed);
+            if (!match) return null;
+            const digits = match[1].length === 3
+                ? match[1].split('').map((d) => d + d).join('')
+                : match[1];
+            return '#' + digits;
+        }
+
+        /** The seed colour changed: regenerate the variations, keeping the chosen one. */
+        function seedChanged(hex) {
+            $('ct-colour').value = hex;
+            $('ct-hex').value = hex;
+            $('ct-hex').removeAttribute('aria-invalid');
+            renderVariations();
+            if (editor.variation >= 0) selectVariation(editor.variation);
+        }
+
+        $('ct-colour').addEventListener('input', () => seedChanged($('ct-colour').value));
+
+        $('ct-hex').addEventListener('input', () => {
+            const hex = normaliseHex($('ct-hex').value);
+            if (hex === null) {
+                $('ct-hex').setAttribute('aria-invalid', 'true');
+                return;
+            }
+            $('ct-colour').value = hex;
+            $('ct-hex').removeAttribute('aria-invalid');
+            renderVariations();
+            if (editor.variation >= 0) selectVariation(editor.variation);
+        });
+
+        $('ct-hex').addEventListener('blur', () => {
+            const hex = normaliseHex($('ct-hex').value);
+            $('ct-hex').value = hex === null ? $('ct-colour').value : hex;
+            $('ct-hex').removeAttribute('aria-invalid');
+        });
+
+        $('ct-name').addEventListener('input', () => {
+            if (editor.tokens) editor.tokens = { ...editor.tokens, name: $('ct-name').value };
+        });
+
+        // Fine-tune: five pickers, live
+        for (const field of TUNE_FIELDS) {
+            const label = document.createElement('label');
+            const picker = document.createElement('input');
+            picker.type = 'color';
+            picker.value = '#000000';
+            const text = document.createElement('span');
+            text.textContent = field.label;
+            label.append(picker, text);
+            $('ct-tune').appendChild(label);
+            tunePickers[field.key] = picker;
+
+            picker.addEventListener('input', () => {
+                if (!editor.tokens) return;
+                const value = picker.value;
+                const next = { ...editor.tokens };
+                if (field.key === 'bg') {
+                    next.bg = value;
+                    next.light = isLightColour(value);
+                } else if (field.key === 'accent') {
+                    next.accent = value;
+                    next.solid = deriveSolid(value);
+                } else if (field.key === 'bar') {
+                    Object.assign(next, deriveBar(value));
+                } else {
+                    next[field.key] = value;
+                }
+                editor.variation = -1;
+                setEditorTokens(next);
+            });
+        }
+
+        /**
+         * Open the editor: for a new theme (no argument), to edit a saved
+         * one, or with an imported theme (`imported`, which has a fresh id).
+         */
+        function openEditor(existing, imported) {
+            const start = existing || imported || null;
+            if (!start && state.settings && state.settings.customThemes.length >= MAX_CUSTOM_THEMES) return;
+
+            editor.open = true;
+            editor.id = start ? start.id : newThemeId(takenIds());
+            editor.variation = -1;
+            editor.tokens = null;
+            $('ct-title').textContent = existing ? 'Edit theme' : 'Create a theme';
+            $('ct-name').value = start ? start.name : 'My theme';
+            $('ct-code').hidden = true;
+            $('ct-import').value = '';
+            setStatus('');
+            $('ct-save').disabled = true;
+            $('ct-warning').hidden = true;
+            $('ct-create').hidden = true;
+            $('ct-editor').hidden = false;
+
+            const seed = start ? start.accent : seedColour();
+            $('ct-colour').value = seed;
+            $('ct-hex').value = seed;
+            renderVariations();
+            if (start) setEditorTokens({ ...start });
+
+            $('ct-editor').scrollIntoView({ block: 'nearest' });
+            $('ct-hex').focus();
+        }
+
+        /** Close the editor without saving: the previous theme comes back everywhere. */
+        function cancelEditor() {
+            if (!editor.open) return;
+            editor.open = false;
+            editor.tokens = null;
+            $('ct-editor').hidden = true;
+            $('ct-create').hidden = false;
+            endPreview();
+            if (state.settings) applyTheme(state.settings.theme);
+        }
+
+        async function saveEditor() {
+            if (!editor.tokens) return;
+            const theme = {
+                ...editor.tokens,
+                id: editor.id,
+                name: cleanName($('ct-name').value) || 'My theme',
+            };
+
+            $('ct-save').disabled = true;
+            const saved = await api.saveCustomTheme(theme);
+            if (!saved) {
+                $('ct-save').disabled = false;
+                setStatus('The theme could not be saved.', true);
+                return;
+            }
+
+            // Keep the theme on screen while the main process confirms the choice
+            state.pendingCustom = theme;
+            editor.open = false;
+            editor.tokens = null;
+            $('ct-editor').hidden = true;
+            $('ct-create').hidden = false;
+            styleThemeElement(document.body, theme);
+            api.updateSetting('theme', theme.id);
+            setTimeout(() => {
+                if (state.pendingCustom === theme) {
+                    state.pendingCustom = null;
+                    renderSettings();
+                }
+            }, 2000);
+        }
+
+        $('ct-create').addEventListener('click', () => openEditor());
+        $('ct-cancel').addEventListener('click', cancelEditor);
+        $('ct-save').addEventListener('click', saveEditor);
+
+        $('ct-export').addEventListener('click', async () => {
+            if (!editor.tokens) {
+                setStatus('Choose a look first, then export it.', true);
+                return;
+            }
+            const code = themeToCode({
+                ...editor.tokens,
+                name: cleanName($('ct-name').value) || 'My theme',
+            });
+            const field = $('ct-code');
+            field.value = code;
+            field.hidden = false;
+            try {
+                await navigator.clipboard.writeText(code);
+                setStatus('Code copied to the clipboard.');
+            } catch {
+                field.focus();
+                field.select();
+                setStatus('Select the code and copy it (Ctrl+C).');
+            }
+        });
+
+        $('ct-code').addEventListener('focus', () => $('ct-code').select());
+
+        function importCode() {
+            const theme = codeToTheme($('ct-import').value, takenIds());
+            if (!theme) {
+                setStatus('That does not look like a theme code.', true);
+                return;
+            }
+            const wasOpen = editor.open;
+            if (!wasOpen) {
+                openEditor(null, theme);
+            } else {
+                editor.id = theme.id;
+                editor.variation = -1;
+                $('ct-title').textContent = 'Create a theme';
+                $('ct-name').value = theme.name;
+                $('ct-colour').value = theme.accent;
+                $('ct-hex').value = theme.accent;
+                renderVariations();
+                setEditorTokens({ ...theme });
+            }
+            setStatus('Theme imported. Press Save to keep it.');
+        }
+
+        $('ct-import-btn').addEventListener('click', importCode);
+        $('ct-import').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                importCode();
+            }
+        });
+
+        // ══ End of custom themes: tiles and editor ═══════════════════
 
         // ── Screens: lock > settings > offline ──────────────────
 
@@ -1596,6 +2709,9 @@
             const showLock = state.locked;
             const showSettings = !showLock && state.settingsOpen;
             const showOffline = !showLock && !showSettings && state.connection.state !== 'online';
+
+            // A theme being tried out does not outlive the settings page
+            if (!showSettings && editor.open) cancelEditor();
 
             $('lock').hidden = !showLock;
             $('settings').hidden = !showSettings;
@@ -1636,6 +2752,8 @@
                 answerAppDialog(currentDialog.cancelId ?? 0);
             } else if (!$('pin-dialog').hidden) {
                 closePinDialog();
+            } else if (editor.open) {
+                cancelEditor();
             } else {
                 closeSettings();
             }
@@ -1940,10 +3058,21 @@
             const settings = state.settings;
             if (!settings) return;
 
-            applyTheme(settings.theme);
+            // A custom theme just saved stays on screen until the settings
+            // confirm it; one being tried out in the editor is not replaced
+            if (state.pendingCustom && settings.theme === state.pendingCustom.id) {
+                state.pendingCustom = null;
+            }
+            const shown = state.pendingCustom ? state.pendingCustom.id : settings.theme;
+            if (editor.open && editor.tokens) {
+                styleThemeElement(document.body, editor.tokens);
+            } else {
+                applyTheme(shown);
+            }
 
-            for (const tile of themeGrid.children) {
-                tile.setAttribute('aria-checked', String(tile.dataset.themeId === settings.theme));
+            renderCustomTiles();
+            for (const tile of themeGrid.querySelectorAll('.theme-tile')) {
+                tile.setAttribute('aria-checked', String(tile.dataset.themeId === shown));
             }
 
             for (const input of document.querySelectorAll('[data-setting]')) {
