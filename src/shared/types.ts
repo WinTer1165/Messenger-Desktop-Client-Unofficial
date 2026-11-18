@@ -162,6 +162,8 @@ export interface AppSettings {
   pauseNotificationsDuringCalls: boolean;
   minimizeToTray: boolean;
   startWithSystem: boolean;
+  /** Messenger's chat list (left) is collapsed */
+  hideChatList: boolean;
   appLock: {
     mode: AppLockMode;
     awayMinutes: number;
@@ -176,7 +178,8 @@ export type BooleanSettingKey =
   | 'hideMessagePreviews'
   | 'pauseNotificationsDuringCalls'
   | 'minimizeToTray'
-  | 'startWithSystem';
+  | 'startWithSystem'
+  | 'hideChatList';
 
 /** Outcome of an app lock request (unlock, PIN change, mode change). */
 export interface LockResult {

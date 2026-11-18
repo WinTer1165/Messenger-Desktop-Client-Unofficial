@@ -97,6 +97,7 @@ import * as appLock from './app-lock';
 import { attachOverlays, setOverlay } from './overlays';
 import { initializeAppDialogs, showAppDialog } from './app-dialog';
 import { startStorageMaintenance, stopStorageMaintenance } from './storage';
+import { injectPanels, applyPanelState } from './panels';
 import {
   createApplicationMenu,
   registerShortcuts,
@@ -1163,6 +1164,7 @@ function createMessengerView(parentSession: Electron.Session): WebContentsView {
     void injectCustomCSS(view, currentTheme);
     void injectNotificationPatch(view);
     void injectLoginLayout(view);
+    void injectPanels(view.webContents);
   });
 
   // Handle page load events
@@ -1572,6 +1574,13 @@ function initializeApp(): void {
 
   // Keep the settings page (and title bar) in step with every change
   settings.onChange(broadcastSettings);
+
+  // Collapse or restore Messenger's chat list (see panels.ts)
+  settings.onChange((key) => {
+    if (key === 'hideChatList' && messengerView) {
+      void applyPanelState(messengerView.webContents);
+    }
+  });
 
   // Start the auto-updater (no-op in development / on unsupported platforms)
   initializeAutoUpdater();
