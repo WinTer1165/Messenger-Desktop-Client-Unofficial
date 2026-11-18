@@ -16,13 +16,12 @@
 
 import { BrowserWindow, dialog, WebContentsView } from 'electron';
 import { AppDialogOptions } from '../shared/types';
-import { isOverlayActive, setOverlay } from './overlays';
+import { getShowingView, isOverlayActive, setOverlay } from './overlays';
 
 /** Wait this long for the document to draw the dialog before giving up. */
 const READY_TIMEOUT_MS = 1500;
 
 let window: BrowserWindow | null = null;
-let view: WebContentsView | null = null;
 let nextId = 0;
 
 interface PendingDialog {
@@ -34,10 +33,9 @@ const pending = new Map<number, PendingDialog>();
 
 export function initializeAppDialogs(
   mainWindow: BrowserWindow,
-  messengerView: WebContentsView
+  _messengerView: WebContentsView
 ): void {
   window = mainWindow;
-  view = messengerView;
 }
 
 /** The OS dialog, for when the window can't show ours. */
@@ -64,13 +62,8 @@ async function showNativeDialog(options: AppDialogOptions): Promise<number> {
  * Messenger is what's on screen (not the settings page, lock screen...).
  */
 async function captureBackdrop(): Promise<string> {
-  const messenger = view;
-  const messengerShowing =
-    messenger !== null &&
-    !messenger.webContents.isDestroyed() &&
-    messenger.getVisible() &&
-    !isOverlayActive('dialog');
-  if (!messengerShowing) return '';
+  const messenger = isOverlayActive('dialog') ? null : getShowingView();
+  if (!messenger) return '';
 
   try {
     const image = await messenger.webContents.capturePage();

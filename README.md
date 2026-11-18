@@ -180,6 +180,7 @@ It also locks when your computer locks or sleeps (except with "When the app star
 ### Window and tray
 
 - **Custom title bar** with Home, a Facebook button (opens facebook.com in your browser), Do Not Disturb, Settings, zoom and window controls
+- **Facebook Marketplace** in the app: the title bar's Marketplace button shows it in a second view, and Messenger keeps running underneath, so notifications still arrive
 - **Tray icon** with a red dot while anything is unread, and a count on the Windows taskbar button
 - **Minimize to tray** when closing, so notifications keep arriving (Settings → Window & startup)
 - **Start with system** on Windows and macOS

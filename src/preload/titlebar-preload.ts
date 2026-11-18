@@ -49,6 +49,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Navigation
   goToHome: () => ipcRenderer.send('go-to-home'),
+  toggleMarketplace: () => ipcRenderer.send('marketplace-toggle'),
+  onMarketplaceState: (callback: (showing: boolean) => void) =>
+    listen('marketplace-state', callback),
   openExternal: (url: string) => ipcRenderer.send('open-external', url),
   checkForUpdates: () => ipcRenderer.send('check-for-updates'),
 
