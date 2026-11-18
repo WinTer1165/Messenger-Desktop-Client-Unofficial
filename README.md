@@ -180,6 +180,7 @@ It also locks when your computer locks or sleeps (except with "When the app star
 ### Window and tray
 
 - **Custom title bar** with Home, a Facebook button (opens facebook.com in your browser), Do Not Disturb, Settings, zoom and window controls
+- **Collapsible panels**: hide the chat list or the conversation information panel from the title bar, so the conversation gets the whole window
 - **Tray icon** with a red dot while anything is unread, and a count on the Windows taskbar button
 - **Minimize to tray** when closing, so notifications keep arriving (Settings → Window & startup)
 - **Start with system** on Windows and macOS
@@ -209,6 +210,8 @@ These work everywhere in the window, including while you're typing in Messenger.
 | `Ctrl/Cmd` + `R` or `F5` | Reload Messenger |
 | `Ctrl/Cmd` + `Shift` + `R` | Reload, ignoring the cache |
 | `Ctrl/Cmd` + `Shift` + `D` | Toggle Do Not Disturb |
+| `Ctrl/Cmd` + `Shift` + `L` | Collapse or restore the chat list |
+| `Ctrl/Cmd` + `Shift` + `I` | Collapse or restore conversation information |
 | `Ctrl/Cmd` + `Q` | Quit |
 
 ### Calls and screen sharing

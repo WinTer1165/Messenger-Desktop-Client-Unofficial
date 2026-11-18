@@ -8,6 +8,7 @@
 
 import { app, Menu, BrowserWindow, WebContents, WebContentsView } from 'electron';
 import * as dnd from './do-not-disturb';
+import * as settings from './settings';
 import { showAppDialog } from './app-dialog';
 import { toDisplayVersion } from '../shared/types';
 
@@ -162,6 +163,22 @@ export function registerShortcuts(contents: WebContents): void {
         if (input.shift) {
           event.preventDefault();
           dnd.toggle();
+        }
+        break;
+
+      case 'l':
+        // Ctrl/Cmd+Shift+L: collapse or restore the chat list
+        if (input.shift) {
+          event.preventDefault();
+          settings.setHideChatList(!settings.getHideChatList());
+        }
+        break;
+
+      case 'i':
+        // Ctrl/Cmd+Shift+I: collapse or restore conversation information
+        if (input.shift) {
+          event.preventDefault();
+          settings.setHideChatInfo(!settings.getHideChatInfo());
         }
         break;
 
