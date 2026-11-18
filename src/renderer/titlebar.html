@@ -1255,6 +1255,12 @@
                         <path fill="#fff" d="M711.3,660,734,512H592V415.96C592,375.47,611.84,336,675.44,336H740V210s-58.59-10-114.61-10C508.44,200,432,270.88,432,399.2V512H302V660H432v357.78a517.396,517.396,0,0,0,160,0V660Z"/>
                     </svg>
                 </button>
+                <button id="read-all-btn" class="icon-btn" title="Mark all chats as read" aria-label="Mark all chats as read">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 6 7 17l-5-5"/>
+                        <path d="m22 10-7.5 7.5L13 16"/>
+                    </svg>
+                </button>
                 <button id="dnd-toggle" class="icon-btn dnd-toggle" title="Do Not Disturb" aria-label="Do Not Disturb" aria-pressed="false">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M10.268 21a2 2 0 0 0 3.464 0"/>
@@ -1651,6 +1657,7 @@
             'maximize': 'maximizeWindow',
             'close': 'closeWindow',
             'check-updates': 'checkForUpdates',
+            'read-all-btn': 'markAllAsRead',
             'offline-retry': 'retryConnection',
             'lock-now': 'lockNow',
         };

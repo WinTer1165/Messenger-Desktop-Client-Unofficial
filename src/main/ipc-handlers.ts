@@ -69,6 +69,9 @@ let themeChangeCallback: ((theme: ThemeSetting) => void) | null = null;
 // Go to home callback
 let goToHomeCallback: (() => void) | null = null;
 
+// "Mark all as read" callback (main owns the view)
+let markAllReadCallback: (() => void) | null = null;
+
 // "Forgot PIN?" callback: signs out of Messenger (main owns the view)
 let forgotPinCallback: (() => Promise<boolean>) | null = null;
 
@@ -97,6 +100,13 @@ export function setThemeChangeCallback(callback: (theme: ThemeSetting) => void):
  */
 export function setGoToHomeCallback(callback: () => void): void {
   goToHomeCallback = callback;
+}
+
+/**
+ * Set the "Mark all as read" callback from main module
+ */
+export function setMarkAllReadCallback(callback: () => void): void {
+  markAllReadCallback = callback;
 }
 
 /**
@@ -393,6 +403,14 @@ function handleGoToHome(): void {
 }
 
 /**
+ * Handle the title bar's "Mark all as read" button.
+ */
+function handleMarkAllRead(event: IpcMainEvent): void {
+  if (!isFromShell(event) || appLock.isLocked()) return;
+  markAllReadCallback?.();
+}
+
+/**
  * Handle the Retry button on the offline screen.
  */
 function handleConnectionRetry(): void {
@@ -669,6 +687,12 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     createHandler('go-to-home', handleGoToHome)
   );
 
+  // Mark all chats as read
+  ipcMain.on(
+    'mark-all-read',
+    createHandler('mark-all-read', handleMarkAllRead)
+  );
+
   // Focus window (notification click-to-focus)
   ipcMain.on(
     'focus-window',
@@ -755,6 +779,7 @@ export function unregisterIpcHandlers(): void {
   ipcMain.removeAllListeners(IPC_CHANNELS.APP_READY);
   ipcMain.removeAllListeners('open-external');
   ipcMain.removeAllListeners('go-to-home');
+  ipcMain.removeAllListeners('mark-all-read');
   ipcMain.removeAllListeners('focus-window');
   ipcMain.removeAllListeners('notification-show');
   ipcMain.removeAllListeners('notification-close');
@@ -781,6 +806,7 @@ export function unregisterIpcHandlers(): void {
   zoomResetFunc = null;
   themeChangeCallback = null;
   goToHomeCallback = null;
+  markAllReadCallback = null;
   forgotPinCallback = null;
   rateLimiter.clear();
 

@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   goToHome: () => ipcRenderer.send('go-to-home'),
   openExternal: (url: string) => ipcRenderer.send('open-external', url),
   checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+  markAllAsRead: () => ipcRenderer.send('mark-all-read'),
 
   // Settings page
   getAppInfo: (): Promise<AppInfo> =>

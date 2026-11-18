@@ -88,15 +88,17 @@ import {
   setZoomFunctions,
   setThemeChangeCallback,
   setGoToHomeCallback,
+  setMarkAllReadCallback,
   setForgotPinCallback,
   getMinimizeToTray,
 } from './ipc-handlers';
 import * as connectivity from './connectivity';
 import * as notifications from './notifications';
 import * as appLock from './app-lock';
-import { attachOverlays, setOverlay } from './overlays';
+import { attachOverlays, setOverlay, isOverlayActive } from './overlays';
 import { initializeAppDialogs, showAppDialog } from './app-dialog';
 import { startStorageMaintenance, stopStorageMaintenance } from './storage';
+import { markAllAsRead } from './mark-all-read';
 import {
   createApplicationMenu,
   registerShortcuts,
@@ -860,6 +862,67 @@ function handleGoToHome(): void {
   }
 }
 
+/**
+ * The title bar's "Mark all as read" button: ask first, then mark every
+ * unread chat in the chat list (see mark-all-read.ts) and say so if it
+ * didn't work out.
+ */
+async function handleMarkAllRead(): Promise<void> {
+  const view = messengerView;
+  if (!view || view.webContents.isDestroyed()) return;
+
+  // Messenger has to be on screen: the marking is done with the mouse
+  if (isOverlayActive('settings') || isOverlayActive('offline')) return;
+
+  const response = await showAppDialog({
+    type: 'question',
+    title: 'Mark all as read?',
+    message: 'Mark every unread chat as read.',
+    detail:
+      'Each unread chat in your chat list is marked as read, the same as choosing ' +
+      '"Mark as read" from its menu. You will see the menus open and close for a moment.',
+    buttons: ['Cancel', 'Mark all as read'],
+    defaultId: 1,
+    cancelId: 0,
+  });
+  if (response !== 1 || view.webContents.isDestroyed()) return;
+
+  // Give Messenger a moment to be back on screen after the dialog
+  await new Promise((resolve) => setTimeout(resolve, 250));
+
+  const result = await markAllAsRead(view.webContents);
+  if (result.problem === 'busy' || (result.marked > 0 && result.failed === 0)) return;
+
+  let type: 'info' | 'warning' = 'info';
+  let message = 'There were no unread chats to mark.';
+  let detail = 'Only chats loaded in the chat list are checked. Scroll the list to load older ones.';
+
+  if (result.problem === 'no-list' || result.problem === 'list-hidden') {
+    type = 'warning';
+    message = 'The chat list could not be found.';
+    detail = 'Open the Chats view with the chat list showing, then try again.';
+  } else if (result.failed > 0) {
+    type = 'warning';
+    message =
+      result.marked > 0
+        ? `Marked ${String(result.marked)}, but ${String(result.failed)} could not be marked.`
+        : 'The unread chats could not be marked.';
+    detail =
+      'The "Mark as read" menu item was not found. This works with Messenger in ' +
+      'English, and can stop working when Messenger changes its page.';
+  }
+
+  await showAppDialog({
+    type,
+    title: 'Mark all as read',
+    message,
+    detail,
+    buttons: ['OK'],
+    defaultId: 0,
+    cancelId: 0,
+  });
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // MESSENGER VIEW MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════
@@ -1563,6 +1626,9 @@ function initializeApp(): void {
 
   // Set up go to home callback
   setGoToHomeCallback(handleGoToHome);
+
+  // "Mark all as read" in the title bar
+  setMarkAllReadCallback(() => void handleMarkAllRead());
 
   // "Forgot PIN?" on the lock screen signs out
   setForgotPinCallback(handleForgotPin);
