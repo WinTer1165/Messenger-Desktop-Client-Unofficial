@@ -198,7 +198,7 @@ Pick one in **Settings → Appearance**. Themes color the whole window: the titl
 | Sakura Bloom | Arctic Frost | Lush Forest | Desert |
 | Electric | High Contrast | | |
 
-**Make your own.** Under the theme grid, **Create a theme** turns one colour into four ready-made looks (Dark, Light, Vivid and Soft). Click one to try it across the whole window, Messenger included; nothing is saved until you press **Save**, and **Cancel** or Esc puts your previous theme back. Saved themes appear after the built-in ones with small edit and delete buttons (up to 20). **Fine-tune** adjusts background, text, secondary text, accent and title bar, and warns if the text becomes hard to read. **Export** gives a short code (`mdt1:…`) you can send to someone; **Import** opens a pasted code in the editor.
+**Make your own.** Under the theme grid, **Create a theme** turns one color into four ready-made looks (Dark, Light, Vivid and Soft). Click one to try it across the whole window, Messenger included; nothing is saved until you press **Save**, and **Cancel** or Esc puts your previous theme back. Saved themes appear after the built-in ones with small edit and delete buttons (up to 20). **Fine-tune** adjusts background, text, secondary text, accent and title bar, and warns if the text becomes hard to read. **Export** gives a short code (`mdt1:…`) you can send to someone; **Import** opens a pasted code in the editor.
 
 ### Keyboard shortcuts
 
