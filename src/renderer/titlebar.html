@@ -347,7 +347,21 @@
             display: flex;
             align-items: center;
             height: 100%;
+            /* The buttons keep their size; the brand gives way instead */
+            flex: none;
             -webkit-app-region: no-drag;
+        }
+
+        /* Narrow windows: the brand clips rather than running underneath
+           the buttons, and fitTitleBar() takes the least needed pieces
+           out one at a time until everything fits */
+        .brand {
+            flex: 0 1 auto;
+            overflow: hidden;
+        }
+
+        .titlebar .squeezed-out {
+            display: none;
         }
 
         .toolbar {
@@ -1682,6 +1696,47 @@
             $('zoom-reset').textContent = `${Math.round(100 + level * 50)}%`;
         });
 
+        // ── Narrow windows ──────────────────────────────────────
+        // The bar's content can be wider than the window (it can be as
+        // narrow as 400px). Pieces step aside in this order until the
+        // rest fits: the version, the app name, the zoom control (still
+        // on Ctrl +/-/0), then the Facebook shortcut. Measured rather
+        // than tied to fixed widths, so it holds for any set of buttons.
+
+        const SQUEEZE_ORDER = [
+            ['#bar-version'],
+            ['.brand .app-name'],
+            ['.actions .zoom', '.actions > .divider'],
+            ['#facebook-btn'],
+        ];
+
+        function fitTitleBar() {
+            const bar = document.querySelector('.titlebar');
+            const brand = bar.querySelector('.brand');
+            const actions = bar.querySelector('.actions');
+            const groups = SQUEEZE_ORDER.map((selectors) =>
+                selectors.map((selector) => bar.querySelector(selector)).filter(Boolean));
+
+            for (const el of groups.flat()) {
+                el.classList.remove('squeezed-out');
+            }
+
+            const style = getComputedStyle(bar);
+            const available = bar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            const GAP = 8;
+            // scrollWidth: what the brand needs, however far it is clipped
+            const fits = () => brand.scrollWidth + GAP + actions.offsetWidth <= available;
+
+            for (const group of groups) {
+                if (fits()) break;
+                for (const el of group) {
+                    el.classList.add('squeezed-out');
+                }
+            }
+        }
+
+        new ResizeObserver(fitTitleBar).observe(document.querySelector('.titlebar'));
+
         // Maximize / restore glyph
         function renderMaximized(maximized) {
             const button = $('maximize');
@@ -1975,6 +2030,7 @@
             $('bar-version').textContent = short;
             $('bar-version').title = 'Version ' + info.version;
             $('bar-version').hidden = false;
+            fitTitleBar();
             $('about-version').textContent = short;
             $('about-versions').textContent =
                 `Version ${info.version} · Electron ${info.electron} · Chromium ${info.chrome.split('.')[0]}`;
